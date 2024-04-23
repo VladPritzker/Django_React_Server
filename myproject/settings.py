@@ -25,6 +25,16 @@ SECRET_KEY = 'django-insecure-2v!2z=tp7_@2zn+v($@g@%ir+wdble23vjm5se5omr2xmrn*28
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+CORS_ALLOW_ALL_ORIGINS = True  # Allow requests from any origin
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
+
+if DEBUG:
+    CSRF_COOKIE_SECURE = False
+    CSRF_COOKIE_HTTPONLY = False
+
 ALLOWED_HOSTS = []
 
 
@@ -39,11 +49,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'myapp',
+    'corsheaders',
+
 
 
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # CORS handling should be very early, before most other middlewares
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -53,6 +66,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'myapp.middleware.ResetDBTableMiddleware',
 ]
+
 
 ROOT_URLCONF = 'myproject.urls'
 
@@ -125,6 +139,8 @@ LOGGING = {
         },
     },
 }
+
+
 
 
 

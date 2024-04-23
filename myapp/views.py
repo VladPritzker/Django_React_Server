@@ -1,16 +1,38 @@
+import json
+import logging
 from django.http import JsonResponse
-from .models import get_daily_activity_model
+from django.contrib.auth.hashers import make_password
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from .models import User
 
-def get_monthly_activities(request, year, month):
-    DailyActivity = get_daily_activity_model(year, month)
-    try:
-        activities = DailyActivity.objects.all().order_by('date')
-        data = [{
-            'date': activity.date.isoformat(),
-            'slept': str(activity.slept) if activity.slept else None,
-            'studied': activity.studied,
-            'wokeUp': str(activity.wokeUp) if activity.wokeUp else None
-        } for activity in activities]
-        return JsonResponse(data, safe=False)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+# Set up logging
+logger = logging.getLogger(__name__)
+
+@csrf_exempt
+def users(request):
+    if request.method == 'GET':
+        try:
+            users = User.objects.all()
+            data = [{'id': user.id, 'username': user.username, 'email': user.email} for user in users]
+            return JsonResponse(data, safe=False)
+        except Exception as e:
+            logger.error("Error getting users: %s", e)
+            return JsonResponse({'error': str(e)}, status=500)
+
+    elif request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user = User(
+                username=data['username'],
+                email=data['email'],
+                password=make_password(data['password'])
+            )
+            user.save()
+            return JsonResponse({'message': 'User registered successfully'}, status=201)
+        except Exception as e:
+            logger.error("Failed to register user: %s", e)
+            return JsonResponse({'error': str(e)}, status=400)
+
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)

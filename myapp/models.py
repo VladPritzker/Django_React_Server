@@ -14,7 +14,7 @@ def get_daily_activity_model(year, month):
     db_table_name = f'daily_activity_{year}_{str(month).zfill(2)}'
 
     class Meta:
-        managed = False
+        managed = False 
         db_table = db_table_name
 
     # Dynamically create a model class
@@ -22,3 +22,14 @@ def get_daily_activity_model(year, month):
         '__module__': 'myapp.models',
         'Meta': Meta,
     })
+
+class User(models.Model):
+    username = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'users'  # Explicitly specifying the table name to match the database
+
+    def __str__(self):
+        return self.username

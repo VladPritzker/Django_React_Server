@@ -37,6 +37,9 @@ if DEBUG:
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = 'myapp.User'
+
+
 
 # Application definition
 
@@ -50,9 +53,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'myapp',
     'corsheaders',
-
-
-
 ]
 
 MIDDLEWARE = [

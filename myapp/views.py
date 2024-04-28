@@ -1,38 +1,45 @@
+from django.contrib.auth import authenticate
 import json
-import logging
 from django.http import JsonResponse
-from django.contrib.auth.hashers import make_password
-from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from .models import User
 
-# Set up logging
-logger = logging.getLogger(__name__)
-
 @csrf_exempt
 def users(request):
-    if request.method == 'GET':
-        try:
-            users = User.objects.all()
-            data = [{'id': user.id, 'username': user.username, 'email': user.email} for user in users]
-            return JsonResponse(data, safe=False)
-        except Exception as e:
-            logger.error("Error getting users: %s", e)
-            return JsonResponse({'error': str(e)}, status=500)
-
-    elif request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            user = User(
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        action = data.get('action')
+        
+        if action == 'register':
+            user = User.objects.create_user(
                 username=data['username'],
                 email=data['email'],
-                password=make_password(data['password'])
+                password=data['password']
             )
-            user.save()
-            return JsonResponse({'message': 'User registered successfully'}, status=201)
-        except Exception as e:
-            logger.error("Failed to register user: %s", e)
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({'message': 'User registered successfully', 'id': user.id}, status=201)
 
+        elif action == 'login':
+            user = authenticate(email=data.get('email'), password=data.get('password'))
+            if user is not None:
+                return JsonResponse({
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'money_invested': user.money_invested,
+                    'money_spent': user.money_spent,
+                    'balance': user.balance
+                }, status=200)
+            else:
+                return JsonResponse({'error': 'Invalid credentials'}, status=401)
+
+        else:
+            return JsonResponse({'error': 'No valid action specified'}, status=400)
+    
+    elif request.method == 'GET':
+        # Handle GET requests here, for example, to retrieve user information
+        users = User.objects.all()
+        users_data = [{'id': user.id, 'username': user.username, 'email': user.email} for user in users]
+        return JsonResponse(users_data, safe=False)
+    
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)

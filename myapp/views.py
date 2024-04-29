@@ -25,9 +25,12 @@ def users(request):
                     'id': user.id,
                     'username': user.username,
                     'email': user.email,
-                    'money_invested': user.money_invested,
-                    'money_spent': user.money_spent,
-                    'balance': user.balance
+                    'money_invested': str(user.money_invested),  # Ensure these fields exist and are serialized correctly
+                    'money_spent': str(user.money_spent),
+                    'balance': str(user.balance),
+                    'is_active': user.is_active,
+                    'is_staff': user.is_staff,
+                    'is_superuser': user.is_superuser
                 }, status=200)
             else:
                 return JsonResponse({'error': 'Invalid credentials'}, status=401)

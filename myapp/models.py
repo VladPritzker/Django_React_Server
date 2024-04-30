@@ -43,5 +43,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         db_table = 'users'
 
+def __str__(self):
+    return self.email
+
+class FinancialRecord(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='financial_records')
+    record_date = models.DateField()
+    title = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        db_table = 'financial_records'
+
     def __str__(self):
-        return self.email
+        return f"{self.title} on {self.record_date} for ${self.amount}"

@@ -111,3 +111,30 @@ def financial_records(request):
 
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+@csrf_exempt
+def usersData(request, user_id=None):
+    if request.method == 'GET':
+        if user_id:
+            try:
+                user = User.objects.get(pk=user_id)
+                return JsonResponse({
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'money_invested': float(user.money_invested),
+                    'money_spent': float(user.money_spent),
+                    'balance': float(user.balance),
+                    'is_active': user.is_active,
+                    'is_staff': user.is_staff,
+                    'is_superuser': user.is_superuser
+                })
+            except User.DoesNotExist:
+                return JsonResponse({'error': 'User not found'}, status=404)
+        else:
+            users = User.objects.all()
+            users_data = [{'id': user.id, 'username': user.username, 'email': user.email} for user in users]
+            return JsonResponse(users_data, safe=False)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)

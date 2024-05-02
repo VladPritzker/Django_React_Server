@@ -1,11 +1,14 @@
 from django.urls import path
-from myapp.views import users, financial_records, usersData
+from myapp.views import users, financial_records, usersData, investing_records
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('users/', users, name='users'),
     path('users/<int:user_id>/', usersData, name='user_details'),  # New endpoint to fetch user details by ID
     path('financial_records/', financial_records, name='get_financial_records'),
+    path('investing_records/', investing_records, name='investing_records'),
+
+
 
     # Password reset URLs
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),

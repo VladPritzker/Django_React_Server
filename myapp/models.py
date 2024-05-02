@@ -65,6 +65,8 @@ class InvestingRecord(models.Model):
     record_date = models.DateField()
     title = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    tenor = models.CharField(max_length=100)  # Assuming tenor is a string, adjust type as necessary
+    type_invest = models.CharField(max_length=100)  # Assuming 
 
     class Meta:
         db_table = 'investing_records'

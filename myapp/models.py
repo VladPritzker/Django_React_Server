@@ -57,3 +57,17 @@ class FinancialRecord(models.Model):
 
     def __str__(self):
         return f"{self.title} on {self.record_date} for ${self.amount}"
+
+
+
+class InvestingRecord(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='investing_records')
+    record_date = models.DateField()
+    title = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        db_table = 'investing_records'
+
+    def __str__(self):
+        return f"{self.title} on {self.record_date} for ${self.amount}"

@@ -188,7 +188,9 @@ def investing_records(request):
 
         records_data = [
             {'id': record.id, 'user_id': record.user.id, 'record_date': record.record_date.isoformat(),
-             'title': record.title, 'amount': float(record.amount)}
+             'title': record.title, 'amount': float(record.amount), 
+             'tenor': record.tenor,
+             'type_invest': record.type_invest}
             for record in records
         ]
         return JsonResponse(records_data, safe=False)

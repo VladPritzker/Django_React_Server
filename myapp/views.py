@@ -1,9 +1,14 @@
 from django.contrib.auth import authenticate
+from django.core.exceptions import ObjectDoesNotExist
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
-from .models import FinancialRecord, User, InvestingRecord
+from .models import FinancialRecord, User, InvestingRecord, Note
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 
 
@@ -196,5 +201,69 @@ def investing_records(request):
             for record in records
         ]
         return JsonResponse(records_data, safe=False)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+@csrf_exempt
+def notes(request, user_id=None):
+    if request.method == 'GET':
+        if user_id:
+            try:
+                notes = Note.objects.filter(user_id=user_id)
+                notes_data = [
+                    {
+                        'id': note.id,
+                        'user_id': note.user.id,
+                        'title': note.title,
+                        'note': note.note,
+                        'date': note.date.isoformat(),
+                        'priority': note.priority
+                    } for note in notes
+                ]
+                return JsonResponse(notes_data, safe=False)
+            except Note.DoesNotExist:
+                return JsonResponse({'error': 'Notes for the specified user not found'}, status=404)
+        else:
+            # Return all notes if no user_id is specified
+            notes = Note.objects.all()
+            notes_data = [
+                {
+                    'id': note.id,
+                    'user_id': note.user.id,
+                    'title': note.title,
+                    'note': note.note,
+                    'date': note.date.isoformat(),
+                    'priority': note.priority
+                } for note in notes
+            ]
+            return JsonResponse(notes_data, safe=False)
+    
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        required_fields = ['user_id', 'title', 'note', 'date', 'priority']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return JsonResponse({'error': 'Missing required fields: ' + ', '.join(missing_fields)}, status=400)
+
+        try:
+            user = User.objects.get(pk=data['user_id'])
+            note = Note.objects.create(
+                user=user,
+                title=data['title'],
+                note=data['note']
+            )
+            return JsonResponse({
+                'id': note.id,
+                'user_id': note.user.id,
+                'title': note.title,
+                'note': note.note,
+                'date': note.date.isoformat()
+            }, status=201)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': 'Failed to create note: ' + str(e)}, status=500)
+
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)

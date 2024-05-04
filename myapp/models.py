@@ -73,3 +73,18 @@ class InvestingRecord(models.Model):
 
     def __str__(self):
         return f"{self.title} on {self.record_date} for ${self.amount}"
+    
+class Note(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    note = models.TextField()
+    date = models.DateField()
+    priority = models.IntegerField(default=0)
+    done = models.BooleanField(default=False)
+    hide = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'notes'
+
+    def __str__(self):
+        return self.title

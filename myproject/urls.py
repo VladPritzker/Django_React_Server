@@ -1,5 +1,5 @@
 from django.urls import path
-from myapp.views import users, financial_records, usersData, investing_records
+from myapp.views import users, financial_records, usersData, investing_records, notes
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -7,6 +7,10 @@ urlpatterns = [
     path('users/<int:user_id>/', usersData, name='user_details'),  # New endpoint to fetch user details by ID
     path('financial_records/', financial_records, name='get_financial_records'),
     path('investing_records/', investing_records, name='investing_records'),
+    path('notes/', notes, name='notes'),
+    path('notes/<int:user_id>/', notes, name='user_notes'),  # This line allows fetching specific notes
+
+
 
 
 

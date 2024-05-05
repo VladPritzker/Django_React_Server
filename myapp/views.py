@@ -218,7 +218,9 @@ def notes(request, user_id=None):
                         'title': note.title,
                         'note': note.note,
                         'date': note.date.isoformat(),
-                        'priority': note.priority
+                        'priority': note.priority,
+                        'done': note.done,
+                'hide': note.hide
                     } for note in notes
                 ]
                 return JsonResponse(notes_data, safe=False)
@@ -234,7 +236,9 @@ def notes(request, user_id=None):
                     'title': note.title,
                     'note': note.note,
                     'date': note.date.isoformat(),
-                    'priority': note.priority
+                    'priority': note.priority,
+                    'done': note.done,
+                    'hide': note.hide
                 } for note in notes
             ]
             return JsonResponse(notes_data, safe=False)
@@ -258,7 +262,9 @@ def notes(request, user_id=None):
                 'user_id': note.user.id,
                 'title': note.title,
                 'note': note.note,
-                'date': note.date.isoformat()
+                'date': note.date.isoformat(),
+                'done': note.done,
+                'hide': note.hide
             }, status=201)
         except User.DoesNotExist:
             return JsonResponse({'error': 'User not found'}, status=404)

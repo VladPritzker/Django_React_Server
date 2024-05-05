@@ -79,7 +79,7 @@ class Note(models.Model):
     title = models.CharField(max_length=255)
     note = models.TextField()
     date = models.DateField()
-    priority = models.IntegerField(default=0)
+    priority = models.TextField()
     done = models.BooleanField(default=False)
     hide = models.BooleanField(default=False)
 

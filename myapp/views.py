@@ -267,3 +267,53 @@ def notes(request, user_id=None):
 
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+@csrf_exempt
+def note_detail_update(request, user_id, note_id):
+    if request.method == 'GET':
+        try:
+            # Ensure the note belongs to the specified user
+            note = Note.objects.get(id=note_id, user_id=user_id)
+            return JsonResponse({
+                'id': note.id,
+                'user_id': note.user.id,
+                'title': note.title,
+                'note': note.note,
+                'date': note.date.isoformat(),
+                'priority': note.priority,
+                'done': note.done,
+                'hide': note.hide
+            })
+        except Note.DoesNotExist:
+            return JsonResponse({'error': 'Note not found'}, status=404)
+
+    elif request.method == 'PATCH':
+        try:
+            note = Note.objects.get(id=note_id, user_id=user_id)
+            data = json.loads(request.body)
+            # Update only the fields that are provided in the request body
+            note.title = data.get('title', note.title)
+            note.note = data.get('note', note.note)
+            note.priority = data.get('priority', note.priority)
+            note.done = data.get('done', note.done)
+            note.hide = data.get('hide', note.hide)
+            note.save()
+            return JsonResponse({
+                'id': note.id,
+                'user_id': note.user.id,
+                'title': note.title,
+                'note': note.note,
+                'date': note.date.isoformat(),
+                'priority': note.priority,
+                'done': note.done,
+                'hide': note.hide
+            }, status=200)
+        except Note.DoesNotExist:
+            return JsonResponse({'error': 'Note not found'}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)

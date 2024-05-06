@@ -211,37 +211,48 @@ def notes(request, user_id=None):
         if user_id:
             try:
                 notes = Note.objects.filter(user_id=user_id)
-                notes_data = [
-                    {
+                notes_data = []
+                for note in notes:
+                    note_data = {
                         'id': note.id,
                         'user_id': note.user.id,
                         'title': note.title,
                         'note': note.note,
-                        'date': note.date.isoformat(),
                         'priority': note.priority,
                         'done': note.done,
-                'hide': note.hide
-                    } for note in notes
-                ]
+                        'hide': note.hide
+                    }
+                    if note.date:
+                        note_data['date'] = note.date.isoformat()
+                    else:
+                        note_data['date'] = None  # or set a default string, if needed
+                    notes_data.append(note_data)
+
                 return JsonResponse(notes_data, safe=False)
             except Note.DoesNotExist:
                 return JsonResponse({'error': 'Notes for the specified user not found'}, status=404)
         else:
             # Return all notes if no user_id is specified
             notes = Note.objects.all()
-            notes_data = [
-                {
+            notes_data = []
+            for note in notes:
+                note_data = {
                     'id': note.id,
                     'user_id': note.user.id,
                     'title': note.title,
                     'note': note.note,
-                    'date': note.date.isoformat(),
                     'priority': note.priority,
                     'done': note.done,
                     'hide': note.hide
-                } for note in notes
-            ]
+                }
+                if note.date:
+                    note_data['date'] = note.date.isoformat()
+                else:
+                    note_data['date'] = None  # or set a default string, if needed
+                notes_data.append(note_data)
+
             return JsonResponse(notes_data, safe=False)
+
     
     elif request.method == 'POST':
         data = json.loads(request.body)
@@ -252,10 +263,13 @@ def notes(request, user_id=None):
 
         try:
             user = User.objects.get(pk=data['user_id'])
+            date = datetime.strptime(data['date'], '%Y-%m-%d').date()  # Ensure date is parsed correctly
             note = Note.objects.create(
                 user=user,
                 title=data['title'],
-                note=data['note']
+                note=data['note'],
+                date=date,  # Set the parsed date
+                priority=data['priority']
             )
             return JsonResponse({
                 'id': note.id,
@@ -263,11 +277,14 @@ def notes(request, user_id=None):
                 'title': note.title,
                 'note': note.note,
                 'date': note.date.isoformat(),
+                'priority': note.priority,
                 'done': note.done,
                 'hide': note.hide
             }, status=201)
         except User.DoesNotExist:
             return JsonResponse({'error': 'User not found'}, status=404)
+        except ValueError as e:
+            return JsonResponse({'error': 'Date format error: ' + str(e)}, status=400)  # Handle date parsing errors
         except Exception as e:
             return JsonResponse({'error': 'Failed to create note: ' + str(e)}, status=500)
 

@@ -2,10 +2,15 @@ from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
 import json
 from django.http import JsonResponse, Http404
+from django.views.decorators.http import require_http_methods
+
 from django.views.decorators.csrf import csrf_exempt
-from .models import FinancialRecord, User, InvestingRecord, Note
+from .models import FinancialRecord, User, InvestingRecord, Note, MonthlyExpense
 from datetime import datetime
 import logging
+from django.db.models import Case, When, Value, IntegerField
+from django.contrib.auth.models import User
+
 
 logger = logging.getLogger(__name__)
 
@@ -210,47 +215,52 @@ def notes(request, user_id=None):
     if request.method == 'GET':
         if user_id:
             try:
-                notes = Note.objects.filter(user_id=user_id)
-                notes_data = []
-                for note in notes:
-                    note_data = {
+                # Sorting manually by assigning custom priorities
+                ordering = Case(
+                    When(priority='High Priority', then=Value(1)),
+                    When(priority='Medium Priority', then=Value(2)),
+                    When(priority='Low Priority', then=Value(3)),
+                    default=Value(4),
+                    output_field=IntegerField()
+                )
+                notes = Note.objects.filter(user_id=user_id).order_by(ordering)
+                notes_data = [
+                    {
                         'id': note.id,
                         'user_id': note.user.id,
                         'title': note.title,
                         'note': note.note,
+                        'date': note.date.isoformat() if note.date else None,
                         'priority': note.priority,
                         'done': note.done,
                         'hide': note.hide
-                    }
-                    if note.date:
-                        note_data['date'] = note.date.isoformat()
-                    else:
-                        note_data['date'] = None  # or set a default string, if needed
-                    notes_data.append(note_data)
-
+                    } for note in notes
+                ]
                 return JsonResponse(notes_data, safe=False)
             except Note.DoesNotExist:
                 return JsonResponse({'error': 'Notes for the specified user not found'}, status=404)
         else:
-            # Return all notes if no user_id is specified
-            notes = Note.objects.all()
-            notes_data = []
-            for note in notes:
-                note_data = {
+            # Apply the same sorting logic for all notes
+            ordering = Case(
+                When(priority='High Priority', then=Value(1)),
+                When(priority='Medium Priority', then=Value(2)),
+                When(priority='Low Priority', then=Value(3)),
+                default=Value(4),
+                output_field=IntegerField()
+            )
+            notes = Note.objects.all().order_by(ordering)
+            notes_data = [
+                {
                     'id': note.id,
                     'user_id': note.user.id,
                     'title': note.title,
                     'note': note.note,
+                    'date': note.date.isoformat() if note.date else None,
                     'priority': note.priority,
                     'done': note.done,
                     'hide': note.hide
-                }
-                if note.date:
-                    note_data['date'] = note.date.isoformat()
-                else:
-                    note_data['date'] = None  # or set a default string, if needed
-                notes_data.append(note_data)
-
+                } for note in notes
+            ]
             return JsonResponse(notes_data, safe=False)
 
     
@@ -337,6 +347,37 @@ def note_detail_update(request, user_id, note_id):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+@require_http_methods(["GET", "POST"])
+def monthly_expenses(request, user_id=None):
+    if request.method == 'GET':
+        if user_id:
+            expenses = MonthlyExpense.objects.filter(user_id=user_id)
+            data = list(expenses.values('id', 'user_id', 'title', 'amount'))
+            return JsonResponse(data, safe=False)
+        else:
+            return JsonResponse({'error': 'User ID is required'}, status=400)
+
+    elif request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user = User.objects.get(pk=data['user_id'])
+            expense = MonthlyExpense.objects.create(
+                user=user,
+                title=data['title'],
+                amount=data['amount']
+            )
+            return JsonResponse({'id': expense.id, 'user_id': expense.user.id, 'title': expense.title, 'amount': expense.amount}, status=201)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+        except KeyError as e:
+            return JsonResponse({'error': f'Missing field: {str(e)}'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
 
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)

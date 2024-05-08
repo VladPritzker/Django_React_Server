@@ -1,15 +1,17 @@
 from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 import json
 from django.http import JsonResponse, Http404
 from django.views.decorators.http import require_http_methods
-
 from django.views.decorators.csrf import csrf_exempt
 from .models import FinancialRecord, User, InvestingRecord, Note, MonthlyExpense
 from datetime import datetime
 import logging
 from django.db.models import Case, When, Value, IntegerField
 from django.contrib.auth.models import User
+User = get_user_model()
+
 
 
 logger = logging.getLogger(__name__)
@@ -352,32 +354,108 @@ def note_detail_update(request, user_id, note_id):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
-@require_http_methods(["GET", "POST"])
-def monthly_expenses(request, user_id=None):
+
+
+
+@csrf_exempt
+@require_http_methods(["GET", "POST", "DELETE"])
+def monthly_expenses(request, user_id=None, expense_id=None):
+    User = get_user_model()  # Use the custom user model defined in settings
+
     if request.method == 'GET':
         if user_id:
-            expenses = MonthlyExpense.objects.filter(user_id=user_id)
-            data = list(expenses.values('id', 'user_id', 'title', 'amount'))
-            return JsonResponse(data, safe=False)
+            try:
+                user = User.objects.get(pk=user_id)
+                expenses = MonthlyExpense.objects.filter(user=user)
+                data = list(expenses.values('id', 'user_id', 'title', 'amount'))
+                return JsonResponse(data, safe=False)
+            except User.DoesNotExist:
+                return JsonResponse({'error': 'User not found'}, status=404)
         else:
             return JsonResponse({'error': 'User ID is required'}, status=400)
 
+
     elif request.method == 'POST':
+        if not user_id:
+            return JsonResponse({'error': 'User ID is required for posting expenses'}, status=400)
+
         try:
+            user = User.objects.get(pk=user_id)
             data = json.loads(request.body)
-            user = User.objects.get(pk=data['user_id'])
-            expense = MonthlyExpense.objects.create(
+            monthly_expense = MonthlyExpense.objects.create(
                 user=user,
                 title=data['title'],
                 amount=data['amount']
             )
-            return JsonResponse({'id': expense.id, 'user_id': expense.user.id, 'title': expense.title, 'amount': expense.amount}, status=201)
+            return JsonResponse({
+                'id': monthly_expense.id,
+                'user_id': monthly_expense.user_id,
+                'title': monthly_expense.title,
+                'amount': str(monthly_expense.amount)
+            }, status=201)
+        
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
         except User.DoesNotExist:
             return JsonResponse({'error': 'User not found'}, status=404)
-        except KeyError as e:
-            return JsonResponse({'error': f'Missing field: {str(e)}'}, status=400)
         except Exception as e:
-            return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+            return JsonResponse({'error': str(e)}, status=500)
+
+    elif request.method == 'DELETE':
+        if not expense_id:
+            return JsonResponse({'error': 'Expense ID is required for deletion'}, status=400)
+
+        try:
+            expense = MonthlyExpense.objects.get(pk=expense_id)
+            expense.delete()
+            return JsonResponse({'message': 'Expense deleted successfully'}, status=204)
+        except MonthlyExpense.DoesNotExist:
+            return JsonResponse({'error': 'Expense not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+
+@csrf_exempt
+@require_http_methods(["GET", "PUT", "DELETE"])
+def expense_detail(request, user_id, expense_id):
+    User = get_user_model()
+    try:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+
+    if request.method == 'GET':
+        try:
+            expense = MonthlyExpense.objects.get(user=user, id=expense_id)
+            return JsonResponse({'id': expense.id, 'user_id': user.id, 'title': expense.title, 'amount': str(expense.amount)}, status=200)
+        except MonthlyExpense.DoesNotExist:
+            return JsonResponse({'error': 'Expense not found'}, status=404)
+
+    elif request.method == 'PUT':
+        try:
+            expense = MonthlyExpense.objects.get(user=user, id=expense_id)
+            data = json.loads(request.body)
+            expense.title = data.get('title', expense.title)
+            expense.amount = data.get('amount', expense.amount)
+            expense.save()
+            return JsonResponse({'id': expense.id, 'title': expense.title, 'amount': str(expense.amount)}, status=200)
+        except MonthlyExpense.DoesNotExist:
+            return JsonResponse({'error': 'Expense not found'}, status=404)
+
+    elif request.method == 'DELETE':
+        try:
+            expense = MonthlyExpense.objects.get(user=user, id=expense_id)
+            print(f"Deleting expense: {expense.title}, ID: {expense.id}")  # Debug print
+            expense.delete()
+            print("Deletion successful.")  # Confirm deletion
+            return JsonResponse({'message': 'Expense deleted successfully'}, status=204)
+        except MonthlyExpense.DoesNotExist:
+            print("Expense not found for deletion.")  # Debug print
+            return JsonResponse({'error': 'Expense not found'}, status=404)
 
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)

@@ -1,6 +1,6 @@
 from django.urls import path
-from myapp.views import users, financial_records, usersData, investing_records,notes, note_detail_update, monthly_expenses
 from django.contrib.auth import views as auth_views
+from myapp.views import users, financial_records, usersData, investing_records,notes, note_detail_update, monthly_expenses, expense_detail
 
 urlpatterns = [
    path('users/', users, name='users'),
@@ -11,6 +11,8 @@ urlpatterns = [
     path('notes/<int:user_id>/', notes, name='user_notes'),  # This line allows fetching specific notes
     path('notes/<int:user_id>/<int:note_id>/', note_detail_update, name='note_detail_update'),
     path('expenses/<int:user_id>/', monthly_expenses, name='monthly_expenses'),
+    path('expenses/', monthly_expenses, name='monthly_expenses'),
+    path('expenses/<int:user_id>/<int:expense_id>/', expense_detail, name='monthly_expenses'),
 
 
 

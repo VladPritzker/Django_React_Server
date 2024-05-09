@@ -362,6 +362,7 @@ def note_detail_update(request, user_id, note_id):
 def monthly_expenses(request, user_id=None, expense_id=None):
     User = get_user_model()  # Use the custom user model defined in settings
 
+
     if request.method == 'GET':
         if user_id:
             try:

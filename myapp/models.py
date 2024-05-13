@@ -33,8 +33,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     money_invested = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     money_spent = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    balance_goal = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    spent_by_week = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    spent_by_month = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    spent_by_year = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     password = models.CharField(max_length=100)
-
 
     objects = UserManager()
 
@@ -44,8 +47,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         db_table = 'users'
 
-def __str__(self):
-    return self.email
+    def __str__(self):
+        return self.email
 
 class FinancialRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='financial_records')

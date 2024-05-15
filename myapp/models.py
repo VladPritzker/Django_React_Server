@@ -70,13 +70,16 @@ class InvestingRecord(models.Model):
     title = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     tenor = models.CharField(max_length=100)  # Assuming tenor is a string, adjust type as necessary
-    type_invest = models.CharField(max_length=100)  # Assuming 
+    type_invest = models.CharField(max_length=100)  # Assuming
+    amount_at_maturity = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)  # New field
+    rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # New field
 
     class Meta:
         db_table = 'investing_records'
 
     def __str__(self):
         return f"{self.title} on {self.record_date} for ${self.amount}"
+
     
 class Note(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

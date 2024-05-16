@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from myapp.views import users, financial_records, usersData, investing_records,notes, note_detail_update, monthly_expenses, expense_detail
+from myapp.views import users, financial_records, usersData, investing_records,notes, note_detail_update, monthly_expenses, expense_detail, reorder_notes
 
 urlpatterns = [
    path('users/', users, name='users'),
@@ -13,6 +13,9 @@ urlpatterns = [
     path('expenses/<int:user_id>/', monthly_expenses, name='monthly_expenses'),
     path('expenses/', monthly_expenses, name='monthly_expenses'),
     path('expenses/<int:user_id>/<int:expense_id>/', expense_detail, name='monthly_expenses'),
+    path('notes/<int:user_id>/reorder/', reorder_notes, name='reorder_notes'),  # New path for reordering notes
+
+
 
 
 
@@ -25,3 +28,5 @@ urlpatterns = [
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 ]
+
+

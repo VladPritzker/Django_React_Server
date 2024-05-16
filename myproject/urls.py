@@ -1,6 +1,8 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from myapp.views import users, financial_records, usersData, investing_records,notes, note_detail_update, monthly_expenses, expense_detail, reorder_notes
+from myapp.views import users, financial_records, usersData, investing_records,notes, note_detail_update, monthly_expenses, expense_detail, reorder_notes, upload_photo
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
    path('users/', users, name='users'),
@@ -14,14 +16,10 @@ urlpatterns = [
     path('expenses/', monthly_expenses, name='monthly_expenses'),
     path('expenses/<int:user_id>/<int:expense_id>/', expense_detail, name='monthly_expenses'),
     path('notes/<int:user_id>/reorder/', reorder_notes, name='reorder_notes'),  # New path for reordering notes
+    path('users/<int:user_id>/upload_photo/', upload_photo, name='upload_photo'),
 
 
-
-
-
-
-
-
+   
     # Password reset URLs
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
@@ -30,3 +28,5 @@ urlpatterns = [
 ]
 
 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

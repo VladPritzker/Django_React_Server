@@ -1,6 +1,5 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ObjectDoesNotExist
 import json
 from django.http import JsonResponse, Http404
 from django.views.decorators.http import require_http_methods
@@ -8,9 +7,14 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import FinancialRecord, User, InvestingRecord, Note, MonthlyExpense
 from datetime import datetime
 import logging
-from django.db.models import Case, When, Value, IntegerField
 from django.contrib.auth.models import User
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import os
+from .models import User
 User = get_user_model()
+
+
 
 
 
@@ -106,7 +110,8 @@ def usersData(request, user_id=None):
                     'spent_by_year': float(user.spent_by_year) if user.spent_by_year else None,
                     'is_active': user.is_active,
                     'is_staff': user.is_staff,
-                    'is_superuser': user.is_superuser
+                    'is_superuser': user.is_superuser,
+                    'photo': user.photo 
                 })
             except User.DoesNotExist:
                 return JsonResponse({'error': 'User not found'}, status=404)
@@ -407,7 +412,7 @@ def note_detail_update(request, user_id, note_id):
                 'user_id': note.user.id,
                 'title': note.title,
                 'note': note.note,
-                'date': note.date.isoformat(),
+                'date': note.date.isoformat() if note.date else None,
                 'priority': note.priority,
                 'done': note.done,
                 'hide': note.hide,
@@ -433,7 +438,7 @@ def note_detail_update(request, user_id, note_id):
                 'user_id': note.user.id,
                 'title': note.title,
                 'note': note.note,
-                'date': note.date.isoformat(),
+                'date': note.date.isoformat() if note.date else None,
                 'priority': note.priority,
                 'done': note.done,
                 'hide': note.hide,
@@ -593,3 +598,23 @@ def expense_detail(request, user_id, expense_id):
 
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+
+
+
+@csrf_exempt
+def upload_photo(request, user_id):
+    if request.method == 'POST' and request.FILES.get('photo'):
+        photo = request.FILES['photo']
+        filename = f'user_{user_id}/{photo.name}'
+        file_path = default_storage.save(filename, ContentFile(photo.read()))
+
+        try:
+            user = User.objects.get(pk=user_id)
+            user.photo = file_path
+            user.save()
+            return JsonResponse({'file_url': file_path}, status=201)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)

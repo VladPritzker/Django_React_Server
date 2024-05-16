@@ -86,9 +86,10 @@ class Note(models.Model):
     title = models.CharField(max_length=255)
     note = models.TextField()
     date = models.DateField()
-    priority = models.TextField()
+    priority = models.CharField(max_length=20)
     done = models.BooleanField(default=False)
     hide = models.BooleanField(default=False)
+    order = models.IntegerField(default=0)  # Add this field
 
     class Meta:
         db_table = 'notes'

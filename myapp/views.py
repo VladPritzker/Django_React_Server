@@ -299,15 +299,7 @@ def notes(request, user_id=None):
     if request.method == 'GET':
         if user_id:
             try:
-                # Sorting manually by assigning custom priorities
-                ordering = Case(
-                    When(priority='High Priority', then=Value(1)),
-                    When(priority='Medium Priority', then=Value(2)),
-                    When(priority='Low Priority', then=Value(3)),
-                    default=Value(4),
-                    output_field=IntegerField()
-                )
-                notes = Note.objects.filter(user_id=user_id).order_by(ordering)
+                notes = Note.objects.filter(user_id=user_id).order_by('order')
                 notes_data = [
                     {
                         'id': note.id,
@@ -317,22 +309,15 @@ def notes(request, user_id=None):
                         'date': note.date.isoformat() if note.date else None,
                         'priority': note.priority,
                         'done': note.done,
-                        'hide': note.hide
+                        'hide': note.hide,
+                        'order': note.order
                     } for note in notes
                 ]
                 return JsonResponse(notes_data, safe=False)
             except Note.DoesNotExist:
                 return JsonResponse({'error': 'Notes for the specified user not found'}, status=404)
         else:
-            # Apply the same sorting logic for all notes
-            ordering = Case(
-                When(priority='High Priority', then=Value(1)),
-                When(priority='Medium Priority', then=Value(2)),
-                When(priority='Low Priority', then=Value(3)),
-                default=Value(4),
-                output_field=IntegerField()
-            )
-            notes = Note.objects.all().order_by(ordering)
+            notes = Note.objects.all().order_by('order')
             notes_data = [
                 {
                     'id': note.id,
@@ -342,12 +327,12 @@ def notes(request, user_id=None):
                     'date': note.date.isoformat() if note.date else None,
                     'priority': note.priority,
                     'done': note.done,
-                    'hide': note.hide
+                    'hide': note.hide,
+                    'order': note.order
                 } for note in notes
             ]
             return JsonResponse(notes_data, safe=False)
 
-    
     elif request.method == 'POST':
         data = json.loads(request.body)
         required_fields = ['user_id', 'title', 'note', 'date', 'priority']
@@ -363,7 +348,8 @@ def notes(request, user_id=None):
                 title=data['title'],
                 note=data['note'],
                 date=date,  # Set the parsed date
-                priority=data['priority']
+                priority=data['priority'],
+                order=data.get('order', 0)  # Set the order if provided
             )
             return JsonResponse({
                 'id': note.id,
@@ -373,7 +359,8 @@ def notes(request, user_id=None):
                 'date': note.date.isoformat(),
                 'priority': note.priority,
                 'done': note.done,
-                'hide': note.hide
+                'hide': note.hide,
+                'order': note.order
             }, status=201)
         except User.DoesNotExist:
             return JsonResponse({'error': 'User not found'}, status=404)
@@ -382,9 +369,33 @@ def notes(request, user_id=None):
         except Exception as e:
             return JsonResponse({'error': 'Failed to create note: ' + str(e)}, status=500)
 
+    elif request.method == 'PATCH':
+        data = json.loads(request.body)
+        if user_id:
+            try:
+                with transaction.atomic():
+                    for note_data in data['notes']:
+                        note = Note.objects.get(id=note_data['id'], user_id=user_id)
+                        note.title = note_data.get('title', note.title)
+                        note.note = note_data.get('note', note.note)
+                        note.priority = note_data.get('priority', note.priority)
+                        note.done = note_data.get('done', note.done)
+                        note.hide = note_data.get('hide', note.hide)
+                        note.order = note_data.get('order', note.order)
+                        note.save()
+                return JsonResponse({'message': 'Notes reordered successfully'}, status=200)
+            except Note.DoesNotExist:
+                return JsonResponse({'error': 'Note not found'}, status=404)
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON'}, status=400)
+            except Exception as e:
+                return JsonResponse({'error': str(e)}, status=500)
+        else:
+            return JsonResponse({'error': 'User ID is required for reordering'}, status=400)
+
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
-    
+
 @csrf_exempt
 def note_detail_update(request, user_id, note_id):
     if request.method == 'GET':
@@ -399,7 +410,8 @@ def note_detail_update(request, user_id, note_id):
                 'date': note.date.isoformat(),
                 'priority': note.priority,
                 'done': note.done,
-                'hide': note.hide
+                'hide': note.hide,
+                'order': note.order
             })
         except Note.DoesNotExist:
             return JsonResponse({'error': 'Note not found'}, status=404)
@@ -414,6 +426,7 @@ def note_detail_update(request, user_id, note_id):
             note.priority = data.get('priority', note.priority)
             note.done = data.get('done', note.done)
             note.hide = data.get('hide', note.hide)
+            note.order = data.get('order', note.order)
             note.save()
             return JsonResponse({
                 'id': note.id,
@@ -423,7 +436,8 @@ def note_detail_update(request, user_id, note_id):
                 'date': note.date.isoformat(),
                 'priority': note.priority,
                 'done': note.done,
-                'hide': note.hide
+                'hide': note.hide,
+                'order': note.order
             }, status=200)
         except Note.DoesNotExist:
             return JsonResponse({'error': 'Note not found'}, status=404)
@@ -435,8 +449,45 @@ def note_detail_update(request, user_id, note_id):
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-
-
+@csrf_exempt
+def reorder_notes(request, user_id):
+    if request.method == 'GET':
+        try:
+            notes = Note.objects.filter(user_id=user_id).order_by('order')
+            notes_data = [
+                {
+                    'id': note.id,
+                    'user_id': note.user.id,
+                    'title': note.title,
+                    'note': note.note,
+                    'date': note.date.isoformat() if note.date else None,
+                    'priority': note.priority,
+                    'done': note.done,
+                    'hide': note.hide,
+                    'order': note.order
+                } for note in notes
+            ]
+            return JsonResponse(notes_data, safe=False)
+        except Note.DoesNotExist:
+            return JsonResponse({'error': 'Notes for the specified user not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    elif request.method == 'PATCH':
+        try:
+            data = json.loads(request.body)
+            for item in data:
+                note = Note.objects.get(id=item['id'], user_id=user_id)
+                note.order = item['order']
+                note.save()
+            return JsonResponse({'message': 'Notes reordered successfully'}, status=200)
+        except Note.DoesNotExist:
+            return JsonResponse({'error': 'Note not found'}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 @csrf_exempt

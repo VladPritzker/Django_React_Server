@@ -38,6 +38,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     spent_by_month = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     spent_by_year = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     password = models.CharField(max_length=100)
+    photo = models.CharField(max_length=255, null=True, blank=True)
 
     objects = UserManager()
 
@@ -85,18 +86,21 @@ class Note(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     note = models.TextField()
-    date = models.DateField()
-    priority = models.CharField(max_length=20)
+    date = models.DateField(null=True, blank=True)
+    priority = models.CharField(max_length=50)
     done = models.BooleanField(default=False)
     hide = models.BooleanField(default=False)
-    order = models.IntegerField(default=0)  # Add this field
+    order = models.IntegerField(default=0)  # Ensure this field exists
+
 
     class Meta:
         db_table = 'notes'
 
     def __str__(self):
         return self.title
-    
+
+
+
 
 class MonthlyExpense(models.Model):
     user = models.ForeignKey(
@@ -113,3 +117,4 @@ class MonthlyExpense(models.Model):
 
     def __str__(self):
         return f"{self.title}: {self.amount}"    
+

@@ -225,6 +225,23 @@ def financial_records(request):
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
+@csrf_exempt
+def delete_financial_record(request, user_id, record_id):
+    if request.method == 'DELETE':
+        try:
+            user = User.objects.get(id=user_id)
+            record = FinancialRecord.objects.get(id=record_id, user=user)
+            record.delete()
+            return JsonResponse({'message': 'Record deleted successfully'}, status=204)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+        except FinancialRecord.DoesNotExist:
+            return JsonResponse({'error': 'Financial record not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': 'Server error: ' + str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
 
 
     

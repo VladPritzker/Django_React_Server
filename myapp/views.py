@@ -4,7 +4,7 @@ import json
 from django.http import JsonResponse, Http404
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from .models import FinancialRecord, User, InvestingRecord, Note, MonthlyExpense
+from .models import FinancialRecord, User, InvestingRecord, Note, MonthlyExpense, IncomeRecord
 from datetime import datetime
 import logging
 from django.contrib.auth.models import User
@@ -12,6 +12,8 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 import os
 from .models import User
+from django.shortcuts import get_object_or_404
+from django.db.models import Sum
 User = get_user_model()
 
 
@@ -635,3 +637,96 @@ def upload_photo(request, user_id):
             return JsonResponse({'error': 'User not found'}, status=404)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+
+
+
+
+def update_user_income(user):
+    total_income = IncomeRecord.objects.filter(user=user).aggregate(total=Sum('amount'))['total'] or 0.00
+    user.income_amount = total_income
+    user.save()
+
+@csrf_exempt
+def income_records_view(request, user_id):
+    try:
+        user = get_object_or_404(User, id=user_id)
+
+        if request.method == 'GET':
+            income_records = IncomeRecord.objects.filter(user=user)
+            records = [
+                {
+                    'id': record.id,
+                    'title': record.title,
+                    'amount': str(record.amount),
+                    'record_date': record.record_date.isoformat()
+                } for record in income_records
+            ]
+            return JsonResponse(records, safe=False, status=200)
+
+        elif request.method == 'POST':
+            data = json.loads(request.body)
+            title = data.get('title')
+            amount = data.get('amount')
+            record_date = data.get('record_date')
+
+            if not title or not amount or not record_date:
+                return JsonResponse({'error': 'Missing fields'}, status=400)
+
+            # Convert record_date from string to date object
+            record_date = datetime.strptime(record_date, '%Y-%m-%d').date()
+
+            record = IncomeRecord.objects.create(
+                user=user,
+                title=title,
+                amount=amount,
+                record_date=record_date
+            )
+            update_user_income(user)
+            return JsonResponse({
+                'id': record.id,
+                'title': record.title,
+                'amount': str(record.amount),
+                'record_date': record.record_date.isoformat()
+            }, status=201)
+        else:
+            return JsonResponse({'error': 'Method not allowed'}, status=405)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+def income_record_detail_view(request, user_id, record_id):
+    try:
+        user = get_object_or_404(User, id=user_id)
+        record = get_object_or_404(IncomeRecord, id=record_id, user=user)
+
+        if request.method == 'PATCH':
+            data = json.loads(request.body)
+            title = data.get('title', record.title)
+            amount = data.get('amount', record.amount)
+            record_date = data.get('record_date', record.record_date)
+
+            if isinstance(record_date, str):
+                # Convert record_date from string to date object if needed
+                record_date = datetime.strptime(record_date, '%Y-%m-%d').date()
+
+            record.title = title
+            record.amount = amount
+            record.record_date = record_date
+            record.save()
+            update_user_income(user)
+            return JsonResponse({
+                'id': record.id,
+                'title': record.title,
+                'amount': str(record.amount),
+                'record_date': record.record_date.isoformat()
+            }, status=200)
+        elif request.method == 'DELETE':
+            record.delete()
+            update_user_income(user)
+            return JsonResponse({'message': 'Record deleted'}, status=204)
+        else:
+            return JsonResponse({'error': 'Method not allowed'}, status=405)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

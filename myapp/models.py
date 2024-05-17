@@ -118,3 +118,14 @@ class MonthlyExpense(models.Model):
     def __str__(self):
         return f"{self.title}: {self.amount}"    
 
+class IncomeRecord(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    record_date = models.DateField()
+
+    class Meta:
+        db_table = 'income_records'
+
+    def __str__(self):
+        return f"{self.title} - {self.amount} - {self.record_date}"

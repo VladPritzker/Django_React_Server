@@ -1,13 +1,12 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from myapp.views import users, financial_records, usersData, investing_records,notes, note_detail_update, monthly_expenses, expense_detail, reorder_notes, upload_photo
+from myapp.views import users, financial_records, usersData, investing_records,notes, note_detail_update, monthly_expenses, expense_detail, reorder_notes, upload_photo, delete_financial_record
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
    path('users/', users, name='users'),
     path('users/<int:user_id>/', usersData, name='user_details'),
-    path('financial_records/', financial_records, name='get_financial_records'),
     path('investing_records/', investing_records, name='investing_records'),
     path('notes/', notes, name='notes'),
     path('notes/<int:user_id>/', notes, name='user_notes'),  # This line allows fetching specific notes
@@ -17,6 +16,8 @@ urlpatterns = [
     path('expenses/<int:user_id>/<int:expense_id>/', expense_detail, name='monthly_expenses'),
     path('notes/<int:user_id>/reorder/', reorder_notes, name='reorder_notes'),  # New path for reordering notes
     path('users/<int:user_id>/upload_photo/', upload_photo, name='upload_photo'),
+    path('financial_records/<int:user_id>/<int:record_id>/', delete_financial_record, name='delete_financial_record'),
+    path('financial_records/', financial_records, name='get_financial_records'),
 
 
    

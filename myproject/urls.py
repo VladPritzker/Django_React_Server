@@ -1,6 +1,8 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from myapp.views import users, financial_records, usersData, investing_records,notes, note_detail_update, monthly_expenses, expense_detail, reorder_notes, upload_photo, delete_financial_record, income_records_view, income_record_detail_view, contact_list, ContactDetailView
+from myapp.views import users, financial_records, usersData, investing_records,notes, note_detail_update, monthly_expenses, expense_detail, reorder_notes, upload_photo, delete_financial_record, income_records_view, income_record_detail_view, contact_list, ContactDetailView, meeting_list, MeetingDetailView
+
+
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -23,6 +25,9 @@ urlpatterns = [
     path('users/<int:user_id>/contacts/<int:pk>/', ContactDetailView.as_view(), name='contact-detail'),
     path('users/<int:user_id>/income_records/', income_records_view, name='income-records-view'),
     path('users/<int:user_id>/income_records/<int:record_id>/', income_record_detail_view, name='income-record-detail-view'),
+    path('users/<int:user_id>/meetings/', meeting_list, name='meeting-list'),
+    path('users/<int:user_id>/meetings/<int:pk>/', MeetingDetailView.as_view(), name='meeting-detail'),
+
 
 
 

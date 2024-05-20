@@ -71,16 +71,18 @@ class InvestingRecord(models.Model):
     record_date = models.DateField()
     title = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    tenor = models.CharField(max_length=100)  # Assuming tenor is a string, adjust type as necessary
-    type_invest = models.CharField(max_length=100)  # Assuming
-    amount_at_maturity = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)  # New field
-    rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # New field
+    tenor = models.CharField(max_length=100)
+    type_invest = models.CharField(max_length=100)
+    amount_at_maturity = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    maturity_date = models.DateField(null=True, blank=True)  # Add this line
 
     class Meta:
         db_table = 'investing_records'
 
     def __str__(self):
         return f"{self.title} on {self.record_date} for ${self.amount}"
+
 
     
 class Note(models.Model):

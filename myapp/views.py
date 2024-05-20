@@ -17,6 +17,8 @@ from .models import User
 from django.shortcuts import get_object_or_404
 from django.db.models import Sum
 User = get_user_model()
+from datetime import timedelta
+
 
 
 
@@ -266,45 +268,32 @@ def investing_records(request):
             {
                 'id': record.id, 'user_id': record.user.id, 'title': record.title, 'amount': float(record.amount),
                 'record_date': record.record_date.isoformat(), 'tenor': record.tenor, 'type_invest': record.type_invest,
-                'amount_at_maturity': float(record.amount_at_maturity) if record.amount_at_maturity else None,  # New field
-                'rate': float(record.rate) if record.rate else None  # New field
+                'amount_at_maturity': float(record.amount_at_maturity) if record.amount_at_maturity else None,
+                'rate': float(record.rate) if record.rate else None,
+                'maturity_date': record.maturity_date.isoformat() if record.maturity_date else None
             }
             for record in records
         ]
         return JsonResponse(records_data, safe=False)
 
-    elif request.method == 'DELETE':
+    elif request.method == 'POST':
         try:
             data = json.loads(request.body)
-            record_id = data['id']
-            record = InvestingRecord.objects.get(id=record_id)
-            record.delete()
-            return JsonResponse({'message': 'Record deleted successfully.'}, status=200)
-        except InvestingRecord.DoesNotExist:
-            return JsonResponse({'error': 'Record not found'}, status=404)
-        except Exception as e:
-            return JsonResponse({'error': 'Server error: ' + str(e)}, status=500)
-        
-    elif request.method == 'POST':
-        data = json.loads(request.body)
-        required_fields = ['user_id', 'title', 'amount', 'record_date', 'tenor', 'type_invest']
-        missing_fields = [field for field in required_fields if field not in data]
-        if missing_fields:
-            return JsonResponse({'error': 'Missing required fields: ' + ', '.join(missing_fields)}, status=400)
-
-        try:
-            user_id = data['user_id']
-            user = User.objects.get(id=user_id)  # Ensure user exists
+            user = get_object_or_404(User, id=data['user_id'])
+            record_date = datetime.strptime(data['record_date'], '%Y-%m-%d').date()
+            tenor = int(data['tenor'])
+            maturity_date = record_date + timedelta(days=tenor * 365)
 
             record = InvestingRecord.objects.create(
                 user=user,
                 title=data['title'],
                 amount=data['amount'],
-                record_date=datetime.strptime(data['record_date'], '%Y-%m-%d').date(),
-                tenor=data['tenor'],
+                record_date=record_date,
+                tenor=tenor,
                 type_invest=data['type_invest'],
-                amount_at_maturity=data.get('amount_at_maturity', None),  # New field
-                rate=data.get('rate', None)  # New field
+                amount_at_maturity=data.get('amount_at_maturity', None),
+                rate=data.get('rate', None),
+                maturity_date=maturity_date
             )
             return JsonResponse({
                 'id': record.id,
@@ -314,16 +303,27 @@ def investing_records(request):
                 'record_date': record.record_date.isoformat(),
                 'tenor': record.tenor,
                 'type_invest': record.type_invest,
-                'amount_at_maturity': str(record.amount_at_maturity) if record.amount_at_maturity else None,  # New field
-                'rate': str(record.rate) if record.rate else None  # New field
+                'amount_at_maturity': str(record.amount_at_maturity) if record.amount_at_maturity else None,
+                'rate': str(record.rate) if record.rate else None,
+                'maturity_date': record.maturity_date.isoformat()
             }, status=201)
-
-        except User.DoesNotExist:
-            return JsonResponse({'error': 'User not found'}, status=404)
-        except ValueError as ve:
-            return JsonResponse({'error': 'Data format error: ' + str(ve)}, status=400)
         except Exception as e:
-            return JsonResponse({'error': 'Server error: ' + str(e)}, status=500)
+            return JsonResponse({'error': str(e)}, status=500)
+
+    elif request.method == 'DELETE':
+        try:
+            data = json.loads(request.body)
+            record_id = data.get('id')
+            if not record_id:
+                return JsonResponse({'error': 'Missing record ID'}, status=400)
+            record = get_object_or_404(InvestingRecord, id=record_id)
+            record.delete()
+            return JsonResponse({'message': 'Record deleted successfully'}, status=204)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 @csrf_exempt

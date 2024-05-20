@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from myapp.views import users, financial_records, usersData, investing_records,notes, note_detail_update, monthly_expenses, expense_detail, reorder_notes, upload_photo, delete_financial_record, income_records_view, income_record_detail_view
+from myapp.views import users, financial_records, usersData, investing_records,notes, note_detail_update, monthly_expenses, expense_detail, reorder_notes, upload_photo, delete_financial_record, income_records_view, income_record_detail_view, contact_list, ContactDetailView
+
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -18,8 +19,11 @@ urlpatterns = [
     path('users/<int:user_id>/upload_photo/', upload_photo, name='upload_photo'),
     path('financial_records/<int:user_id>/<int:record_id>/', delete_financial_record, name='delete_financial_record'),
     path('financial_records/', financial_records, name='get_financial_records'),
+    path('users/<int:user_id>/contacts/', contact_list, name='contact-list'),
+    path('users/<int:user_id>/contacts/<int:pk>/', ContactDetailView.as_view(), name='contact-detail'),
     path('users/<int:user_id>/income_records/', income_records_view, name='income-records-view'),
     path('users/<int:user_id>/income_records/<int:record_id>/', income_record_detail_view, name='income-record-detail-view'),
+
 
 
    

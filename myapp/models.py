@@ -130,3 +130,16 @@ class IncomeRecord(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.amount} - {self.record_date}"
+
+
+class Contact(models.Model):
+    name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=20)
+    note = models.TextField(null=True, blank=True)
+    user_id = models.IntegerField()
+
+    class Meta:
+        db_table = 'contacts'
+
+    def __str__(self):
+        return self.name

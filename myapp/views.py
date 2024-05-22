@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from django.views import View
@@ -817,50 +819,7 @@ class ContactDetailView(View):
         contact.delete()
         return JsonResponse({'message': 'Contact deleted successfully'}, status=204)
 
-@csrf_exempt
-def meeting_list(request, user_id):
-    if request.method == 'GET':
-        meetings = Meeting.objects.filter(user_id=user_id)
-        meetings_list = [
-            {
-                'id': meeting.id,
-                'title': meeting.title,
-                'datetime': meeting.datetime.isoformat(),
-                'done': meeting.done,
-                'user_id': meeting.user_id
-            }
-            for meeting in meetings
-        ]
-        return JsonResponse(meetings_list, safe=False)
 
-    elif request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            user = get_object_or_404(User, id=user_id)
-            
-            # Convert datetime string to a datetime object
-            datetime_str = data.get('datetime')
-            meeting_datetime = datetime.fromisoformat(datetime_str)
-
-            meeting = Meeting.objects.create(
-                user=user,
-                title=data.get('title'),
-                datetime=meeting_datetime,
-                done=data.get('done', False)
-            )
-            return JsonResponse({
-                'id': meeting.id,
-                'title': meeting.title,
-                'datetime': meeting.datetime.isoformat(),
-                'done': meeting.done,
-                'user_id': meeting.user_id
-            }, status=201)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
-        except KeyError as e:
-            return JsonResponse({'error': f'Missing field: {e}'}, status=400)
-        except ValueError:
-            return JsonResponse({'error': 'Invalid datetime format'}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MeetingDetailView(View):
@@ -870,7 +829,7 @@ class MeetingDetailView(View):
         data = {
             'id': meeting.id,
             'title': meeting.title,
-            'datetime': meeting.datetime.isoformat(),
+            'datetime': meeting.datetime.isoformat(),  # Return exactly as stored in the DB
             'done': meeting.done,
             'user_id': meeting.user_id
         }
@@ -888,7 +847,7 @@ class MeetingDetailView(View):
             return JsonResponse({'message': 'Meeting updated successfully', 'meeting': {
                 'id': meeting.id,
                 'title': meeting.title,
-                'datetime': meeting.datetime.isoformat(),
+                'datetime': meeting.datetime.isoformat(),  # Return exactly as stored in the DB
                 'done': meeting.done,
                 'user_id': meeting.user_id
             }})
@@ -903,3 +862,49 @@ class MeetingDetailView(View):
         meeting = get_object_or_404(Meeting, user_id=user_id, pk=pk)
         meeting.delete()
         return JsonResponse({'message': 'Meeting deleted successfully'}, status=204)
+    
+
+@csrf_exempt
+def meeting_list(request, user_id):
+    if request.method == 'GET':
+        meetings = Meeting.objects.filter(user_id=user_id)
+        meetings_list = [
+            {
+                'id': meeting.id,
+                'title': meeting.title,
+                'datetime': meeting.datetime.isoformat(),  # Return exactly as stored in the DB
+                'done': meeting.done,
+                'user_id': meeting.user_id
+            }
+            for meeting in meetings
+        ]
+        return JsonResponse(meetings_list, safe=False)
+
+    elif request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user = get_object_or_404(User, id=user_id)
+            
+            # Convert datetime string to a naive datetime object
+            datetime_str = data.get('datetime')
+            meeting_datetime = datetime.fromisoformat(datetime_str)
+
+            meeting = Meeting.objects.create(
+                user=user,
+                title=data.get('title'),
+                datetime=meeting_datetime,
+                done=data.get('done', False)
+            )
+            return JsonResponse({
+                'id': meeting.id,
+                'title': meeting.title,
+                'datetime': meeting.datetime.isoformat(),  # Return exactly as stored in the DB
+                'done': meeting.done,
+                'user_id': meeting.user_id
+            }, status=201)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except KeyError as e:
+            return JsonResponse({'error': f'Missing field: {e}'}, status=400)
+        except ValueError:
+            return JsonResponse({'error': 'Invalid datetime format'}, status=400)

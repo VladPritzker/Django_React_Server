@@ -764,10 +764,19 @@ def add_income_record(request, user_id):
                 record_date=datetime.fromisoformat(data.get('record_date'))
             )
 
-            # Update the user's balance
+            # Calculate start dates for month and year
+            month_start = income_record.record_date.replace(day=1)
+            year_start = income_record.record_date.replace(month=1, day=1)
+
+            # Calculate monthly and yearly income
+            income_by_month = IncomeRecord.objects.filter(user=user, record_date__gte=month_start, record_date__lt=month_start + timedelta(days=31)).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+            income_by_year = IncomeRecord.objects.filter(user=user, record_date__gte=year_start, record_date__lt=year_start + timedelta(days=365)).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+
+            # Update the user's balance and income amounts
             user.balance += amount
             user.income_amount += amount
-
+            user.income_by_month = income_by_month
+            user.income_by_year = income_by_year
             user.save()
 
             return JsonResponse({
@@ -790,17 +799,27 @@ def delete_income_record(request, user_id, record_id):
             user = get_object_or_404(User, id=user_id)
             income_record = get_object_or_404(IncomeRecord, id=record_id, user=user)
 
-            # Update the user's balance
-            user.balance -= Decimal(income_record.amount)
-            user.income_amount -=Decimal(income_record.amount)
-            user.save()
+            # Calculate start dates for month and year
+            month_start = income_record.record_date.replace(day=1)
+            year_start = income_record.record_date.replace(month=1, day=1)
 
-            # Delete the income record
+            # Calculate monthly and yearly income after deletion
+            user.balance -= Decimal(income_record.amount)
+            user.income_amount -= Decimal(income_record.amount)
             income_record.delete()
+
+            income_by_month = IncomeRecord.objects.filter(user=user, record_date__gte=month_start, record_date__lt=month_start + timedelta(days=31)).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+            income_by_year = IncomeRecord.objects.filter(user=user, record_date__gte=year_start, record_date__lt=year_start + timedelta(days=365)).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+
+            # Update the user's income amounts
+            user.income_by_month = income_by_month
+            user.income_by_year = income_by_year
+            user.save()
 
             return JsonResponse({'message': 'Income record deleted successfully'}, status=204)
         except IncomeRecord.DoesNotExist:
             return JsonResponse({'error': 'Income record not found'}, status=404)
+
 
     
 @csrf_exempt

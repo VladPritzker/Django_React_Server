@@ -1,5 +1,4 @@
-from django.utils import timezone
-
+from decimal import Decimal  # Ensure this import is present
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from django.views import View
@@ -63,6 +62,8 @@ def users(request):
                     'spent_by_week': float(user.spent_by_week) if user.spent_by_week else None,
                     'spent_by_month': float(user.spent_by_month) if user.spent_by_month else None,
                     'spent_by_year': float(user.spent_by_year) if user.spent_by_year else None,
+                    'income_by_month': float(user.income_by_month) if user.income_by_month else None,
+                    'income_by_year': float(user.income_by_year) if user.income_by_year else None,
                     'is_active': user.is_active,
                     'is_staff': user.is_staff,
                     'is_superuser': user.is_superuser
@@ -75,7 +76,7 @@ def users(request):
             try:
                 user = User.objects.get(id=user_id)
                 return JsonResponse({
-                  'id': user.id,
+                    'id': user.id,
                     'username': user.username,
                     'email': user.email,
                     'money_invested': float(user.money_invested),
@@ -86,6 +87,8 @@ def users(request):
                     'spent_by_week': float(user.spent_by_week) if user.spent_by_week else None,
                     'spent_by_month': float(user.spent_by_month) if user.spent_by_month else None,
                     'spent_by_year': float(user.spent_by_year) if user.spent_by_year else None,
+                    'income_by_month': float(user.income_by_month) if user.income_by_month else None,
+                    'income_by_year': float(user.income_by_year) if user.income_by_year else None,
                     'is_active': user.is_active,
                     'is_staff': user.is_staff,
                     'is_superuser': user.is_superuser
@@ -100,6 +103,7 @@ def users(request):
 
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+
 
     
     
@@ -121,6 +125,8 @@ def usersData(request, user_id=None):
                     'spent_by_week': float(user.spent_by_week) if user.spent_by_week else None,
                     'spent_by_month': float(user.spent_by_month) if user.spent_by_month else None,
                     'spent_by_year': float(user.spent_by_year) if user.spent_by_year else None,
+                    'income_by_month': float(user.income_by_month) if user.income_by_month else None,
+                    'income_by_year': float(user.income_by_year) if user.income_by_year else None,
                     'is_active': user.is_active,
                     'is_staff': user.is_staff,
                     'is_superuser': user.is_superuser,
@@ -142,6 +148,8 @@ def usersData(request, user_id=None):
                 'spent_by_week': float(user.spent_by_week) if user.spent_by_week else None,
                 'spent_by_month': float(user.spent_by_month) if user.spent_by_month else None,
                 'spent_by_year': float(user.spent_by_year) if user.spent_by_year else None,
+                'income_by_month': float(user.income_by_month) if user.income_by_month else None,
+                'income_by_year': float(user.income_by_year) if user.income_by_year else None,
                 'is_active': user.is_active,
                 'is_staff': user.is_staff,
                 'is_superuser': user.is_superuser
@@ -185,6 +193,7 @@ def usersData(request, user_id=None):
 
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+
 
 
 
@@ -731,15 +740,68 @@ def income_record_detail_view(request, user_id, record_id):
                 'title': record.title,
                 'amount': str(record.amount),
                 'record_date': record.record_date.isoformat()
-            }, status=200)
-        elif request.method == 'DELETE':
-            record.delete()
-            update_user_income(user)
-            return JsonResponse({'message': 'Record deleted'}, status=204)
+            }, status=200)        
         else:
             return JsonResponse({'error': 'Method not allowed'}, status=405)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+def add_income_record(request, user_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user = get_object_or_404(User, id=user_id)
+            
+            # Convert amount to Decimal
+            amount = Decimal(data.get('amount'))
+
+            # Create the income record
+            income_record = IncomeRecord.objects.create(
+                user=user,
+                title=data.get('title'),
+                amount=amount,
+                record_date=datetime.fromisoformat(data.get('record_date'))
+            )
+
+            # Update the user's balance
+            user.balance += amount
+            user.income_amount += amount
+
+            user.save()
+
+            return JsonResponse({
+                'id': income_record.id,
+                'title': income_record.title,
+                'amount': str(income_record.amount),
+                'record_date': income_record.record_date.isoformat()
+            }, status=201)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except KeyError as e:
+            return JsonResponse({'error': f'Missing field: {e}'}, status=400)
+        except ValueError:
+            return JsonResponse({'error': 'Invalid datetime format'}, status=400)
+
+@csrf_exempt
+def delete_income_record(request, user_id, record_id):
+    if request.method == 'DELETE':
+        try:
+            user = get_object_or_404(User, id=user_id)
+            income_record = get_object_or_404(IncomeRecord, id=record_id, user=user)
+
+            # Update the user's balance
+            user.balance -= Decimal(income_record.amount)
+            user.income_amount -=Decimal(income_record.amount)
+            user.save()
+
+            # Delete the income record
+            income_record.delete()
+
+            return JsonResponse({'message': 'Income record deleted successfully'}, status=204)
+        except IncomeRecord.DoesNotExist:
+            return JsonResponse({'error': 'Income record not found'}, status=404)
+
     
 @csrf_exempt
 @require_http_methods(["GET", "POST"])

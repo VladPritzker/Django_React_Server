@@ -673,7 +673,7 @@ def income_records_view(request, user_id):
         user = get_object_or_404(User, id=user_id)
 
         if request.method == 'GET':
-            income_records = IncomeRecord.objects.filter(user=user)
+            income_records = IncomeRecord.objects.filter(user=user).order_by('-record_date')  # Order by date descending
             records = [
                 {
                     'id': record.id,
@@ -682,7 +682,7 @@ def income_records_view(request, user_id):
                     'record_date': record.record_date.isoformat()
                 } for record in income_records
             ]
-            return JsonResponse(records, safe=False, status=200)
+            return JsonResponse(records, safe=False, status=200)    
 
         elif request.method == 'POST':
             data = json.loads(request.body)
@@ -764,20 +764,13 @@ def add_income_record(request, user_id):
                 record_date=datetime.fromisoformat(data.get('record_date'))
             )
 
-            # Calculate start dates for month and year
-            month_start = income_record.record_date.replace(day=1)
-            year_start = income_record.record_date.replace(month=1, day=1)
-
-            # Calculate monthly and yearly income
-            income_by_month = IncomeRecord.objects.filter(user=user, record_date__gte=month_start, record_date__lt=month_start + timedelta(days=31)).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
-            income_by_year = IncomeRecord.objects.filter(user=user, record_date__gte=year_start, record_date__lt=year_start + timedelta(days=365)).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
-
-            # Update the user's balance and income amounts
+            # Update the user's balance and income amount
             user.balance += amount
             user.income_amount += amount
-            user.income_by_month = income_by_month
-            user.income_by_year = income_by_year
             user.save()
+
+            # Update income by month and year
+            update_income_by_periods(user)
 
             return JsonResponse({
                 'id': income_record.id,
@@ -799,26 +792,46 @@ def delete_income_record(request, user_id, record_id):
             user = get_object_or_404(User, id=user_id)
             income_record = get_object_or_404(IncomeRecord, id=record_id, user=user)
 
-            # Calculate start dates for month and year
-            month_start = income_record.record_date.replace(day=1)
-            year_start = income_record.record_date.replace(month=1, day=1)
-
-            # Calculate monthly and yearly income after deletion
+            # Update the user's balance and income amount
             user.balance -= Decimal(income_record.amount)
             user.income_amount -= Decimal(income_record.amount)
+            user.save()
+
+            # Delete the income record
             income_record.delete()
 
-            income_by_month = IncomeRecord.objects.filter(user=user, record_date__gte=month_start, record_date__lt=month_start + timedelta(days=31)).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
-            income_by_year = IncomeRecord.objects.filter(user=user, record_date__gte=year_start, record_date__lt=year_start + timedelta(days=365)).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
-
-            # Update the user's income amounts
-            user.income_by_month = income_by_month
-            user.income_by_year = income_by_year
-            user.save()
+            # Update income by month and year
+            update_income_by_periods(user)
 
             return JsonResponse({'message': 'Income record deleted successfully'}, status=204)
         except IncomeRecord.DoesNotExist:
             return JsonResponse({'error': 'Income record not found'}, status=404)
+
+
+
+def update_income_by_periods(user):
+    now = datetime.now()
+    current_month = now.month
+    current_year = now.year
+
+    # Calculate income for the current month
+    monthly_income = IncomeRecord.objects.filter(
+        user=user,
+        record_date__year=current_year,
+        record_date__month=current_month
+    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+
+    # Calculate income for the current year
+    yearly_income = IncomeRecord.objects.filter(
+        user=user,
+        record_date__year=current_year
+    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+
+    # Update the user's income_by_month and income_by_year fields
+    user.income_by_month = monthly_income
+    user.income_by_year = yearly_income
+    user.save()
+
 
 
     

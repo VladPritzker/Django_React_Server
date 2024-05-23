@@ -42,6 +42,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     spent_by_week = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     spent_by_month = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     spent_by_year = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    income_by_year = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    income_by_month = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     password = models.CharField(max_length=100)
     photo = models.CharField(max_length=255, null=True, blank=True)
 

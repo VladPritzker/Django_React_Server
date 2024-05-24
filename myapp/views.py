@@ -277,8 +277,12 @@ def investing_records(request):
         records = InvestingRecord.objects.filter(user_id=user_id) if user_id else InvestingRecord.objects.all()
         records_data = [
             {
-                'id': record.id, 'user_id': record.user.id, 'title': record.title, 'amount': float(record.amount),
-                'record_date': record.record_date.isoformat(), 'tenor': record.tenor, 'type_invest': record.type_invest,
+                'id': record.id, 'user_id': record.user.id,
+                'title': record.title,
+                'amount': float(record.amount),
+                'record_date': record.record_date.isoformat(),
+                'tenor': record.tenor,
+                'type_invest': record.type_invest,
                 'amount_at_maturity': float(record.amount_at_maturity) if record.amount_at_maturity else None,
                 'rate': float(record.rate) if record.rate else None,
                 'maturity_date': record.maturity_date.isoformat() if record.maturity_date else None
@@ -286,7 +290,6 @@ def investing_records(request):
             for record in records
         ]
         return JsonResponse(records_data, safe=False)
-
     elif request.method == 'POST':
         try:
             data = json.loads(request.body)

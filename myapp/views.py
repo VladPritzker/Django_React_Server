@@ -1,4 +1,4 @@
-from decimal import Decimal  # Ensure this import is present
+from decimal import Decimal
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from django.views import View
@@ -8,30 +8,13 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from .models import FinancialRecord, User, InvestingRecord, Note, MonthlyExpense, IncomeRecord, Contact, Meeting
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
-from django.contrib.auth.models import User
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-import os
-from .models import User
 from django.shortcuts import get_object_or_404
 from django.db.models import Sum
-User = get_user_model()
-from datetime import timedelta, datetime
-
-
-
-
-
 
 logger = logging.getLogger(__name__)
-
-
-
-
-
-
+User = get_user_model()
 
 @csrf_exempt
 def users(request):
@@ -50,12 +33,14 @@ def users(request):
         elif action == 'login':
             user = authenticate(email=data.get('email'), password=data.get('password'))
             if user is not None:
+                update_income_by_periods(user)
+                update_spending_by_periods(user)
                 return JsonResponse({
                     'id': user.id,
                     'username': user.username,
                     'email': user.email,
                     'money_invested': float(user.money_invested),
-                    'income_amount' : float(user.income_amount),
+                    'income_by_week': float(user.income_by_week),
                     'money_spent': float(user.money_spent),
                     'balance': float(user.balance),
                     'balance_goal': float(user.balance_goal) if user.balance_goal else None,
@@ -75,12 +60,14 @@ def users(request):
             user_id = data.get('user_id')
             try:
                 user = User.objects.get(id=user_id)
+                update_income_by_periods(user)
+                update_spending_by_periods(user)
                 return JsonResponse({
                     'id': user.id,
                     'username': user.username,
                     'email': user.email,
                     'money_invested': float(user.money_invested),
-                    'income_amount' : float(user.income_amount),
+                    'income_by_week': float(user.income_by_week),
                     'money_spent': float(user.money_spent),
                     'balance': float(user.balance),
                     'balance_goal': float(user.balance_goal) if user.balance_goal else None,
@@ -105,20 +92,53 @@ def users(request):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
-    
-    
+def update_spending_by_periods(user):
+    now = datetime.now()
+    current_week_start = now - timedelta(days=(now.weekday() + 1) % 7)  # Start of the week (Sunday)
+    current_month = now.month
+    current_year = now.year
+
+    # Calculate spending for the current week
+    weekly_spending = FinancialRecord.objects.filter(
+        user=user,
+        record_date__gte=current_week_start
+    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+
+    # Calculate spending for the current month
+    monthly_spending = FinancialRecord.objects.filter(
+        user=user,
+        record_date__year=current_year,
+        record_date__month=current_month
+    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+
+    # Calculate spending for the current year
+    yearly_spending = FinancialRecord.objects.filter(
+        user=user,
+        record_date__year=current_year
+    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+
+    # Update the user's spent_by_week, spent_by_month, and spent_by_year fields
+    user.spent_by_week = weekly_spending
+    user.spent_by_month = monthly_spending
+    user.spent_by_year = yearly_spending
+    user.save()
+
+
+
 @csrf_exempt
 def usersData(request, user_id=None):
     if request.method == 'GET':
         if user_id:
             try:
                 user = User.objects.get(pk=user_id)
+                update_income_by_periods(user)
+                update_spending_by_periods(user)
                 return JsonResponse({
                     'id': user.id,
                     'username': user.username,
                     'email': user.email,
                     'money_invested': float(user.money_invested),
-                    'income_amount' : float(user.income_amount),
+                    'income_by_week': float(user.income_by_week),
                     'money_spent': float(user.money_spent),
                     'balance': float(user.balance),
                     'balance_goal': float(user.balance_goal) if user.balance_goal else None,
@@ -141,7 +161,7 @@ def usersData(request, user_id=None):
                 'username': user.username,
                 'email': user.email,
                 'money_invested': float(user.money_invested),
-                'income_amount' : float(user.income_amount),
+                'income_by_week': float(user.income_by_week),
                 'money_spent': float(user.money_spent),
                 'balance': float(user.balance),
                 'balance_goal': float(user.balance_goal) if user.balance_goal else None,
@@ -193,9 +213,6 @@ def usersData(request, user_id=None):
 
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
-
-
-
 
 
 @csrf_exempt
@@ -266,10 +283,6 @@ def delete_financial_record(request, user_id, record_id):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
-
-    
-
-    
 @csrf_exempt
 def investing_records(request):
     if request.method == 'GET':
@@ -411,7 +424,7 @@ def notes(request, user_id=None):
         except User.DoesNotExist:
             return JsonResponse({'error': 'User not found'}, status=404)
         except ValueError as e:
-            return JsonResponse({'error': 'Date format error: ' + str(e)}, status=400)  # Handle date parsing errors
+            return JsonResponse({'error': 'Date format error: ' + str(e)}, status=400)
         except Exception as e:
             return JsonResponse({'error': 'Failed to create note: ' + str(e)}, status=500)
 
@@ -442,11 +455,11 @@ def notes(request, user_id=None):
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
+
 @csrf_exempt
 def note_detail_update(request, user_id, note_id):
     if request.method == 'GET':
         try:
-            # Ensure the note belongs to the specified user
             note = Note.objects.get(id=note_id, user_id=user_id)
             return JsonResponse({
                 'id': note.id,
@@ -466,7 +479,6 @@ def note_detail_update(request, user_id, note_id):
         try:
             note = Note.objects.get(id=note_id, user_id=user_id)
             data = json.loads(request.body)
-            # Update only the fields that are provided in the request body
             note.title = data.get('title', note.title)
             note.note = data.get('note', note.note)
             note.priority = data.get('priority', note.priority)
@@ -539,8 +551,7 @@ def reorder_notes(request, user_id):
 @csrf_exempt
 @require_http_methods(["GET", "POST", "DELETE"])
 def monthly_expenses(request, user_id=None, expense_id=None):
-    User = get_user_model()  # Use the custom user model defined in settings
-
+    User = get_user_model()
 
     if request.method == 'GET':
         if user_id:
@@ -598,7 +609,6 @@ def monthly_expenses(request, user_id=None, expense_id=None):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
-
 @csrf_exempt
 @require_http_methods(["GET", "PUT", "DELETE"])
 def expense_detail(request, user_id, expense_id):
@@ -629,18 +639,16 @@ def expense_detail(request, user_id, expense_id):
     elif request.method == 'DELETE':
         try:
             expense = MonthlyExpense.objects.get(user=user, id=expense_id)
-            print(f"Deleting expense: {expense.title}, ID: {expense.id}")  # Debug print
+            print(f"Deleting expense: {expense.title}, ID: {expense.id}")
             expense.delete()
-            print("Deletion successful.")  # Confirm deletion
+            print("Deletion successful.")
             return JsonResponse({'message': 'Expense deleted successfully'}, status=204)
         except MonthlyExpense.DoesNotExist:
-            print("Expense not found for deletion.")  # Debug print
+            print("Expense not found for deletion.")
             return JsonResponse({'error': 'Expense not found'}, status=404)
 
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
-    
-
 
 
 @csrf_exempt
@@ -661,13 +669,9 @@ def upload_photo(request, user_id):
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
-
-
-
-
 def update_user_income(user):
     total_income = IncomeRecord.objects.filter(user=user).aggregate(total=Sum('amount'))['total'] or 0.00
-    user.income_amount = total_income
+    user.income_by_week = total_income
     user.save()
 
 @csrf_exempt
@@ -676,7 +680,7 @@ def income_records_view(request, user_id):
         user = get_object_or_404(User, id=user_id)
 
         if request.method == 'GET':
-            income_records = IncomeRecord.objects.filter(user=user).order_by('-record_date')  # Order by date descending
+            income_records = IncomeRecord.objects.filter(user=user).order_by('-record_date')
             records = [
                 {
                     'id': record.id,
@@ -696,7 +700,6 @@ def income_records_view(request, user_id):
             if not title or not amount or not record_date:
                 return JsonResponse({'error': 'Missing fields'}, status=400)
 
-            # Convert record_date from string to date object
             record_date = datetime.strptime(record_date, '%Y-%m-%d').date()
 
             record = IncomeRecord.objects.create(
@@ -706,6 +709,7 @@ def income_records_view(request, user_id):
                 record_date=record_date
             )
             update_user_income(user)
+            update_income_by_periods(user)
             return JsonResponse({
                 'id': record.id,
                 'title': record.title,
@@ -730,7 +734,6 @@ def income_record_detail_view(request, user_id, record_id):
             record_date = data.get('record_date', record.record_date)
 
             if isinstance(record_date, str):
-                # Convert record_date from string to date object if needed
                 record_date = datetime.strptime(record_date, '%Y-%m-%d').date()
 
             record.title = title
@@ -738,6 +741,7 @@ def income_record_detail_view(request, user_id, record_id):
             record.record_date = record_date
             record.save()
             update_user_income(user)
+            update_income_by_periods(user)
             return JsonResponse({
                 'id': record.id,
                 'title': record.title,
@@ -756,10 +760,8 @@ def add_income_record(request, user_id):
             data = json.loads(request.body)
             user = get_object_or_404(User, id=user_id)
             
-            # Convert amount to Decimal
             amount = Decimal(data.get('amount'))
 
-            # Create the income record
             income_record = IncomeRecord.objects.create(
                 user=user,
                 title=data.get('title'),
@@ -767,12 +769,10 @@ def add_income_record(request, user_id):
                 record_date=datetime.fromisoformat(data.get('record_date'))
             )
 
-            # Update the user's balance and income amount
             user.balance += amount
-            user.income_amount += amount
+            user.income_by_week += amount
             user.save()
 
-            # Update income by month and year
             update_income_by_periods(user)
 
             return JsonResponse({
@@ -795,15 +795,12 @@ def delete_income_record(request, user_id, record_id):
             user = get_object_or_404(User, id=user_id)
             income_record = get_object_or_404(IncomeRecord, id=record_id, user=user)
 
-            # Update the user's balance and income amount
             user.balance -= Decimal(income_record.amount)
-            user.income_amount -= Decimal(income_record.amount)
+            user.income_by_week -= Decimal(income_record.amount)
             user.save()
 
-            # Delete the income record
             income_record.delete()
 
-            # Update income by month and year
             update_income_by_periods(user)
 
             return JsonResponse({'message': 'Income record deleted successfully'}, status=204)
@@ -811,33 +808,124 @@ def delete_income_record(request, user_id, record_id):
             return JsonResponse({'error': 'Income record not found'}, status=404)
 
 
-
 def update_income_by_periods(user):
     now = datetime.now()
+    current_week_start = now - timedelta(days=now.weekday())
     current_month = now.month
     current_year = now.year
 
-    # Calculate income for the current month
+    weekly_income = IncomeRecord.objects.filter(
+        user=user,
+        record_date__gte=current_week_start
+    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+
     monthly_income = IncomeRecord.objects.filter(
         user=user,
         record_date__year=current_year,
         record_date__month=current_month
     ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
 
-    # Calculate income for the current year
     yearly_income = IncomeRecord.objects.filter(
         user=user,
         record_date__year=current_year
     ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
 
-    # Update the user's income_by_month and income_by_year fields
+    user.income_by_week = weekly_income
     user.income_by_month = monthly_income
     user.income_by_year = yearly_income
     user.save()
 
 
+@csrf_exempt
+def usersData(request, user_id=None):
+    if request.method == 'GET':
+        if user_id:
+            try:
+                user = User.objects.get(pk=user_id)
+                update_income_by_periods(user)
+                update_spending_by_periods(user)
+                return JsonResponse({
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'money_invested': float(user.money_invested),
+                    'income_by_week': float(user.income_by_week),
+                    'money_spent': float(user.money_spent),
+                    'balance': float(user.balance),
+                    'balance_goal': float(user.balance_goal) if user.balance_goal else None,
+                    'spent_by_week': float(user.spent_by_week) if user.spent_by_week else None,
+                    'spent_by_month': float(user.spent_by_month) if user.spent_by_month else None,
+                    'spent_by_year': float(user.spent_by_year) if user.spent_by_year else None,
+                    'income_by_month': float(user.income_by_month) if user.income_by_month else None,
+                    'income_by_year': float(user.income_by_year) if user.income_by_year else None,
+                    'is_active': user.is_active,
+                    'is_staff': user.is_staff,
+                    'is_superuser': user.is_superuser,
+                    'photo': user.photo 
+                })
+            except User.DoesNotExist:
+                return JsonResponse({'error': 'User not found'}, status=404)
+        else:
+            users = User.objects.all()
+            users_data = [{
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'money_invested': float(user.money_invested),
+                'income_by_week': float(user.income_by_week),
+                'money_spent': float(user.money_spent),
+                'balance': float(user.balance),
+                'balance_goal': float(user.balance_goal) if user.balance_goal else None,
+                'spent_by_week': float(user.spent_by_week) if user.spent_by_week else None,
+                'spent_by_month': float(user.spent_by_month) if user.spent_by_month else None,
+                'spent_by_year': float(user.spent_by_year) if user.spent_by_year else None,
+                'income_by_month': float(user.income_by_month) if user.income_by_month else None,
+                'income_by_year': float(user.income_by_year) if user.income_by_year else None,
+                'is_active': user.is_active,
+                'is_staff': user.is_staff,
+                'is_superuser': user.is_superuser
+            } for user in users]
+            return JsonResponse(users_data, safe=False)
 
-    
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        try:
+            user = User.objects.create(**data)
+            return JsonResponse({'message': 'User created successfully', 'id': user.id}, status=201)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    elif request.method == 'PATCH':
+        if not user_id:
+            return JsonResponse({'error': 'User ID is required for updates'}, status=400)
+        try:
+            data = json.loads(request.body)
+            user = User.objects.get(pk=user_id)
+            for key, value in data.items():
+                setattr(user, key, value)
+            user.save()
+            return JsonResponse({'message': 'User updated successfully'}, status=200)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    elif request.method == 'DELETE':
+        if not user_id:
+            return JsonResponse({'error': 'User ID is required for deletion'}, status=400)
+        try:
+            user = User.objects.get(pk=user_id)
+            user.delete()
+            return JsonResponse({'message': 'User deleted successfully'}, status=204)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def contact_list(request, user_id):
@@ -917,7 +1005,6 @@ class ContactDetailView(View):
         return JsonResponse({'message': 'Contact deleted successfully'}, status=204)
 
 
-
 @method_decorator(csrf_exempt, name='dispatch')
 class MeetingDetailView(View):
 
@@ -926,7 +1013,7 @@ class MeetingDetailView(View):
         data = {
             'id': meeting.id,
             'title': meeting.title,
-            'datetime': meeting.datetime.isoformat(),  # Return exactly as stored in the DB
+            'datetime': meeting.datetime.isoformat(),
             'done': meeting.done,
             'user_id': meeting.user_id
         }
@@ -944,7 +1031,7 @@ class MeetingDetailView(View):
             return JsonResponse({'message': 'Meeting updated successfully', 'meeting': {
                 'id': meeting.id,
                 'title': meeting.title,
-                'datetime': meeting.datetime.isoformat(),  # Return exactly as stored in the DB
+                'datetime': meeting.datetime.isoformat(),
                 'done': meeting.done,
                 'user_id': meeting.user_id
             }})
@@ -969,7 +1056,7 @@ def meeting_list(request, user_id):
             {
                 'id': meeting.id,
                 'title': meeting.title,
-                'datetime': meeting.datetime.isoformat(),  # Return exactly as stored in the DB
+                'datetime': meeting.datetime.isoformat(),
                 'done': meeting.done,
                 'user_id': meeting.user_id
             }
@@ -982,7 +1069,6 @@ def meeting_list(request, user_id):
             data = json.loads(request.body)
             user = get_object_or_404(User, id=user_id)
             
-            # Convert datetime string to a naive datetime object
             datetime_str = data.get('datetime')
             meeting_datetime = datetime.fromisoformat(datetime_str)
 
@@ -995,7 +1081,7 @@ def meeting_list(request, user_id):
             return JsonResponse({
                 'id': meeting.id,
                 'title': meeting.title,
-                'datetime': meeting.datetime.isoformat(),  # Return exactly as stored in the DB
+                'datetime': meeting.datetime.isoformat(),
                 'done': meeting.done,
                 'user_id': meeting.user_id
             }, status=201)

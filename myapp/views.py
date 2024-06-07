@@ -98,6 +98,7 @@ def update_spending_by_periods(user):
     current_month = now.month
     current_year = now.year
 
+
     # Calculate spending for the current week
     weekly_spending = FinancialRecord.objects.filter(
         user=user,

@@ -811,31 +811,34 @@ def delete_income_record(request, user_id, record_id):
 
 def update_income_by_periods(user):
     now = datetime.now()
-    current_week_start = now - timedelta(days=now.weekday())
+    current_week_start = now - timedelta(days=(now.weekday() + 1) % 7)  # Start of the week (Sunday)
     current_month = now.month
     current_year = now.year
 
+    # Calculate income for the current week
     weekly_income = IncomeRecord.objects.filter(
         user=user,
         record_date__gte=current_week_start
     ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
 
+    # Calculate income for the current month
     monthly_income = IncomeRecord.objects.filter(
         user=user,
         record_date__year=current_year,
         record_date__month=current_month
     ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
 
+    # Calculate income for the current year
     yearly_income = IncomeRecord.objects.filter(
         user=user,
         record_date__year=current_year
     ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
 
+    # Update the user's income_by_week, income_by_month, and income_by_year fields
     user.income_by_week = weekly_income
     user.income_by_month = monthly_income
     user.income_by_year = yearly_income
     user.save()
-
 
 @csrf_exempt
 def usersData(request, user_id=None):

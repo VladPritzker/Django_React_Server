@@ -9,6 +9,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from .models import FinancialRecord, User, InvestingRecord, Note, MonthlyExpense, IncomeRecord, Contact, Meeting
 from datetime import datetime, timedelta
+import pytz  
 import logging
 from django.shortcuts import get_object_or_404
 from django.db.models import Sum
@@ -1074,7 +1075,8 @@ def meeting_list(request, user_id):
             user = get_object_or_404(User, id=user_id)
             
             datetime_str = data.get('datetime')
-            meeting_datetime = datetime.fromisoformat(datetime_str)
+            local_datetime = datetime.fromisoformat(datetime_str)
+            meeting_datetime = local_datetime.astimezone(pytz.utc)
 
             meeting = Meeting.objects.create(
                 user=user,
@@ -1095,3 +1097,5 @@ def meeting_list(request, user_id):
             return JsonResponse({'error': f'Missing field: {e}'}, status=400)
         except ValueError:
             return JsonResponse({'error': 'Invalid datetime format'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)

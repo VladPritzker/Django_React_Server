@@ -1061,7 +1061,7 @@ def meeting_list(request, user_id):
             {
                 'id': meeting.id,
                 'title': meeting.title,
-                'datetime': meeting.datetime.isoformat(),
+                'datetime': meeting.datetime.astimezone(pytz.utc).strftime('%Y-%m-%dT%H:%M:%S'),
                 'done': meeting.done,
                 'user_id': meeting.user_id
             }
@@ -1075,6 +1075,7 @@ def meeting_list(request, user_id):
             user = get_object_or_404(User, id=user_id)
             
             datetime_str = data.get('datetime')
+            # Parse the datetime and set it to UTC
             local_datetime = datetime.fromisoformat(datetime_str)
             meeting_datetime = local_datetime.astimezone(pytz.utc)
 
@@ -1087,7 +1088,7 @@ def meeting_list(request, user_id):
             return JsonResponse({
                 'id': meeting.id,
                 'title': meeting.title,
-                'datetime': meeting.datetime.isoformat(),
+                'datetime': meeting.datetime.astimezone(pytz.utc).strftime('%Y-%m-%dT%H:%M:%S'),
                 'done': meeting.done,
                 'user_id': meeting.user_id
             }, status=201)

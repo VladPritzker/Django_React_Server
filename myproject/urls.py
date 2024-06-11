@@ -15,12 +15,12 @@ urlpatterns = [
     path('users/<int:user_id>/', usersData, name='user_details'),
     path('investing_records/', investing_records, name='investing_records'),
     path('notes/', notes, name='notes'),
-    path('notes/<int:user_id>/', notes, name='user_notes'),  # This line allows fetching specific notes
+    path('notes/<int:user_id>/', notes, name='user_notes'),
     path('notes/<int:user_id>/<int:note_id>/', note_detail_update, name='note_detail_update'),
     path('expenses/<int:user_id>/', monthly_expenses, name='monthly_expenses'),
     path('expenses/', monthly_expenses, name='monthly_expenses'),
     path('expenses/<int:user_id>/<int:expense_id>/', expense_detail, name='monthly_expenses'),
-    path('notes/<int:user_id>/reorder/', reorder_notes, name='reorder_notes'),  # New path for reordering notes
+    path('notes/<int:user_id>/reorder/', reorder_notes, name='reorder_notes'),
     path('users/<int:user_id>/upload_photo/', upload_photo, name='upload_photo'),
     path('financial_records/<int:user_id>/<int:record_id>/', delete_financial_record, name='delete_financial_record'),
     path('financial_records/', financial_records, name='get_financial_records'),
@@ -32,6 +32,7 @@ urlpatterns = [
     path('users/<int:user_id>/income_records/<int:record_id>/delete/', delete_income_record, name='delete_income_record'),
     path('users/<int:user_id>/meetings/', meeting_list, name='meeting-list'),
     path('users/<int:user_id>/meetings/<int:pk>/', MeetingDetailView.as_view(), name='meeting-detail'),
+
 
     # Password reset URLs
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),

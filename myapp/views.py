@@ -1053,6 +1053,7 @@ class MeetingDetailView(View):
         return JsonResponse({'message': 'Meeting deleted successfully'}, status=204)
     
 
+
 @csrf_exempt
 def meeting_list(request, user_id):
     if request.method == 'GET':

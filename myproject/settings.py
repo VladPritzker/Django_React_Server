@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'myapp',
 ]
 
+
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # CORS handling should be very early, before most other middlewares
     'django.middleware.security.SecurityMiddleware',

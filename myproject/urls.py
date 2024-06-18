@@ -1,38 +1,40 @@
+from django.contrib import admin
 from django.urls import path
-from django.contrib.auth import views as auth_views
-from myapp.views import (
-    users, financial_records, usersData, investing_records, notes, note_detail_update,
-    monthly_expenses, expense_detail, reorder_notes, upload_photo, delete_financial_record,
-    income_records_view, income_record_detail_view, contact_list, ContactDetailView,
-    meeting_list, MeetingDetailView, add_income_record, delete_income_record
-)
-
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
+from myapp.views.user_views import users, users_data, upload_photo
+from myapp.views.income_views import income_records_view, income_record_detail_view, add_income_record, delete_income_record
+from myapp.views.meeting_views import meeting_list, MeetingDetailView
+from myapp.views.financial_views import financial_records, delete_financial_record
+from myapp.views.investing_views import investing_records
+from myapp.views.note_views import notes, note_detail_update, reorder_notes
+from myapp.views.expense_views import monthly_expenses, expense_detail
+from myapp.views.contact_views import contact_list, ContactDetailView
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
     path('users/', users, name='users'),
-    path('users/<int:user_id>/', usersData, name='user_details'),
+    path('users/<int:user_id>/', users_data, name='users_data'),
+    path('financial_records/', financial_records, name='financial_records'),
+    path('financial_records/<int:user_id>/<int:record_id>/', delete_financial_record, name='delete_financial_record'),
     path('investing_records/', investing_records, name='investing_records'),
     path('notes/', notes, name='notes'),
-    path('notes/<int:user_id>/', notes, name='user_notes'),
-    path('notes/<int:user_id>/<int:note_id>/', note_detail_update, name='note_detail_update'),
-    path('expenses/<int:user_id>/', monthly_expenses, name='monthly_expenses'),
-    path('expenses/', monthly_expenses, name='monthly_expenses'),
-    path('expenses/<int:user_id>/<int:expense_id>/', expense_detail, name='monthly_expenses'),
-    path('notes/<int:user_id>/reorder/', reorder_notes, name='reorder_notes'),
-    path('users/<int:user_id>/upload_photo/', upload_photo, name='upload_photo'),
-    path('financial_records/<int:user_id>/<int:record_id>/', delete_financial_record, name='delete_financial_record'),
-    path('financial_records/', financial_records, name='get_financial_records'),
-    path('users/<int:user_id>/contacts/', contact_list, name='contact-list'),
-    path('users/<int:user_id>/contacts/<int:pk>/', ContactDetailView.as_view(), name='contact-detail'),
-    path('users/<int:user_id>/income_records/', income_records_view, name='income-records-view'),
-    path('users/<int:user_id>/income_records/add/', add_income_record, name='add_income_record'),
-    path('users/<int:user_id>/income_records/<int:record_id>/', income_record_detail_view, name='income-record-detail-view'),
-    path('users/<int:user_id>/income_records/<int:record_id>/delete/', delete_income_record, name='delete_income_record'),
-    path('users/<int:user_id>/meetings/', meeting_list, name='meeting-list'),
-    path('users/<int:user_id>/meetings/<int:pk>/', MeetingDetailView.as_view(), name='meeting-detail'),
-
+    path('notes/user/<int:user_id>/', notes, name='user_notes'),
+    path('notes/user/<int:user_id>/<int:note_id>/', note_detail_update, name='note_detail_update'),
+    path('notes/reorder/user/<int:user_id>/', reorder_notes, name='reorder_notes'),
+    path('monthly_expenses/', monthly_expenses, name='monthly_expenses'),
+    path('monthly_expenses/<int:user_id>/', monthly_expenses, name='user_monthly_expenses'),
+    path('monthly_expenses/<int:user_id>/<int:expense_id>/', expense_detail, name='expense_detail'),
+    path('users/<int:user_id>/income_records/', income_records_view, name='income_records'),
+    path('users/<int:user_id>/income_records/<int:record_id>/', income_record_detail_view, name='income_record_detail'),
+    path('users/<int:user_id>/add_income/', add_income_record, name='add_income_record'),
+    path('users/<int:user_id>/delete_income/<int:record_id>/', delete_income_record, name='delete_income_record'),
+    path('contacts/<int:user_id>/', contact_list, name='contact_list'),
+    path('contacts/<int:user_id>/<int:pk>/', ContactDetailView.as_view(), name='contact_detail'),
+    path('meetings/<int:user_id>/', meeting_list, name='meeting_list'),
+    path('meetings/<int:user_id>/<int:pk>/', MeetingDetailView.as_view(), name='meeting_detail'),
+    path('users/<int:user_id>/upload_photo/', upload_photo, name='upload_photo'),  # Add this line
 
     # Password reset URLs
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),

@@ -7,6 +7,7 @@ from django.utils import timezone
 
 
 
+
 class UserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
         if not email:
@@ -45,7 +46,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     income_by_year = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     income_by_month = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     password = models.CharField(max_length=100)
-    photo = models.CharField(max_length=255, null=True, blank=True)
+    photo = models.ImageField(upload_to='user_photos/', null=True, blank=True)
 
     objects = UserManager()
 

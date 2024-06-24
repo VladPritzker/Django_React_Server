@@ -4,7 +4,9 @@ from django.http import JsonResponse
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 import json
-from .utils import update_income_by_periods, update_spending_by_periods
+from myapp.views.income_views import update_income_by_periods
+
+from myapp.views.financial_views import update_spending_by_periods
 import os
 from django.shortcuts import get_object_or_404
 from myapp.models import User

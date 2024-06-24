@@ -5,7 +5,6 @@ from datetime import datetime
 from myapp.models import IncomeRecord, User
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
-from myapp.views.utils import update_income_by_periods
 from datetime import datetime, timedelta
 from django.db.models import Sum
 

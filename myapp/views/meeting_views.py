@@ -2,16 +2,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
 from datetime import datetime
-import pytz
 from myapp.models import Meeting, User
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.utils.decorators import method_decorator
 from django.views import View
-
-
-
-
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MeetingDetailView(View):
@@ -31,9 +26,11 @@ class MeetingDetailView(View):
         try:
             meeting = get_object_or_404(Meeting, user_id=user_id, pk=pk)
             data = json.loads(request.body)
+            print("Received patch data:", data)
             meeting.title = data.get('title', meeting.title)
             datetime_str = data.get('datetime', meeting.datetime.isoformat())
-            meeting.datetime = datetime.fromisoformat(datetime_str) if isinstance(datetime_str, str) else meeting.datetime
+            if isinstance(datetime_str, str):
+                meeting.datetime = datetime.fromisoformat(datetime_str)
             meeting.done = data.get('done', meeting.done)
             meeting.save()
             return JsonResponse({'message': 'Meeting updated successfully', 'meeting': {
@@ -54,7 +51,6 @@ class MeetingDetailView(View):
         meeting = get_object_or_404(Meeting, user_id=user_id, pk=pk)
         meeting.delete()
         return JsonResponse({'message': 'Meeting deleted successfully'}, status=204)
-    
 
 
 @csrf_exempt
@@ -65,7 +61,7 @@ def meeting_list(request, user_id):
             {
                 'id': meeting.id,
                 'title': meeting.title,
-                'datetime': meeting.datetime.astimezone(pytz.utc).strftime('%Y-%m-%dT%H:%M:%S'),
+                'datetime': meeting.datetime.isoformat(),
                 'done': meeting.done,
                 'user_id': meeting.user_id
             }
@@ -79,9 +75,7 @@ def meeting_list(request, user_id):
             user = get_object_or_404(User, id=user_id)
             
             datetime_str = data.get('datetime')
-            # Parse the datetime and set it to UTC
-            local_datetime = datetime.fromisoformat(datetime_str)
-            meeting_datetime = local_datetime.astimezone(pytz.utc)
+            meeting_datetime = datetime.strptime(datetime_str, '%Y-%m-%dT%H:%M')
 
             meeting = Meeting.objects.create(
                 user=user,
@@ -92,7 +86,7 @@ def meeting_list(request, user_id):
             return JsonResponse({
                 'id': meeting.id,
                 'title': meeting.title,
-                'datetime': meeting.datetime.astimezone(pytz.utc).strftime('%Y-%m-%dT%H:%M:%S'),
+                'datetime': meeting.datetime.isoformat(),
                 'done': meeting.done,
                 'user_id': meeting.user_id
             }, status=201)

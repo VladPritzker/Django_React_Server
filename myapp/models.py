@@ -156,8 +156,9 @@ class Contact(models.Model):
 class Meeting(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
-    datetime = models.DateTimeField()
+    datetime = models.DateTimeField()  # Ensure no timezone conversion here
     done = models.BooleanField(default=False)
+
 
     class Meta:
         db_table = 'meetings'

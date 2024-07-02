@@ -208,6 +208,4 @@ def upload_photo(request, user_id):
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
-def update_user_data(user):
-    update_income_by_periods(user)
-    update_spending_by_periods(user)
+

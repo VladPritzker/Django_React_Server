@@ -11,6 +11,7 @@ from django.db.models import Sum
 
 
 
+
 @csrf_exempt
 def income_records_view(request, user_id):
     try:
@@ -45,7 +46,7 @@ def income_records_view(request, user_id):
                 amount=amount,
                 record_date=record_date
             )
-            update_user_income(user)
+            
             update_income_by_periods(user)
             return JsonResponse({
                 'id': record.id,
@@ -110,6 +111,7 @@ def add_income_record(request, user_id):
             user.save()
 
             update_income_by_periods(user)
+            
 
             return JsonResponse({
                 'id': income_record.id,

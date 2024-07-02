@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from django.db.models import Sum
 
-
 def update_spending_by_periods(user):
     now = datetime.now()
     current_week_start = now - timedelta(days=(now.weekday() + 1) % 7)  # Start of the week (Sunday)

@@ -60,6 +60,9 @@ def financial_records(request):
                 record_date=parsed_date
             )
             
+            user.balance -= amount
+            user.save()
+
             update_spending_by_periods(user)
 
             return JsonResponse({
@@ -100,8 +103,12 @@ def delete_financial_record(request, user_id, record_id):
         try:
             user = User.objects.get(id=user_id)
             record = FinancialRecord.objects.get(id=record_id, user=user)
-            record.delete()
             
+            user.balance += record.amount
+            user.save()
+            
+            record.delete()
+
             update_spending_by_periods(user)
 
             return JsonResponse({'message': 'Record deleted successfully'}, status=204)

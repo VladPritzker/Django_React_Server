@@ -107,7 +107,6 @@ def add_income_record(request, user_id):
             )
 
             user.balance += amount
-            user.income_by_week += amount
             user.save()
 
             update_income_by_periods(user)
@@ -133,7 +132,6 @@ def delete_income_record(request, user_id, record_id):
             income_record = get_object_or_404(IncomeRecord, id=record_id, user=user)
 
             user.balance -= Decimal(income_record.amount)
-            user.income_by_week -= Decimal(income_record.amount)
             user.save()
 
             income_record.delete()

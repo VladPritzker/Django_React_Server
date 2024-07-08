@@ -14,7 +14,7 @@ class SleepLogsView(View):
             user = User.objects.get(id=user_id)
         except User.DoesNotExist:
             return JsonResponse({"error": "User not found"}, status=404)
-
+ 
         if id:
             try:
                 sleep_log = SleepLog.objects.get(id=id, user=user)

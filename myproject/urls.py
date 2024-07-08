@@ -11,6 +11,7 @@ from myapp.views.investing_views import investing_records
 from myapp.views.note_views import notes, note_detail_update, reorder_notes
 from myapp.views.expense_views import monthly_expenses, expense_detail
 from myapp.views.contact_views import contact_list, ContactDetailView
+from myapp.views import sleep_logs
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -35,6 +36,10 @@ urlpatterns = [
     path('meetings/<int:user_id>/', meeting_list, name='meeting_list'),
     path('meetings/<int:user_id>/<int:pk>/', MeetingDetailView.as_view(), name='meeting_detail'),
     path('users/<int:user_id>/upload_photo/', upload_photo, name='upload_photo'),  # Add this line
+    path('sleeplogs/<int:user_id>/', sleep_logs.SleepLogsView.as_view(), name='sleep_logs_list'),
+    path('sleeplogs/<int:user_id>/<int:id>/', sleep_logs.SleepLogsView.as_view(), name='sleep_log_detail'),
+
+
 
     # Password reset URLs
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),

@@ -3,11 +3,6 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
 
-
-
-
-
-
 class UserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
         if not email:
@@ -71,8 +66,6 @@ class FinancialRecord(models.Model):
     def __str__(self):
         return f"{self.title} on {self.record_date} for ${self.amount}"
 
-
-
 class InvestingRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='investing_records')
     record_date = models.DateField()
@@ -90,8 +83,6 @@ class InvestingRecord(models.Model):
     def __str__(self):
         return f"{self.title} on {self.record_date} for ${self.amount}"
 
-
-    
 class Note(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
@@ -102,15 +93,11 @@ class Note(models.Model):
     hide = models.BooleanField(default=False)
     order = models.IntegerField(default=0)  # Ensure this field exists
 
-
     class Meta:
         db_table = 'notes'
 
     def __str__(self):
         return self.title
-
-
-
 
 class MonthlyExpense(models.Model):
     user = models.ForeignKey(
@@ -121,12 +108,11 @@ class MonthlyExpense(models.Model):
     title = models.CharField(max_length=100)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
 
-
     class Meta:
         db_table = 'monthly_expenses'
 
     def __str__(self):
-        return f"{self.title}: {self.amount}"    
+        return f"{self.title}: {self.amount}"
 
 class IncomeRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -139,7 +125,6 @@ class IncomeRecord(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.amount} - {self.record_date}"
-
 
 class Contact(models.Model):
     name = models.CharField(max_length=100)
@@ -159,9 +144,33 @@ class Meeting(models.Model):
     datetime = models.DateTimeField()  # Ensure no timezone conversion here
     done = models.BooleanField(default=False)
 
-
     class Meta:
         db_table = 'meetings'
 
     def __str__(self):
         return self.title
+
+class SleepLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateField()
+    sleep_time = models.DateTimeField()
+    wake_time = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+     
+    class Meta:
+        db_table = 'sleep_logs'
+
+
+    def __str__(self):
+        return f'{self.user.username} - {self.date}'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'date': self.date,
+            'sleep_time': self.sleep_time,
+            'wake_time': self.wake_time,
+            'created_at': self.created_at,
+        }
+

@@ -1,5 +1,3 @@
-# views/sleep_logs.py
-
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -46,7 +44,7 @@ class SleepLogsView(View):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
-    def put(self, request, user_id, id):
+    def patch(self, request, user_id, id):
         try:
             user = User.objects.get(id=user_id)
             sleep_log = SleepLog.objects.get(id=id, user=user)

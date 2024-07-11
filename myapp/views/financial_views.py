@@ -8,7 +8,10 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from django.db.models import Sum
 
-def update_spending_by_periods(user):
+def update_spending_by_periods(user, skip_update=False):
+    if skip_update:
+        return
+
     now = datetime.now()
     current_week_start = now - timedelta(days=(now.weekday() + 1) % 7)  # Start of the week (Sunday)
     current_month = now.month
@@ -38,6 +41,7 @@ def update_spending_by_periods(user):
     user.spent_by_month = monthly_spending
     user.spent_by_year = yearly_spending
     user.save()
+
 
 @csrf_exempt
 def financial_records(request):

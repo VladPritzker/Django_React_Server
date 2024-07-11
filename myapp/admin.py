@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .models import User
+from .models import User, FinancialRecord, InvestingRecord, Note, MonthlyExpense, IncomeRecord, Contact, Meeting, SleepLog
 
 class MyUserChangeForm(UserChangeForm):
     class Meta:
@@ -34,4 +34,15 @@ class MyUserAdmin(BaseUserAdmin):
     ordering = ('email',)
     filter_horizontal = ('groups', 'user_permissions',)
 
+# Register the User model with the custom admin class
 admin.site.register(User, MyUserAdmin)
+
+# Register other models without custom admin classes
+admin.site.register(FinancialRecord)
+admin.site.register(InvestingRecord)
+admin.site.register(Note)
+admin.site.register(MonthlyExpense)
+admin.site.register(IncomeRecord)
+admin.site.register(Contact)
+admin.site.register(Meeting)
+admin.site.register(SleepLog)

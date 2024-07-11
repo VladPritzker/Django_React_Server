@@ -146,7 +146,10 @@ def delete_income_record(request, user_id, record_id):
 
 
 
-def update_income_by_periods(user):
+def update_income_by_periods(user, skip_update=False):
+    if skip_update:
+        return
+
     now = datetime.now()
     current_week_start = now - timedelta(days=(now.weekday() + 1) % 7)  # Start of the week (Sunday)
     current_month = now.month
@@ -157,7 +160,6 @@ def update_income_by_periods(user):
         user=user,
         record_date__gte=current_week_start
     ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
-
 
     # Calculate income for the current month
     monthly_income = IncomeRecord.objects.filter(

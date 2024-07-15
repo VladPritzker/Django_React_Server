@@ -7,4 +7,7 @@ pillow==10.3.0
 PyMySQL==1.1.1
 pytz==2024.1
 sqlparse==0.5.0
+<<<<<<< HEAD
 gunicorn
+=======
+>>>>>>> 1782e7a7c92bf6d8cef5d1fc4f1dde129be4f529

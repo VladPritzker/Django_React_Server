@@ -28,6 +28,7 @@ if DEBUG:
 AUTH_USER_MODEL = 'myapp.User'
 
 # Application definition
+
 INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.admin',
@@ -87,14 +88,6 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': os.getenv('DB_HOST'),
         'PORT': os.getenv('DB_PORT'),
-    },
-    'digitalocean': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DO_DB_NAME'),
-        'USER': os.getenv('DO_DB_USER'),
-        'PASSWORD': os.getenv('DO_DB_PASSWORD'),
-        'HOST': os.getenv('DO_DB_HOST'),
-        'PORT': os.getenv('DO_DB_PORT'),
     }
 }
 

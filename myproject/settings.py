@@ -50,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'myapp.middleware.ResetDBTableMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware', 
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -58,7 +59,14 @@ CORS_ALLOWED_ORIGINS = [
     'https://oyster-app-vhznt.ondigitalocean.app',
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://oyster-app-vhznt.ondigitalocean.app',
+]
+
+
 CORS_ALLOW_CREDENTIALS = True
+
+
 
 CSRF_TRUSTED_ORIGINS = ['https://oyster-app-vhznt.ondigitalocean.app']
 CORS_ALLOWED_ORIGINS = ['https://oyster-app-vhznt.ondigitalocean.app']

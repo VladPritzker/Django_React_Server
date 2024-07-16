@@ -16,7 +16,7 @@ from myapp.views.home_views import homepage
 
 urlpatterns = [
     
-    path('/', homepage, name='homepage'),
+    path('', homepage, name='homepage'),
     path('admin/', admin.site.urls),
     path('users/', users, name='users'),
     path('users/<int:user_id>/', users_data, name='users_data'),

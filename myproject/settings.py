@@ -17,18 +17,11 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'
 
-CORS_ALLOW_ALL_ORIGINS = True  # Allow requests from any origin
-CORS_ALLOW_CREDENTIALS = True
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
-
-if DEBUG:
-    CSRF_COOKIE_SECURE = False
-    CSRF_COOKIE_HTTPONLY = False
 
 AUTH_USER_MODEL = 'myapp.User'
 
 # Application definition
-
 INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.admin',
@@ -54,8 +47,10 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:4200',
+    'http://localhost:3000',  # Add your frontend URL here
 ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'myproject.urls'
 
@@ -83,11 +78,11 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'NAME': 'myproject',
+        'USER': 'pritzker',
+        'PASSWORD': 'Test11!!',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
 
@@ -151,3 +146,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 USE_TZ = False
+
+CORS_ALLOW_ALL_ORIGINS = True  # Allow requests from any origin
+CORS_ALLOW_CREDENTIALS = True

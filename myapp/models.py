@@ -1,9 +1,8 @@
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
@@ -44,6 +43,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     income_by_month = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     password = models.CharField(max_length=100)
     photo = models.ImageField(upload_to='user_photos/', null=True, blank=True)
+    groups = models.ManyToManyField(Group, related_name='custom_user_groups', blank=True)
+    user_permissions = models.ManyToManyField(Permission, related_name='custom_user_permissions', blank=True)
 
     objects = UserManager()
 
@@ -55,7 +56,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
-
 
 class FinancialRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='financial_records')
@@ -78,7 +78,7 @@ class InvestingRecord(models.Model):
     type_invest = models.CharField(max_length=100)
     amount_at_maturity = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    maturity_date = models.DateField(null=True, blank=True)  # Add this line
+    maturity_date = models.DateField(null=True, blank=True)
 
     class Meta:
         db_table = 'investing_records'
@@ -94,7 +94,7 @@ class Note(models.Model):
     priority = models.CharField(max_length=50)
     done = models.BooleanField(default=False)
     hide = models.BooleanField(default=False)
-    order = models.IntegerField(default=0)  # Ensure this field exists
+    order = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'notes'
@@ -144,7 +144,7 @@ class Contact(models.Model):
 class Meeting(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
-    datetime = models.DateTimeField()  # Ensure no timezone conversion here
+    datetime = models.DateTimeField()
     done = models.BooleanField(default=False)
 
     class Meta:
@@ -159,10 +159,9 @@ class SleepLog(models.Model):
     sleep_time = models.DateTimeField()
     wake_time = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
-     
+
     class Meta:
         db_table = 'sleep_logs'
-
 
     def __str__(self):
         return f'{self.user.username} - {self.date}'
@@ -176,4 +175,3 @@ class SleepLog(models.Model):
             'wake_time': self.wake_time,
             'created_at': self.created_at,
         }
-

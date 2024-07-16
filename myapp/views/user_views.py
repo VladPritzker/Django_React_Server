@@ -21,12 +21,17 @@ def users(request):
         action = data.get('action')
         
         if action == 'register':
-            user = User.objects.create_user(
-                username=data['username'],
-                email=data['email'],
-                password=data['password']
-            )
-            return JsonResponse({'message': 'User registered successfully', 'id': user.id}, status=201)
+            try:
+                user = User.objects.create_user(
+                    username=data['username'],
+                    email=data['email'],
+                    password=data['password']
+                )
+                print(f"User created: {user}")  # Debugging line
+                return JsonResponse({'message': 'User registered successfully', 'id': user.id}, status=201)
+            except Exception as e:
+                print(f"Error creating user: {e}")  # Debugging line
+                return JsonResponse({'error': str(e)}, status=400)
 
         elif action == 'login':
             user = authenticate(email=data.get('email'), password=data.get('password'))
@@ -89,6 +94,7 @@ def users(request):
 
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+
 
 @csrf_exempt
 def users_data(request, user_id=None):

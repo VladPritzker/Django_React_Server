@@ -52,6 +52,8 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # Add your frontend URL here
+    'https://clownfish-app-dsl46.ondigitalocean.app',
+    'https://oyster-app-vhznt.ondigitalocean.app',
 ]
 
 CORS_ALLOW_CREDENTIALS = True

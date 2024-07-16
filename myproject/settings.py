@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from decouple import config
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -58,6 +60,10 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
+CSRF_TRUSTED_ORIGINS = ['https://oyster-app-vhznt.ondigitalocean.app']
+CORS_ALLOWED_ORIGINS = ['https://oyster-app-vhznt.ondigitalocean.app']
+
+
 ROOT_URLCONF = 'myproject.urls'
 
 TEMPLATES = [
@@ -82,21 +88,21 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
+SECRET_KEY = config('SECRET_KEY')
+
+DEBUG = config('DEBUG', default=False, cast=bool)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
-        'OPTIONS': {
-            'ssl': {
-                'ca': os.getenv('SSL_CA', None),  # Optional for local development
-            }
-        }
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT', cast=int),
     }
 }
+
 
 
 

@@ -15,7 +15,7 @@ from myapp.models import User
 
 User = get_user_model()
 
-@method_decorator(csrf_exempt, name='dispatch')
+@csrf_exempt
 def users(request):
     if request.method == 'POST':
         data = json.loads(request.body)

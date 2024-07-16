@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -14,7 +15,7 @@ from myapp.models import User
 
 User = get_user_model()
 
-@csrf_exempt
+@method_decorator(csrf_exempt, name='dispatch')
 def users(request):
     if request.method == 'POST':
         data = json.loads(request.body)

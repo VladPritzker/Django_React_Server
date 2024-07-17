@@ -19,11 +19,33 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'
 
+# Security settings
+SECRET_KEY = config('SECRET_KEY')
+DEBUG = config('DEBUG', default=False, cast=bool)
+
+# Allowed hosts
 ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost',
-    'oyster-app-vhznt.ondigitalocean.app',  # Add your DigitalOcean app URL here
+    'oyster-app-vhznt.ondigitalocean.app',  # Production
+    'clownfish-app-dsl46.ondigitalocean.app'  # Production
 ]
+
+# CORS and CSRF settings
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',  # Local frontend
+    'https://clownfish-app-dsl46.ondigitalocean.app',  # Production frontend
+    'https://oyster-app-vhznt.ondigitalocean.app',  # Production backend
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',  # Local frontend
+    'https://clownfish-app-dsl46.ondigitalocean.app',  # Production frontend
+    'https://oyster-app-vhznt.ondigitalocean.app',  # Production backend
+    'http://127.0.0.1:8000'
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 AUTH_USER_MODEL = 'myapp.User'
 
@@ -53,23 +75,15 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware', 
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # Add your frontend URL here
-    'https://clownfish-app-dsl46.ondigitalocean.app',
-    'https://oyster-app-vhznt.ondigitalocean.app',
-]
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://oyster-app-vhznt.ondigitalocean.app',
-]
+
+
 
 
 CORS_ALLOW_CREDENTIALS = True
 
 
 
-CSRF_TRUSTED_ORIGINS = ['https://oyster-app-vhznt.ondigitalocean.app']
-CORS_ALLOWED_ORIGINS = ['https://oyster-app-vhznt.ondigitalocean.app']
 
 
 ROOT_URLCONF = 'myproject.urls'

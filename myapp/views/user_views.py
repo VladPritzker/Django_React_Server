@@ -1,6 +1,5 @@
 from django.contrib.auth import authenticate, get_user_model
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.http import JsonResponse
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -11,9 +10,12 @@ import traceback
 
 from myapp.views.income_views import update_income_by_periods
 from myapp.views.financial_views import update_spending_by_periods
-from myapp.models import User
 
 User = get_user_model()
+
+@ensure_csrf_cookie
+def csrf_token_view(request):
+    return JsonResponse({'csrftoken': request.COOKIES['csrftoken']})
 
 @csrf_exempt
 def users(request):
@@ -96,7 +98,6 @@ def users(request):
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-
 @csrf_exempt
 def users_data(request, user_id=None):
     if request.method == 'PATCH':
@@ -109,7 +110,14 @@ def users_data(request, user_id=None):
             for key, value in data.items():
                 if hasattr(user, key):
                     print(f"Updating {key} to {value}")  # Logging the field being updated
-                    setattr(user, key, Decimal(value))
+                    # Attempt to convert to Decimal if possible
+                    try:
+                        if isinstance(getattr(user, key), Decimal):
+                            setattr(user, key, Decimal(value))
+                        else:
+                            setattr(user, key, value)
+                    except InvalidOperation:
+                        return JsonResponse({'error': f'Invalid value for field {key}: {value}'}, status=400)
                 else:
                     return JsonResponse({'error': f'Invalid field: {key}'}, status=400)
 

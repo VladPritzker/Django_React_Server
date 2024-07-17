@@ -1,35 +1,55 @@
-# settings.py
-
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 from decouple import config
 
+
 # Load environment variables from .env file
 load_dotenv()
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.getenv('SECRET_KEY')
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.getenv('DEBUG') == 'True'
+
+# Security settings
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
+# Allowed hosts
 ALLOWED_HOSTS = [
-    '127.0.0.1',
+    '127.0.0.1', 
     'localhost',
-    'oyster-app-vhznt.ondigitalocean.app',
-    'clownfish-app-dsl46.ondigitalocean.app'
+    'oyster-app-vhznt.ondigitalocean.app',  # Production
+    'clownfish-app-dsl46.ondigitalocean.app'  # Production
 ]
 
 # CORS and CSRF settings
-CORS_ALLOW_ALL_ORIGINS = True  # Allow requests from any origin for testing purposes
-CORS_ALLOW_CREDENTIALS = True
-
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',
-    'https://clownfish-app-dsl46.ondigitalocean.app',
-    'https://oyster-app-vhznt.ondigitalocean.app'
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',  # Local frontend
+    'https://clownfish-app-dsl46.ondigitalocean.app',  # Production frontend
+    'https://oyster-app-vhznt.ondigitalocean.app',  # Production backend
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',  # Local frontend
+    'https://clownfish-app-dsl46.ondigitalocean.app',  # Production frontend
+    'https://oyster-app-vhznt.ondigitalocean.app',  # Production backend
+    'http://127.0.0.1:8000'
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+AUTH_USER_MODEL = 'myapp.User'
+
+# Application definition
 INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.admin',
@@ -43,7 +63,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # CORS handling middleware
+    'corsheaders.middleware.CorsMiddleware',  # CORS handling should be very early, before most other middlewares
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -52,7 +72,19 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'myapp.middleware.ResetDBTableMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware', 
 ]
+
+
+
+
+
+
+CORS_ALLOW_CREDENTIALS = True
+
+
+
+
 
 ROOT_URLCONF = 'myproject.urls'
 
@@ -74,6 +106,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'myproject.wsgi.application'
 
+# Database
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+SECRET_KEY = config('SECRET_KEY')
+
+DEBUG = config('DEBUG', default=False, cast=bool)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -84,6 +124,12 @@ DATABASES = {
         'PORT': config('DB_PORT', cast=int),
     }
 }
+
+
+
+
+# Password validation
+# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -117,15 +163,31 @@ LOGGING = {
     },
 }
 
+# Internationalization
+# https://docs.djangoproject.com/en/5.0/topics/i18n/
+
 LANGUAGE_CODE = 'en-us'
+
 TIME_ZONE = 'America/New_York'
+
 USE_I18N = True
+
 USE_TZ = True
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Ensure you have the correct storage backend set up
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+USE_TZ = False
+
+CORS_ALLOW_ALL_ORIGINS = True  # Allow requests from any origin
+CORS_ALLOW_CREDENTIALS = True

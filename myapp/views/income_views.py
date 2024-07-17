@@ -1,8 +1,6 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
-from django.utils.decorators import method_decorator
-
 from datetime import datetime
 from myapp.models import IncomeRecord, User
 from django.shortcuts import get_object_or_404
@@ -14,7 +12,7 @@ from django.db.models import Sum
 
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+@csrf_exempt
 def income_records_view(request, user_id):
     try:
         user = get_object_or_404(User, id=user_id)
@@ -61,7 +59,7 @@ def income_records_view(request, user_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-@method_decorator(csrf_exempt, name='dispatch')
+@csrf_exempt
 def income_record_detail_view(request, user_id, record_id):
     try:
         user = get_object_or_404(User, id=user_id)
@@ -93,7 +91,7 @@ def income_record_detail_view(request, user_id, record_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-@method_decorator(csrf_exempt, name='dispatch')
+@csrf_exempt
 def add_income_record(request, user_id):
     if request.method == 'POST':
         try:
@@ -128,7 +126,7 @@ def add_income_record(request, user_id):
         except ValueError:
             return JsonResponse({'error': 'Invalid datetime format'}, status=400)
 
-@method_decorator(csrf_exempt, name='dispatch')
+@csrf_exempt
 def delete_income_record(request, user_id, record_id):
     if request.method == 'DELETE':
         try:

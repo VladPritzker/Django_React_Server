@@ -28,7 +28,8 @@ ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost',
     'oyster-app-vhznt.ondigitalocean.app',  # Production
-    'clownfish-app-dsl46.ondigitalocean.app'  # Production
+    'clownfish-app-dsl46.ondigitalocean.app',
+    'http://localhost:3000'  # Production
 ]
 
 # CORS and CSRF settings
@@ -42,7 +43,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',  # Local frontend
     'https://clownfish-app-dsl46.ondigitalocean.app',  # Production frontend
     'https://oyster-app-vhznt.ondigitalocean.app',  # Production backend
-    'http://127.0.0.1:8000'
+    'http://127.0.0.1:8000',
+    'http://localhost:3000'
 ]
 
 CORS_ALLOW_CREDENTIALS = True

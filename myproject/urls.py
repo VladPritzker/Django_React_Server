@@ -3,7 +3,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
-from myapp.views.user_views import users, users_data, upload_photo
+from myapp.views.user_views import users, users_data, upload_photo, csrf_token_view  # Import the view
 from myapp.views.income_views import income_records_view, income_record_detail_view, add_income_record, delete_income_record
 from myapp.views.meeting_views import meeting_list, MeetingDetailView
 from myapp.views.financial_views import financial_records, delete_financial_record
@@ -15,7 +15,6 @@ from myapp.views import sleep_logs
 from myapp.views.home_views import homepage
 
 urlpatterns = [
-    
     path('', homepage, name='homepage'),
     path('admin/', admin.site.urls),
     path('users/', users, name='users'),
@@ -26,7 +25,7 @@ urlpatterns = [
     path('notes/', notes, name='notes'),
     path('notes/user/<int:user_id>/', notes, name='user_notes'),
     path('notes/user/<int:user_id>/<int:note_id>/', note_detail_update, name='note_detail_update'),
-    path('notes/reorder/user/<int:user_id>/', reorder_notes, name='reorder_notes'),
+    path('notes/reorder/<int:user_id>/', reorder_notes, name='reorder_notes'),
     path('monthly_expenses/', monthly_expenses, name='monthly_expenses'),
     path('monthly_expenses/<int:user_id>/', monthly_expenses, name='user_monthly_expenses'),
     path('monthly_expenses/<int:user_id>/<int:expense_id>/', expense_detail, name='expense_detail'),
@@ -41,8 +40,7 @@ urlpatterns = [
     path('users/<int:user_id>/upload_photo/', upload_photo, name='upload_photo'),  # Add this line
     path('sleeplogs/<int:user_id>/', sleep_logs.SleepLogsView.as_view(), name='sleep_logs_list'),
     path('sleeplogs/<int:user_id>/<int:id>/', sleep_logs.SleepLogsView.as_view(), name='sleep_log_detail'),
-
-
+    path('get_csrf_token/', csrf_token_view, name='get_csrf_token'),  # Add this line
 
     # Password reset URLs
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),

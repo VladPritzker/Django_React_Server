@@ -1,4 +1,9 @@
 from django.contrib.auth import authenticate, get_user_model
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.http import JsonResponse
 from django.core.files.storage import default_storage
@@ -61,6 +66,28 @@ def users(request):
                 }, status=200)
             else:
                 return JsonResponse({'error': 'Invalid credentials'}, status=401)
+        
+        elif action == 'reset_password':
+            email = data.get('email')
+            try:
+                user = User.objects.get(email=email)
+                token = default_token_generator.make_token(user)
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                reset_link = f"{request.scheme}://{request.get_host()}/reset_password/{uid}/{token}/"
+                message = render_to_string('reset_password_email.html', {
+                    'user': user,
+                    'reset_link': reset_link,
+                })
+                send_mail(
+                    'Password Reset Request',
+                    message,
+                    'no-reply@yourdomain.com',
+                    [user.email],
+                    fail_silently=False,
+                )
+                return JsonResponse({'message': 'Password reset link sent to your email.'}, status=200)
+            except User.DoesNotExist:
+                return JsonResponse({'error': 'User with this email does not exist.'}, status=404)
 
         elif action == 'fetch_user_details':
             user_id = data.get('user_id')

@@ -1,8 +1,8 @@
+# settings.py
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 from decouple import config
-
+from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
@@ -19,8 +19,6 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-
-
 # Allowed hosts
 ALLOWED_HOSTS = [
     '127.0.0.1',
@@ -35,6 +33,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # Local frontend
     'https://clownfish-app-dsl46.ondigitalocean.app',  # Production frontend
     'https://oyster-app-vhznt.ondigitalocean.app',  # Production backend
+    'http://127.0.0.1:3000',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -172,7 +171,6 @@ USE_TZ = False
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -181,3 +179,5 @@ EMAIL_USE_SSL = False  # Ensure this line is set to False
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = 'no-reply@yourdomain.com'
+
+STOCK_DATA_KEY = config('STOCK_DATA_KEY')

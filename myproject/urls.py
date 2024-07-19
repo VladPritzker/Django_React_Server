@@ -13,6 +13,8 @@ from myapp.views.expense_views import monthly_expenses, expense_detail
 from myapp.views.contact_views import contact_list, ContactDetailView
 from myapp.views import sleep_logs
 from myapp.views.home_views import homepage
+from myapp.views.finance_views import get_stock_data
+
 
 urlpatterns = [
     path('', homepage, name='homepage'),
@@ -41,6 +43,10 @@ urlpatterns = [
     path('sleeplogs/<int:user_id>/', sleep_logs.SleepLogsView.as_view(), name='sleep_logs_list'),
     path('sleeplogs/<int:user_id>/<int:id>/', sleep_logs.SleepLogsView.as_view(), name='sleep_log_detail'),
     path('get_csrf_token/', csrf_token_view, name='get_csrf_token'),  # Add this line
+    path('api/stock-data/', get_stock_data, name='get_stock_data'),
+
+
+
 
     # Password reset URLs
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),

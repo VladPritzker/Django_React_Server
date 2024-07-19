@@ -14,18 +14,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG') == 'True'
-
-# Security settings
-SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
+
+
 
 # Allowed hosts
 ALLOWED_HOSTS = [
-    '127.0.0.1', 
+    '127.0.0.1',
     'localhost',
     'oyster-app-vhznt.ondigitalocean.app',  # Production
     'clownfish-app-dsl46.ondigitalocean.app',
@@ -74,26 +72,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'myapp.middleware.ResetDBTableMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware', 
 ]
-
-
-
-
-
-
-CORS_ALLOW_CREDENTIALS = True
-
-
-
-
 
 ROOT_URLCONF = 'myproject.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'myapp/templates')],  # Ensure this path is correct
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -111,11 +97,6 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
-SECRET_KEY = config('SECRET_KEY')
-
-DEBUG = config('DEBUG', default=False, cast=bool)
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -126,9 +107,6 @@ DATABASES = {
         'PORT': config('DB_PORT', cast=int),
     }
 }
-
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -189,7 +167,17 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Ensure you have the correct storage backend set up
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
+# Additional settings
 USE_TZ = False
-
-CORS_ALLOW_ALL_ORIGINS = True  # Allow requests from any origin
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False  # Ensure this line is set to False
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = 'no-reply@yourdomain.com'

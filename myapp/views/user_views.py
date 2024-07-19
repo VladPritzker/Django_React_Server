@@ -1,7 +1,7 @@
-from django.contrib.auth import authenticate, get_user_model
 from django.core.mail import send_mail
+from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.tokens import default_token_generator
-from django.template.loader import render_to_string
+from django.template.loader import render_to_string, get_template
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
@@ -12,6 +12,10 @@ from django.shortcuts import get_object_or_404
 from decimal import Decimal
 import json
 import traceback
+from django.template import TemplateDoesNotExist
+from django.conf import settings
+import os
+
 
 from myapp.views.income_views import update_income_by_periods
 from myapp.views.financial_views import update_spending_by_periods
@@ -67,13 +71,32 @@ def users(request):
             else:
                 return JsonResponse({'error': 'Invalid credentials'}, status=401)
         
+        
+
+        
         elif action == 'reset_password':
             email = data.get('email')
             try:
                 user = User.objects.get(email=email)
                 token = default_token_generator.make_token(user)
                 uid = urlsafe_base64_encode(force_bytes(user.pk))
-                reset_link = f"{request.scheme}://{request.get_host()}/reset_password/{uid}/{token}/"
+                reset_link = f"{request.scheme}://{request.get_host()}/reset/{uid}/{token}/"
+                
+                try:
+                    # Attempt to load the template
+                    template = get_template('reset_password_email.html')
+                    print(f"Template found at: {template.origin}")
+                except TemplateDoesNotExist:
+                    print("Template reset_password_email.html does not exist.")
+                    print(f"Template directories: {settings.TEMPLATES[0]['DIRS']}")
+                    for directory in settings.TEMPLATES[0]['DIRS']:
+                        if os.path.exists(directory):
+                            print(f"Contents of {directory}: {os.listdir(directory)}")
+                        else:
+                            print(f"Directory does not exist: {directory}")
+                    return JsonResponse({'error': 'Email template not found.'}, status=500)
+
+                # Render the email content
                 message = render_to_string('reset_password_email.html', {
                     'user': user,
                     'reset_link': reset_link,
@@ -84,11 +107,16 @@ def users(request):
                     'no-reply@yourdomain.com',
                     [user.email],
                     fail_silently=False,
+                    html_message=message,  # This is where the HTML content is passed
+
                 )
                 return JsonResponse({'message': 'Password reset link sent to your email.'}, status=200)
             except User.DoesNotExist:
                 return JsonResponse({'error': 'User with this email does not exist.'}, status=404)
-
+            except Exception as e:
+                print(f"SMTP error: {e}")
+                return JsonResponse({'error': 'Failed to send email.'}, status=500)
+        
         elif action == 'fetch_user_details':
             user_id = data.get('user_id')
             try:
@@ -116,6 +144,9 @@ def users(request):
                 })
             except User.DoesNotExist:
                 return JsonResponse({'error': 'User not found'}, status=404)
+        
+        else:
+            return JsonResponse({'error': 'Invalid action'}, status=400)
 
     elif request.method == 'GET':
         users = User.objects.all()
@@ -124,6 +155,8 @@ def users(request):
 
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
 
 @csrf_exempt
 def users_data(request, user_id=None):

@@ -26,6 +26,7 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
+    id = models.BigAutoField(primary_key=True)
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
@@ -56,6 +57,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
 
 class FinancialRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='financial_records')
@@ -175,3 +178,47 @@ class SleepLog(models.Model):
             'wake_time': self.wake_time,
             'created_at': self.created_at,
         }
+
+
+
+class StockData(models.Model):
+    ticker = models.CharField(max_length=10)
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    day_high = models.DecimalField(max_digits=10, decimal_places=2)
+    day_low = models.DecimalField(max_digits=10, decimal_places=2)
+    day_open = models.DecimalField(max_digits=10, decimal_places=2)
+    week_52_high = models.DecimalField(max_digits=10, decimal_places=2)
+    week_52_low = models.DecimalField(max_digits=10, decimal_places=2)
+    previous_close_price = models.DecimalField(max_digits=10, decimal_places=2)
+    day_change = models.DecimalField(max_digits=10, decimal_places=2)
+    volume = models.BigIntegerField()
+    date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'stock_data'    
+    
+    def __str__(self):
+        return self.ticker
+
+
+class InvestmentComparison(models.Model):
+    user_id = models.IntegerField()
+    investment_name = models.CharField(max_length=100)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
+    tenor = models.IntegerField()  # in months
+    risk_percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    discount_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    NPV = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    IRR = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'investment_comparison'
+
+    def __str__(self):
+        return self.investment_name
+
+
+

@@ -7,14 +7,14 @@ from myapp.views.user_views import users, users_data, upload_photo, csrf_token_v
 from myapp.views.income_views import income_records_view, income_record_detail_view, add_income_record, delete_income_record
 from myapp.views.meeting_views import meeting_list, MeetingDetailView
 from myapp.views.financial_views import financial_records, delete_financial_record
-from myapp.views.investing_views import investing_records
+from myapp.views.investing_views import investing_records_view, investing_record_detail_view
 from myapp.views.note_views import notes, note_detail_update, reorder_notes
 from myapp.views.expense_views import monthly_expenses, expense_detail
 from myapp.views.contact_views import contact_list, ContactDetailView
 from myapp.views import sleep_logs
 from myapp.views.home_views import homepage
 from myapp.views.stock_data import stock_data_view
-from myapp.views.investmentComparison import investment_view
+
 
 
 urlpatterns = [
@@ -24,7 +24,8 @@ urlpatterns = [
     path('users/<int:user_id>/', users_data, name='users_data'),
     path('financial_records/', financial_records, name='financial_records'),
     path('financial_records/<int:user_id>/<int:record_id>/', delete_financial_record, name='delete_financial_record'),
-    path('investing_records/', investing_records, name='investing_records'),
+    path('investing_records/<int:user_id>/', investing_records_view, name='investing_records_list'),
+    path('investing_records/<int:user_id>/<int:record_id>/', investing_record_detail_view, name='investing_record_detail'),
     path('notes/', notes, name='notes'),
     path('notes/user/<int:user_id>/', notes, name='user_notes'),
     path('notes/user/<int:user_id>/<int:note_id>/', note_detail_update, name='note_detail_update'),
@@ -45,8 +46,7 @@ urlpatterns = [
     path('sleeplogs/<int:user_id>/<int:id>/', sleep_logs.SleepLogsView.as_view(), name='sleep_log_detail'),
     path('get_csrf_token/', csrf_token_view, name='get_csrf_token'),  # Add this line
     path('api/stock-data/', stock_data_view, name='stock_data_view'),
-    path('users/<int:user_id>/investments/', investment_view, name='investment_list'),
-    path('users/<int:user_id>/investments/<int:id>/', investment_view, name='investment_detail'),
+    
 
 
 

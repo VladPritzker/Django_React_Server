@@ -3,6 +3,8 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.db import models
+
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
@@ -72,22 +74,29 @@ class FinancialRecord(models.Model):
     def __str__(self):
         return f"{self.title} on {self.record_date} for ${self.amount}"
 
+
+
 class InvestingRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='investing_records')
-    record_date = models.DateField()
-    title = models.CharField(max_length=255)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    tenor = models.CharField(max_length=100)
-    type_invest = models.CharField(max_length=100)
+    record_date = models.DateField(null=True, blank=True)
+    title = models.CharField(max_length=255, null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tenor = models.CharField(max_length=255, null=True, blank=True)
+    type_invest = models.CharField(max_length=255, null=True, blank=True)
     amount_at_maturity = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
-    rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     maturity_date = models.DateField(null=True, blank=True)
+    cash_flows = models.JSONField(null=True, blank=True)
+    discount_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    IRR = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    NPV = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
 
     class Meta:
         db_table = 'investing_records'
 
     def __str__(self):
         return f"{self.title} on {self.record_date} for ${self.amount}"
+
+
 
 class Note(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -200,25 +209,3 @@ class StockData(models.Model):
     
     def __str__(self):
         return self.ticker
-
-
-class InvestmentComparison(models.Model):
-    user_id = models.IntegerField()
-    investment_name = models.CharField(max_length=100)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
-    tenor = models.IntegerField()  # in months
-    risk_percentage = models.DecimalField(max_digits=5, decimal_places=2)
-    discount_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    NPV = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
-    IRR = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'investment_comparison'
-
-    def __str__(self):
-        return self.investment_name
-
-
-

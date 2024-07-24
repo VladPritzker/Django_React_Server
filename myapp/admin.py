@@ -34,12 +34,17 @@ class MyUserAdmin(BaseUserAdmin):
     ordering = ('email',)
     filter_horizontal = ('groups', 'user_permissions',)
 
+class InvestingRecordAdmin(admin.ModelAdmin):
+    list_display = ('user', 'record_date', 'title', 'amount', 'tenor', 'type_invest', 'amount_at_maturity', 'maturity_date', 'discount_rate', 'yearly_income')
+    fields = ('user', 'record_date', 'title', 'amount', 'tenor', 'type_invest', 'amount_at_maturity', 'maturity_date', 'discount_rate', 'yearly_income')
+
+
 # Register the User model with the custom admin class
 admin.site.register(User, MyUserAdmin)
 
 # Register other models without custom admin classes
 admin.site.register(FinancialRecord)
-admin.site.register(InvestingRecord)
+admin.site.register(InvestingRecord, InvestingRecordAdmin)
 admin.site.register(Note)
 admin.site.register(MonthlyExpense)
 admin.site.register(IncomeRecord)

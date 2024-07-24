@@ -84,17 +84,35 @@ class InvestingRecord(models.Model):
     tenor = models.CharField(max_length=255, null=True, blank=True)
     type_invest = models.CharField(max_length=255, null=True, blank=True)
     amount_at_maturity = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
-    maturity_date = models.DateField(null=True, blank=True)
-    cash_flows = models.JSONField(null=True, blank=True)
+    maturity_date = models.DateField(null=True, blank=True)    
     discount_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    IRR = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    NPV = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    yearly_income = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # New field
+
 
     class Meta:
         db_table = 'investing_records'
 
     def __str__(self):
         return f"{self.title} on {self.record_date} for ${self.amount}"
+    
+class CustomCashFlowInvestment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    record_date = models.DateField()
+    title = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    tenor = models.CharField(max_length=255)
+    type_invest = models.CharField(max_length=255)
+    cash_flows = models.JSONField()
+    discount_rate = models.DecimalField(max_digits=5, decimal_places=2)
+    IRR = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    NPV = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+
+    class Meta:
+        db_table = 'custom_cash_flow_investments'
+
+    def __str__(self):
+        return f"{self.title} on {self.record_date} for ${self.amount}"
+    
 
 
 
@@ -209,3 +227,5 @@ class StockData(models.Model):
     
     def __str__(self):
         return self.ticker
+
+

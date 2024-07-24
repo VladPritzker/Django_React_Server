@@ -15,6 +15,10 @@ from myapp.views import sleep_logs
 from myapp.views.home_views import homepage
 from myapp.views.stock_data import stock_data_view
 
+from myapp.views.customCashFlowInvestment_views import custom_cash_flow_investments, custom_cash_flow_investment_detail
+
+
+
 
 
 urlpatterns = [
@@ -26,6 +30,9 @@ urlpatterns = [
     path('financial_records/<int:user_id>/<int:record_id>/', delete_financial_record, name='delete_financial_record'),
     path('investing_records/<int:user_id>/', investing_records_view, name='investing_records_list'),
     path('investing_records/<int:user_id>/<int:record_id>/', investing_record_detail_view, name='investing_record_detail'),
+    path('custom_cash_flow_investments/<int:user_id>/', custom_cash_flow_investments, name='custom_cash_flow_investments'),
+    path('custom_cash_flow_investments/<int:user_id>/<int:record_id>/', custom_cash_flow_investment_detail, name='custom_cash_flow_investment_detail'),
+
     path('notes/', notes, name='notes'),
     path('notes/user/<int:user_id>/', notes, name='user_notes'),
     path('notes/user/<int:user_id>/<int:note_id>/', note_detail_update, name='note_detail_update'),

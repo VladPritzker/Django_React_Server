@@ -25,7 +25,8 @@ ALLOWED_HOSTS = [
     'localhost',
     'oyster-app-vhznt.ondigitalocean.app',  # Production
     'clownfish-app-dsl46.ondigitalocean.app',
-    'http://localhost:3000'  # Production
+    'http://localhost:3000',
+    'http://pritzker-finance.com'
 ]
 
 # CORS and CSRF settings
@@ -34,6 +35,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://clownfish-app-dsl46.ondigitalocean.app',  # Production frontend
     'https://oyster-app-vhznt.ondigitalocean.app',  # Production backend
     'http://127.0.0.1:3000',
+    'http://pritzker-finance.com'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -41,7 +43,9 @@ CSRF_TRUSTED_ORIGINS = [
     'https://clownfish-app-dsl46.ondigitalocean.app',  # Production frontend
     'https://oyster-app-vhznt.ondigitalocean.app',  # Production backend
     'http://127.0.0.1:8000',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'http://pritzker-finance.com'
+
 ]
 
 CORS_ALLOW_CREDENTIALS = True

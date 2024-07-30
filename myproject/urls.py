@@ -14,8 +14,9 @@ from myapp.views.contact_views import contact_list, ContactDetailView
 from myapp.views import sleep_logs
 from myapp.views.home_views import homepage
 from myapp.views.stock_data import stock_data_view
-
 from myapp.views.customCashFlowInvestment_views import custom_cash_flow_investments, custom_cash_flow_investment_detail
+from myapp.views.stock_data_pdf import fetch_stock_data, generate_pdf
+
 
 
 
@@ -53,6 +54,9 @@ urlpatterns = [
     path('sleeplogs/<int:user_id>/<int:id>/', sleep_logs.SleepLogsView.as_view(), name='sleep_log_detail'),
     path('get_csrf_token/', csrf_token_view, name='get_csrf_token'),  # Add this line
     path('api/stock-data/', stock_data_view, name='stock_data_view'),
+    path('fetch-stock-data/', fetch_stock_data, name='fetch_stock_data'),
+    path('generate-pdf/', generate_pdf, name='generate_pdf'),
+
     
 
 

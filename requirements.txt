@@ -23,8 +23,6 @@ sqlparse==0.5.0
 urllib3==2.2.2
 reportlab
 pdfkit==1.0.0
-django-wkhtmltopdf
+django-wkhtmltopdf==3.4.0
 docusign_esign==3.10.0
-
-
-
+jinja2==3.1.2  # Add this line

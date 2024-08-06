@@ -3,67 +3,52 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
-from myapp.views.user_views import users, users_data, upload_photo, csrf_token_view  # Import the view
-from myapp.views.income_views import income_records_view, income_record_detail_view, add_income_record, delete_income_record
-from myapp.views.meeting_views import meeting_list, MeetingDetailView
-from myapp.views.financial_views import financial_records, delete_financial_record
-from myapp.views.investing_views import investing_records_view, investing_record_detail_view
-from myapp.views.note_views import notes, note_detail_update, reorder_notes
-from myapp.views.expense_views import monthly_expenses, expense_detail
-from myapp.views.contact_views import contact_list, ContactDetailView
-from myapp.views import sleep_logs
-from myapp.views.home_views import homepage
-from myapp.views.stock_data import stock_data_view
-from myapp.views.customCashFlowInvestment_views import custom_cash_flow_investments, custom_cash_flow_investment_detail
-from myapp.views.stock_data_pdf import fetch_stock_data, generate_pdf
-
-
-
-
-
+from myapp.views import (
+    user_views, income_views, meeting_views, financial_views,
+    investing_views, note_views, expense_views, contact_views,
+    sleep_logs, home_views, stock_data, customCashFlowInvestment_views,
+    stock_data_pdf, docusign_views
+)
 
 urlpatterns = [
-    path('', homepage, name='homepage'),
+    path('', home_views.homepage, name='homepage'),
     path('admin/', admin.site.urls),
-    path('users/', users, name='users'),
-    path('users/<int:user_id>/', users_data, name='users_data'),
-    path('financial_records/', financial_records, name='financial_records'),
-    path('financial_records/<int:user_id>/<int:record_id>/', delete_financial_record, name='delete_financial_record'),
-    path('investing_records/<int:user_id>/', investing_records_view, name='investing_records_list'),
-    path('investing_records/<int:user_id>/<int:record_id>/', investing_record_detail_view, name='investing_record_detail'),
-    path('custom_cash_flow_investments/<int:user_id>/', custom_cash_flow_investments, name='custom_cash_flow_investments'),
-    path('custom_cash_flow_investments/<int:user_id>/<int:record_id>/', custom_cash_flow_investment_detail, name='custom_cash_flow_investment_detail'),
-
-    path('notes/', notes, name='notes'),
-    path('notes/user/<int:user_id>/', notes, name='user_notes'),
-    path('notes/user/<int:user_id>/<int:note_id>/', note_detail_update, name='note_detail_update'),
-    path('notes/reorder/<int:user_id>/', reorder_notes, name='reorder_notes'),
-    path('monthly_expenses/', monthly_expenses, name='monthly_expenses'),
-    path('monthly_expenses/<int:user_id>/', monthly_expenses, name='user_monthly_expenses'),
-    path('monthly_expenses/<int:user_id>/<int:expense_id>/', expense_detail, name='expense_detail'),
-    path('users/<int:user_id>/income_records/', income_records_view, name='income_records'),
-    path('users/<int:user_id>/income_records/<int:record_id>/', income_record_detail_view, name='income_record_detail'),
-    path('users/<int:user_id>/add_income/', add_income_record, name='add_income_record'),
-    path('users/<int:user_id>/delete_income/<int:record_id>/', delete_income_record, name='delete_income_record'),
-    path('contacts/<int:user_id>/', contact_list, name='contact_list'),
-    path('contacts/<int:user_id>/<int:pk>/', ContactDetailView.as_view(), name='contact_detail'),
-    path('meetings/<int:user_id>/', meeting_list, name='meeting_list'),
-    path('meetings/<int:user_id>/<int:pk>/', MeetingDetailView.as_view(), name='meeting_detail'),
-    path('users/<int:user_id>/upload_photo/', upload_photo, name='upload_photo'),  # Add this line
+    path('users/', user_views.users, name='users'),
+    path('users/<int:user_id>/', user_views.users_data, name='users_data'),
+    path('financial_records/', financial_views.financial_records, name='financial_records'),
+    path('financial_records/<int:user_id>/<int:record_id>/', financial_views.delete_financial_record, name='delete_financial_record'),
+    path('investing_records/<int:user_id>/', investing_views.investing_records_view, name='investing_records_list'),
+    path('investing_records/<int:user_id>/<int:record_id>/', investing_views.investing_record_detail_view, name='investing_record_detail'),
+    path('custom_cash_flow_investments/<int:user_id>/', customCashFlowInvestment_views.custom_cash_flow_investments, name='custom_cash_flow_investments'),
+    path('custom_cash_flow_investments/<int:user_id>/<int:record_id>/', customCashFlowInvestment_views.custom_cash_flow_investment_detail, name='custom_cash_flow_investment_detail'),
+    path('notes/', note_views.notes, name='notes'),
+    path('notes/user/<int:user_id>/', note_views.notes, name='user_notes'),
+    path('notes/user/<int:user_id>/<int:note_id>/', note_views.note_detail_update, name='note_detail_update'),
+    path('notes/reorder/<int:user_id>/', note_views.reorder_notes, name='reorder_notes'),
+    path('monthly_expenses/', expense_views.monthly_expenses, name='monthly_expenses'),
+    path('monthly_expenses/<int:user_id>/', expense_views.monthly_expenses, name='user_monthly_expenses'),
+    path('monthly_expenses/<int:user_id>/<int:expense_id>/', expense_views.expense_detail, name='expense_detail'),
+    path('users/<int:user_id>/income_records/', income_views.income_records_view, name='income_records'),
+    path('users/<int:user_id>/income_records/<int:record_id>/', income_views.income_record_detail_view, name='income_record_detail'),
+    path('contacts/<int:user_id>/', contact_views.contact_list, name='contact_list'),
+    path('contacts/<int:user_id>/<int:pk>/', contact_views.ContactDetailView.as_view(), name='contact_detail'),
+    path('meetings/<int:user_id>/', meeting_views.meeting_list, name='meeting_list'),
+    path('meetings/<int:user_id>/<int:pk>/', meeting_views.MeetingDetailView.as_view(), name='meeting_detail'),
+    path('users/<int:user_id>/upload_photo/', user_views.upload_photo, name='upload_photo'),
     path('sleeplogs/<int:user_id>/', sleep_logs.SleepLogsView.as_view(), name='sleep_logs_list'),
     path('sleeplogs/<int:user_id>/<int:id>/', sleep_logs.SleepLogsView.as_view(), name='sleep_log_detail'),
-    path('get_csrf_token/', csrf_token_view, name='get_csrf_token'),  # Add this line
-    path('api/stock-data/', stock_data_view, name='stock_data_view'),
-    path('fetch-stock-data/', fetch_stock_data, name='fetch_stock_data'),
-    path('generate-pdf/', generate_pdf, name='generate_pdf'),
+    path('get_csrf_token/', user_views.csrf_token_view, name='get_csrf_token'),
+    path('api/stock-data/', stock_data.stock_data_view, name='stock_data_view'),
+    path('fetch-stock-data/', stock_data_pdf.fetch_stock_data, name='fetch_stock_data'),
+    path('generate-pdf/', stock_data_pdf.generate_pdf, name='generate_pdf'),
 
-    
-
-
-
-
-
-
+    # DocuSign Endpoints
+    path('docusign/', docusign_views.index, name='docusign_index'),
+    path('docusign/user/<int:user_id>/', docusign_views.get_user, name='docusign_get_user'),
+    path('docusign/generate_and_sign', docusign_views.generate_and_sign, name='docusign_generate_and_sign'),
+    path('docusign/oauth/callback', docusign_views.oauth_callback, name='docusign_oauth_callback'),
+    path('docusign/return', docusign_views.return_url, name='docusign_return_url'),
+    path('docusign/webhook', docusign_views.webhook, name='docusign_webhook'),
 
     # Password reset URLs
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),

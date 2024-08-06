@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BHI Bank Onboarding for {{ first_name }} {{ last_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            line-height: 1.6;
+        }
+        .section-title {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        .user-info {
+            margin: 10px 0;
+        }
+        .user-info span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BHI Bank Onboarding</h1>
+        <p class="section-title">User Information:</p>
+        <div class="user-info"><span>Organization:</span> {{ organization }}</div>
+        <div class="user-info"><span>First Name:</span> {{ first_name }}</div>
+        <div class="user-info"><span>Last Name:</span> {{ last_name }}</div>
+        <div class="user-info"><span>Customer Since:</span> {{ customer_since_date }}</div>
+        <div class="user-info"><span>Relationship:</span> {{ customer_relationship }}</div>
+        <div class="user-info"><span>Street:</span> {{ street }}</div>
+        <div class="user-info"><span>City:</span> {{ city }}</div>
+        <div class="user-info"><span>Zipcode:</span> {{ zipcode }}</div>
+        <div class="user-info"><span>Country:</span> {{ country }}</div>
+        <div class="user-info"><span>Phone Type:</span> {{ phone_type }}</div>
+        <div class="user-info"><span>Tax ID:</span> {{ tax_id }}</div>
+        <div class="user-info"><span>Email:</span> {{ email.address }}</div>
+        <div class="user-info"><span>Political Exposure:</span> {{ political_exposure_info.person_org }}</div>
+        <div class="user-info"><span>Alias:</span> {{ alias_info.name }}</div>
+    </div>
+</body>
+</html>

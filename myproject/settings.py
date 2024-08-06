@@ -45,7 +45,6 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:3000',
     'http://pritzker-finance.com'
-
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -63,6 +62,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'myapp',
+    'wkhtmltopdf',
+    'docusign_esign',
+    'jinja2'
 ]
 
 MIDDLEWARE = [

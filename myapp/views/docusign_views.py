@@ -1,4 +1,5 @@
 import logging
+from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -9,23 +10,34 @@ from docusign_esign import ApiClient, EnvelopesApi, Document, Signer, SignHere, 
 import base64
 from myapp.docusign import config
 from myapp.docusign.user_data import user_data
+from django.middleware.csrf import get_token
 
 
 logging.basicConfig(level=logging.DEBUG)
 
+@csrf_exempt
+def some_view(request):
+    csrf_token = get_token(request)
+    return JsonResponse({'csrfToken': csrf_token})
+
+@csrf_exempt
 def index(request):
     return HttpResponse("Welcome to the DocuSign API!")
 
+@csrf_exempt
 def get_user(request, user_id):
     if user_id in user_data:
         return JsonResponse(user_data[user_id])
     else:
         return JsonResponse({"error": "User not found"}, status=404)
 
+@csrf_exempt
 def generate_and_sign(request):
     try:
         user_id = request.POST.get('user_id')
         signer_email = request.POST.get('signer_email')
+
+        logging.debug(f"Received user_id: {user_id}, signer_email: {signer_email}")
 
         if not user_id or not signer_email:
             return JsonResponse({"error": "Missing user_id or signer_email"}, status=400)
@@ -45,10 +57,14 @@ def generate_and_sign(request):
         signer_name = f"{user['first_name']} {user['last_name']}"
         sign_url = create_embedded_signing_url(pdf_path, signer_email, signer_name)
 
+        logging.debug(f"Generated sign_url: {sign_url}")
+
         return JsonResponse({"sign_url": sign_url})
     except Exception as e:
+        logging.error(f"Error in generate_and_sign: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
 
+@csrf_exempt
 def oauth_callback(request):
     code = request.GET.get('code')
     if not code:
@@ -72,14 +88,22 @@ def oauth_callback(request):
     
     return JsonResponse({"message": "Authorization successful"})
 
+@csrf_exempt
 def populate_template(data):
     with open('myapp/docusign/template.html', 'r') as file:
         template = Template(file.read())
     return template.render(data)
 
+@csrf_exempt
 def generate_pdf(html_content, output_path):
-    pdfkit.from_string(html_content, output_path)
+    options = {
+        'page-size': 'Letter',
+        'encoding': "UTF-8",
+        'no-outline': None
+    }
+    pdfkit.from_string(html_content, output_path, options=options)
 
+@csrf_exempt
 def create_embedded_signing_url(pdf_path, signer_email, signer_name):
     api_client = ApiClient()
     api_client.host = config.DOCUSIGN_ACCOUNT_BASE_URI + '/restapi'
@@ -141,9 +165,11 @@ def create_embedded_signing_url(pdf_path, signer_email, signer_name):
 
     return results.url
 
+@csrf_exempt
 def return_url(request):
     return HttpResponse("Thank you for signing the document!")
 
+@csrf_exempt
 def webhook(request):
     try:
         data = request.json
@@ -157,6 +183,7 @@ def webhook(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
+@csrf_exempt
 def download_signed_document(envelope_id):
     api_client = ApiClient()
     api_client.host = config.DOCUSIGN_ACCOUNT_BASE_URI + '/restapi'
@@ -173,6 +200,7 @@ def download_signed_document(envelope_id):
     with open('signed_document.pdf', 'wb') as f:
         f.write(signed_document)
 
+@csrf_exempt
 def transfer_signed_document(signed_pdf_path, destination_url):
     with open(signed_pdf_path, 'rb') as file:
         response = requests.post(destination_url, files={'file': file}, headers={'Authorization': 'Bearer ' + config.DESTINATION_API_KEY})

@@ -42,13 +42,13 @@ urlpatterns = [
     path('fetch-stock-data/', stock_data_pdf.fetch_stock_data, name='fetch_stock_data'),
     path('generate-pdf/', stock_data_pdf.generate_pdf, name='generate_pdf'),
 
-    # DocuSign Endpoints
+     # DocuSign Endpoints
     path('docusign/', docusign_views.index, name='docusign_index'),
     path('docusign/user/<int:user_id>/', docusign_views.get_user, name='docusign_get_user'),
-    path('docusign/generate_and_sign', docusign_views.generate_and_sign, name='docusign_generate_and_sign'),
-    path('docusign/oauth/callback', docusign_views.oauth_callback, name='docusign_oauth_callback'),
-    path('docusign/return', docusign_views.return_url, name='docusign_return_url'),
-    path('docusign/webhook', docusign_views.webhook, name='docusign_webhook'),
+    path('docusign/generate_and_sign/', docusign_views.generate_and_sign, name='docusign_generate_and_sign'),
+    path('docusign/oauth/callback/', docusign_views.oauth_callback, name='docusign_oauth_callback'),
+    path('docusign/return/', docusign_views.return_url, name='docusign_return_url'),
+    path('docusign/webhook/', docusign_views.webhook, name='docusign_webhook'),
 
     # Password reset URLs
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),

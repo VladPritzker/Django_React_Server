@@ -7,6 +7,10 @@ from django.shortcuts import get_object_or_404
 from decimal import Decimal
 from datetime import datetime, timedelta
 from django.db.models import Sum
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 
 
@@ -61,23 +65,27 @@ def income_records_view(request, user_id):
 
 @csrf_exempt
 def income_record_detail_view(request, user_id, record_id):
-    if request.method == 'DELETE':
-        try:
-            user = get_object_or_404(User, id=user_id)
-            income_record = get_object_or_404(IncomeRecord, id=record_id, user=user)
-
+    logger.debug(f'Request method: {request.method}, User ID: {user_id}, Record ID: {record_id}')
+    try:
+        user = get_object_or_404(User, id=user_id)
+        income_record = get_object_or_404(IncomeRecord, id=record_id, user=user)
+        
+        if request.method == 'DELETE':
             user.balance -= Decimal(income_record.amount)
             user.save()
-
             income_record.delete()
-
             update_income_by_periods(user)
-
             return JsonResponse({'message': 'Income record deleted successfully'}, status=204)
-        except IncomeRecord.DoesNotExist:
-            return JsonResponse({'error': 'Income record not found'}, status=404)
+        else:
+            return JsonResponse({'error': 'Method not allowed'}, status=405)
+    except IncomeRecord.DoesNotExist:
+        logger.error('Income record not found')
+        return JsonResponse({'error': 'Income record not found'}, status=404)
+    except Exception as e:
+        logger.error(f'Error: {str(e)}')
+        return JsonResponse({'error': str(e)}, status=500)
 
-
+@csrf_exempt
 def update_income_by_periods(user, skip_update=False):
     if skip_update:
         return

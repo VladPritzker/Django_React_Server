@@ -116,8 +116,7 @@ DATABASES = {
         'OPTIONS': {
           'connect_timeout': 300,
             'read_timeout': 300,
-            'write_timeout': 300,
-            'pool_recycle': 3600,
+            'write_timeout': 300,            
         }
     }
 }

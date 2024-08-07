@@ -27,7 +27,7 @@ ALLOWED_HOSTS = [
     'clownfish-app-dsl46.ondigitalocean.app',
     'http://localhost:3000',
     'http://pritzker-finance.com',
-    'http://pritzker-investing.com'
+    'http://pritzker-investment.com'
 ]
 
 # CORS and CSRF settings
@@ -37,7 +37,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://oyster-app-vhznt.ondigitalocean.app',  # Production backend
     'http://127.0.0.1:3000',
     'http://pritzker-finance.com',
-    'http://pritzker-investing.com'
+    'http://pritzker-investment.com'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -47,7 +47,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:3000',
     'http://pritzker-finance.com',
-    'http://pritzker-investing.com'
+    'http://pritzker-investment.com'
+
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -65,9 +66,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'myapp',
-    'wkhtmltopdf',
-    'docusign_esign',
-    'jinja2'
 ]
 
 MIDDLEWARE = [
@@ -113,11 +111,6 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD'),
         'HOST': config('DB_HOST'),
         'PORT': config('DB_PORT', cast=int),
-        'OPTIONS': {
-          'connect_timeout': 300,
-            'read_timeout': 300,
-            'write_timeout': 300,            
-        }
     }
 }
 
@@ -195,6 +188,3 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = 'no-reply@yourdomain.com'
 
 STOCK_DATA_KEY = config('STOCK_DATA_KEY')
-
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'None'

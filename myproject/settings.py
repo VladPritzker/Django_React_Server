@@ -51,7 +51,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 ]
 
-CORS_ALLOW_CREDENTIALS = True
+
 
 AUTH_USER_MODEL = 'myapp.User'
 
@@ -176,7 +176,6 @@ DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 # Additional settings
 USE_TZ = False
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -188,3 +187,14 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = 'no-reply@yourdomain.com'
 
 STOCK_DATA_KEY = config('STOCK_DATA_KEY')
+CORS_ALLOW_CREDENTIALS = True
+
+
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS'
+]

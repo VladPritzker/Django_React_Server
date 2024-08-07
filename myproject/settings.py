@@ -110,6 +110,11 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD'),
         'HOST': config('DB_HOST'),
         'PORT': config('DB_PORT', cast=int),
+        'OPTIONS': {
+          'connect_timeout': 300,
+            'read_timeout': 300,
+            'write_timeout': 300,
+        }
     }
 }
 
@@ -187,3 +192,6 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = 'no-reply@yourdomain.com'
 
 STOCK_DATA_KEY = config('STOCK_DATA_KEY')
+
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'

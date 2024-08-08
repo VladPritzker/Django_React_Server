@@ -7,7 +7,7 @@ from myapp.views import (
     user_views, income_views, meeting_views, financial_views,
     investing_views, note_views, expense_views, contact_views,
     sleep_logs, home_views, stock_data, customCashFlowInvestment_views,
-    stock_data_pdf, docusign_views
+    stock_data_pdf, docusign_views, convert_html_to_pdf_and_send
 )
 
 urlpatterns = [
@@ -43,12 +43,10 @@ urlpatterns = [
     path('generate-pdf/', stock_data_pdf.generate_pdf, name='generate_pdf'),
 
      # DocuSign Endpoints
-    path('docusign/', docusign_views.index, name='docusign_index'),
-    path('docusign/user/<int:user_id>/', docusign_views.get_user, name='docusign_get_user'),
-    path('docusign/generate_and_sign/', docusign_views.generate_and_sign, name='docusign_generate_and_sign'),
-    path('docusign/oauth/callback/', docusign_views.oauth_callback, name='docusign_oauth_callback'),
-    path('docusign/return/', docusign_views.return_url, name='docusign_return_url'),
-    path('docusign/webhook/', docusign_views.webhook, name='docusign_webhook'),
+    path('docusign/login/', docusign_views.docusign_login, name='docusign_login'),
+    path('docusign/oauth/callback/', docusign_views.docusign_callback, name='docusign_callback'),
+    path('docusign/send/', convert_html_to_pdf_and_send.convert_html_to_pdf_and_send, name='convert_html_to_pdf_and_send'),
+
 
     # Password reset URLs
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),

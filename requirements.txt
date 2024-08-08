@@ -26,3 +26,5 @@ pdfkit==1.0.0
 django-wkhtmltopdf==3.4.0
 docusign_esign==3.10.0
 jinja2==3.1.2  # Add this line
+html2pdf
+docusign-esign

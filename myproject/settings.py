@@ -198,3 +198,10 @@ CORS_ALLOW_METHODS = [
     'DELETE',
     'OPTIONS'
 ]
+
+DOCUSIGN_USER_ID = '12f700c7-039a-45c6-ad65-eaa830eba0fa'
+DOCUSIGN_API_ACCOUNT_ID = '8b8e41e8-4e91-4bf2-b23f-6198b8cc3116'
+DOCUSIGN_ACCOUNT_BASE_URI = 'https://na3.docusign.net'
+DOCUSIGN_INTEGRATION_KEY = '9638a832-3d8d-4c73-b8c4-0323ff3aa1a7'
+DOCUSIGN_SECRET_KEY = '6cd5225a-6b29-4f0c-83b2-c7bf8bd5ea7a'
+DOCUSIGN_REDIRECT_URI = 'https://oyster-app-vhznt.ondigitalocean.app/docusign/oauth/callback'

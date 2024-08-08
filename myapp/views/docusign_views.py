@@ -96,12 +96,15 @@ def populate_template(data):
 
 @csrf_exempt
 def generate_pdf(html_content, output_path):
+    path_to_wkhtmltopdf = '/usr/bin/wkhtmltopdf'  # Use the path returned by 'which wkhtmltopdf'
+    config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
     options = {
         'page-size': 'Letter',
         'encoding': "UTF-8",
         'no-outline': None
     }
-    pdfkit.from_string(html_content, output_path, options=options)
+    pdfkit.from_string(html_content, output_path, options=options, configuration=config)
+
 
 @csrf_exempt
 def create_embedded_signing_url(pdf_path, signer_email, signer_name):

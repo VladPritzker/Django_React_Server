@@ -1,8 +1,10 @@
-import os
+import logging
 from django.shortcuts import redirect
-from django.http import JsonResponse
 from requests_oauthlib import OAuth2Session
 from django.conf import settings
+from django.http import JsonResponse
+
+logger = logging.getLogger(__name__)
 
 DOCUSIGN_AUTHORIZATION_URL = "https://account.docusign.com/oauth/auth"
 DOCUSIGN_TOKEN_URL = "https://account.docusign.com/oauth/token"
@@ -34,4 +36,5 @@ def docusign_callback(request):
         client_secret=CLIENT_SECRET
     )
     request.session['oauth_token'] = token
+    logger.debug(f"Token stored in session: {request.session['oauth_token']}")
     return JsonResponse(token)

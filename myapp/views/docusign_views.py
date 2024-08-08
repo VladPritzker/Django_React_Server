@@ -42,7 +42,8 @@ def generate_and_sign(request):
         if not user_id or not signer_email:
             return JsonResponse({"error": "Missing user_id or signer_email"}, status=400)
 
-        user = user_data.get(user_id)
+        # Make sure user_id is string type as the keys in user_data are strings
+        user = user_data.get(str(user_id))
         if not user:
             return JsonResponse({"error": "User not found"}, status=404)
 
@@ -63,6 +64,7 @@ def generate_and_sign(request):
     except Exception as e:
         logging.error(f"Error in generate_and_sign: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
+
 
 @csrf_exempt
 def oauth_callback(request):

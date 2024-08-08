@@ -25,7 +25,7 @@ def convert_html_to_pdf_and_send(request):
             logger.error("Email is required")
             return JsonResponse({"error": "Email is required"}, status=400)
 
-        html_template_path = '/path/to/your/template.html'
+        html_template_path = '/myapp/docusign/template.html'
 
         try:
             with open(html_template_path, 'r') as file:

@@ -1,3 +1,4 @@
+import os
 import base64
 import logging
 from django.views.decorators.csrf import csrf_exempt
@@ -25,7 +26,9 @@ def convert_html_to_pdf_and_send(request):
             logger.error("Email is required")
             return JsonResponse({"error": "Email is required"}, status=400)
 
-        html_template_path = '/myapp/docusign/template.html'
+        # Set the correct path for the HTML template
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        html_template_path = os.path.join(base_dir, 'myapp', 'docusign', 'template.html')
 
         try:
             with open(html_template_path, 'r') as file:

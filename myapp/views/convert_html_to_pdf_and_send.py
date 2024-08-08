@@ -1,4 +1,3 @@
-import os
 import base64
 import logging
 from django.views.decorators.csrf import csrf_exempt
@@ -26,17 +25,87 @@ def convert_html_to_pdf_and_send(request):
             logger.error("Email is required")
             return JsonResponse({"error": "Email is required"}, status=400)
 
-        # Set the correct path for the HTML template
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        html_template_path = os.path.join(base_dir, 'myapp', 'docusign', 'template.html')
+        # Inline HTML content
+        html_content = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>BHI Bank Onboarding for John Doe</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    padding: 20px;
+                    background-color: #f4f4f4;
+                }
+                .container {
+                    max-width: 800px;
+                    margin: auto;
+                    background: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                }
+                h1 {
+                    color: #333;
+                }
+                p {
+                    line-height: 1.6;
+                }
+                .section-title {
+                    margin-top: 20px;
+                    font-weight: bold;
+                    color: #333;
+                }
+                .user-info {
+                    margin: 10px 0;
+                }
+                .user-info span {
+                    font-weight: bold;
+                }
+                .signature-section {
+                    margin-top: 40px;
+                    text-align: center;
+                }
+                .signature-placeholder {
+                    border: 2px dashed #ccc;
+                    padding: 20px;
+                    margin-top: 20px;
+                    display: inline-block;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>BHI Bank Onboarding</h1>
+                <p class="section-title">User Information:</p>
+                <div class="user-info"><span>Organization:</span> BHI Bank</div>
+                <div class="user-info"><span>First Name:</span> John</div>
+                <div class="user-info"><span>Last Name:</span> Doe</div>
+                <div class="user-info"><span>Customer Since:</span> 2020-01-01</div>
+                <div class="user-info"><span>Relationship:</span> Client</div>
+                <div class="user-info"><span>Street:</span> 123 Main St</div>
+                <div class="user-info"><span>City:</span> New York</div>
+                <div class="user-info"><span>Zipcode:</span> 10001</div>
+                <div class="user-info"><span>Country:</span> USA</div>
+                <div class="user-info"><span>Phone Type:</span> Mobile</div>
+                <div class="user-info"><span>Tax ID:</span> 123-45-6789</div>
+                <div class="user-info"><span>Email:</span> john.doe@example.com</div>
+                <div class="user-info"><span>Political Exposure:</span> None</div>
+                <div class="user-info"><span>Alias:</span> JD</div>
 
-        try:
-            with open(html_template_path, 'r') as file:
-                html_content = file.read()
-                logger.debug("HTML template read successfully")
-        except FileNotFoundError:
-            logger.error("HTML template not found")
-            return JsonResponse({"error": "HTML template not found"}, status=500)
+                <div class="signature-section">
+                    <p class="section-title">Signature:</p>
+                    <div class="signature-placeholder">
+                        <!-- DocuSign Signature Placeholder -->
+                        <p>Signature: /s1/</p>
+                        <p>Date: /d1/</p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
 
         pdf_file_path = 'document.pdf'
         try:

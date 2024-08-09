@@ -63,7 +63,6 @@ def get_oauth_token(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-
 @csrf_exempt
 def get_authorization_code(request):
     try:
@@ -84,11 +83,15 @@ def get_authorization_code(request):
 
         # Parse the authorization code from the URL
         parsed_url = urllib.parse.urlparse(redirected_url)
-        authorization_code = urllib.parse.parse_qs(parsed_url.query).get('code')[0]
-        logger.debug(f"Authorization Code: {authorization_code}")
+        code_list = urllib.parse.parse_qs(parsed_url.query).get('code')
 
-        # Return the authorization code in the response
-        return JsonResponse({'authorization_code': authorization_code})
+        if code_list:
+            authorization_code = code_list[0]
+            logger.debug(f"Authorization Code: {authorization_code}")
+            return JsonResponse({'authorization_code': authorization_code})
+        else:
+            logger.error("Authorization code not found in the redirected URL.")
+            return JsonResponse({'error': 'Authorization code not found'}, status=400)
 
     except HTTPError as e:
         logger.error(f"HTTP error: {e.code} - {e.reason}")

@@ -67,6 +67,7 @@ def get_oauth_token(request):
 
 @csrf_exempt
 def get_authorization_code(request):
+    driver = None  # Initialize driver to None
     try:
         # Define the authorization URL
         auth_url = (
@@ -112,6 +113,3 @@ def get_authorization_code(request):
     except Exception as e:
         logger.error(f"Error in get_authorization_code: {e}")
         return JsonResponse({'error': str(e)}, status=500)
-
-    finally:
-        driver.quit()

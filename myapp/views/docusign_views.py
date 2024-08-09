@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 logger = logging.getLogger(__name__)
 
 @csrf_exempt
-def get_oauth_token():
+def get_oauth_token(request):
     # Step 1: Request authorization code
     auth_url = (
         f"https://account-d.docusign.com/oauth/auth?response_type=code"
@@ -63,6 +63,4 @@ def get_oauth_token():
     token_data = token_response.json()
     access_token = token_data['access_token']
     
-    return access_token
-
-# The rest of your function remains the same
+    return JsonResponse({'access_token': access_token})

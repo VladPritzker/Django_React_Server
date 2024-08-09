@@ -7,6 +7,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import requests
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger(__name__)
 

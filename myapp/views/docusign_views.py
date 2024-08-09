@@ -1,12 +1,14 @@
-import urllib.request
-import urllib.parse
-from urllib.error import URLError, HTTPError
-import logging
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-import base64
-import requests
-from django.conf import settings
+import logging
+import time
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
+from urllib.parse import urlparse, parse_qs
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 logger = logging.getLogger(__name__)
 
@@ -76,14 +78,28 @@ def get_authorization_code(request):
             "&state=pY8wl6h04PardhgXHAQdmz746VHwzc"
         )
 
-        # Fetch the redirect URL using urllib
-        with urllib.request.urlopen(auth_url) as response:
-            redirected_url = response.geturl()  # Fetches the final URL after redirection
-            logger.debug(f"Redirected URL: {redirected_url}")
+        # Set up Selenium WebDriver with Chrome in headless mode
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+
+        # Open the authorization URL
+        driver.get(auth_url)
+
+        # Wait for the authorization code to be in the URL after the redirection
+        WebDriverWait(driver, 20).until(
+            EC.url_contains("code=")
+        )
+
+        # Get the current URL after the final redirection
+        redirected_url = driver.current_url
+        logger.debug(f"Redirected URL: {redirected_url}")
 
         # Parse the authorization code from the URL
-        parsed_url = urllib.parse.urlparse(redirected_url)
-        code_list = urllib.parse.parse_qs(parsed_url.query).get('code')
+        parsed_url = urlparse(redirected_url)
+        code_list = parse_qs(parsed_url.query).get('code')
 
         if code_list:
             authorization_code = code_list[0]
@@ -93,12 +109,9 @@ def get_authorization_code(request):
             logger.error("Authorization code not found in the redirected URL.")
             return JsonResponse({'error': 'Authorization code not found'}, status=400)
 
-    except HTTPError as e:
-        logger.error(f"HTTP error: {e.code} - {e.reason}")
-        return JsonResponse({'error': f"HTTP error: {e.code} - {e.reason}"}, status=500)
-    except URLError as e:
-        logger.error(f"URL error: {e.reason}")
-        return JsonResponse({'error': f"URL error: {e.reason}"}, status=500)
     except Exception as e:
         logger.error(f"Error in get_authorization_code: {e}")
         return JsonResponse({'error': str(e)}, status=500)
+
+    finally:
+        driver.quit()

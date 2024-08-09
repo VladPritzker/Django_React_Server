@@ -98,8 +98,8 @@ def convert_html_to_pdf_and_send(request):
                     <p class="section-title">Signature:</p>
                     <div class="signature-placeholder">
                         <!-- DocuSign Signature Placeholder -->
-                        <p>Signature: /s1/</p>
-                        <p>Date: /d1/</p>
+                        <p>Signature: </p>
+                        <p>Date: </p>
                     </div>
                 </div>
             </div>

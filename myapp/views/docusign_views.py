@@ -6,7 +6,7 @@ from django.http import JsonResponse
 
 logger = logging.getLogger(__name__)
 
-DOCUSIGN_AUTHORIZATION_URL = "https://account.docusign.com/oauth/auth"
+DOCUSIGN_AUTHORIZATION_URL = "https://account-d.docusign.com/oauth/auth"
 DOCUSIGN_TOKEN_URL = "https://account-d.docusign.com/oauth/token"
 CLIENT_ID = settings.DOCUSIGN_INTEGRATION_KEY
 CLIENT_SECRET = settings.DOCUSIGN_SECRET_KEY
@@ -23,7 +23,7 @@ def get_oauth_session(token=None):
 
 def docusign_login(request):
     oauth = get_oauth_session()
-    authorization_url, state = oauth.authorization_url(DOCUSIGN_AUTHORIZATION_URL)
+    authorization_url = oauth.authorization_url(DOCUSIGN_AUTHORIZATION_URL)[0]
     return redirect(authorization_url)
 
 def docusign_callback(request):

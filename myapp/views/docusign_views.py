@@ -1,12 +1,10 @@
+import urllib.request
+import urllib.parse
+from urllib.error import URLError, HTTPError
+import logging
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import base64
-import logging
-import time
-from urllib.parse import urlparse, parse_qs
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
 import requests
 from django.conf import settings
 
@@ -22,31 +20,15 @@ def get_oauth_token(request):
             f"&client_id={settings.DOCUSIGN_INTEGRATION_KEY}"
             f"&redirect_uri={settings.DOCUSIGN_REDIRECT_URI}"
         )
-        
-        # Set up headless browser using Selenium
-        options = webdriver.ChromeOptions()
-        options.add_argument("--headless")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
 
-        # Navigate to the authorization URL
-        driver.get(auth_url)
-        
-        # Wait for the redirection (adjust the time if needed)
-        time.sleep(10)
-        
-        # Get the current URL after redirection
-        current_url = driver.current_url
-        logger.debug(f"Redirected URL: {current_url}")
+        # Fetch the redirect URL using urllib
+        with urllib.request.urlopen(auth_url) as response:
+            redirected_url = response.geturl()  # Fetches the final URL after redirection
+            logger.debug(f"Redirected URL: {redirected_url}")
 
         # Parse the authorization code from the URL
-        parsed_url = urlparse(current_url)
-        authorization_code = parse_qs(parsed_url.query).get('code')[0]
-        
-        # Clean up the browser session
-        driver.quit()
-        
+        parsed_url = urllib.parse.urlparse(redirected_url)
+        authorization_code = urllib.parse.parse_qs(parsed_url.query).get('code')[0]
         logger.debug(f"Authorization code: {authorization_code}")
 
         # Step 2: Exchange the authorization code for an access token
@@ -60,7 +42,7 @@ def get_oauth_token(request):
             "grant_type": "authorization_code",
             "code": authorization_code
         }
-        
+
         token_response = requests.post(token_url, headers=headers, data=data)
         token_data = token_response.json()
         access_token = token_data.get('access_token')
@@ -69,11 +51,16 @@ def get_oauth_token(request):
             return JsonResponse({'access_token': access_token})
         else:
             return JsonResponse({'error': 'Failed to retrieve access token', 'details': token_data}, status=400)
-    
+
+    except HTTPError as e:
+        logger.error(f"HTTP error: {e.code} - {e.reason}")
+        return JsonResponse({'error': f"HTTP error: {e.code} - {e.reason}"}, status=500)
+    except URLError as e:
+        logger.error(f"URL error: {e.reason}")
+        return JsonResponse({'error': f"URL error: {e.reason}"}, status=500)
     except Exception as e:
         logger.error(f"Error in get_oauth_token: {e}")
         return JsonResponse({'error': str(e)}, status=500)
-
 
 
 
@@ -90,31 +77,25 @@ def get_authorization_code(request):
             "&state=pY8wl6h04PardhgXHAQdmz746VHwzc"
         )
 
-        # Set up Selenium WebDriver with Chrome in headless mode
-        options = webdriver.ChromeOptions()
-        options.add_argument("--headless")
-        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+        # Fetch the redirect URL using urllib
+        with urllib.request.urlopen(auth_url) as response:
+            redirected_url = response.geturl()  # Fetches the final URL after redirection
+            logger.debug(f"Redirected URL: {redirected_url}")
 
-        # Open the authorization URL
-        driver.get(auth_url)
-        
-        # Wait for the redirection to complete (adjust the time as needed)
-        time.sleep(10)
-        
-        # Get the current URL after redirection
-        redirected_url = driver.current_url
-        logger.debug(f"Redirected URL: {redirected_url}")
-
-        # Extract the authorization code from the URL
-        parsed_url = urlparse(redirected_url)
-        authorization_code = parse_qs(parsed_url.query).get('code')[0]
-
-        # Clean up by closing the browser
-        driver.quit()
-
+        # Parse the authorization code from the URL
+        parsed_url = urllib.parse.urlparse(redirected_url)
+        authorization_code = urllib.parse.parse_qs(parsed_url.query).get('code')[0]
         logger.debug(f"Authorization Code: {authorization_code}")
+
+        # Return the authorization code in the response
         return JsonResponse({'authorization_code': authorization_code})
-    
+
+    except HTTPError as e:
+        logger.error(f"HTTP error: {e.code} - {e.reason}")
+        return JsonResponse({'error': f"HTTP error: {e.code} - {e.reason}"}, status=500)
+    except URLError as e:
+        logger.error(f"URL error: {e.reason}")
+        return JsonResponse({'error': f"URL error: {e.reason}"}, status=500)
     except Exception as e:
         logger.error(f"Error in get_authorization_code: {e}")
         return JsonResponse({'error': str(e)}, status=500)

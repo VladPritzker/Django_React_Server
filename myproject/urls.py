@@ -7,7 +7,7 @@ from myapp.views import (
     user_views, income_views, meeting_views, financial_views,
     investing_views, note_views, expense_views, contact_views,
     sleep_logs, home_views, stock_data, customCashFlowInvestment_views,
-    stock_data_pdf, docusign_views, convert_html_to_pdf_and_send
+    stock_data_pdf, docusign_views
 )
 
 urlpatterns = [
@@ -45,7 +45,7 @@ urlpatterns = [
      # DocuSign Endpoints
     path('docusign/login/', docusign_views.docusign_login, name='docusign_login'),
     path('docusign/oauth/callback/', docusign_views.docusign_callback, name='docusign_callback'),
-    path('docusign/send/', convert_html_to_pdf_and_send.convert_html_to_pdf_and_send, name='convert_html_to_pdf_and_send'),
+    path('docusign/send/', docusign_views.send_envelope, name='send_envelope'),
 
 
     # Password reset URLs

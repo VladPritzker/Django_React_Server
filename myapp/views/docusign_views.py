@@ -1,113 +1,67 @@
 import base64
 import logging
-from django.shortcuts import redirect
-from django.conf import settings
-from django.http import JsonResponse
-from requests_oauthlib import OAuth2Session
+import time
+from urllib.parse import urlparse, parse_qs
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 import requests
-from urllib.parse import urlencode
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-DOCUSIGN_AUTHORIZATION_URL = "https://account-d.docusign.com/oauth/auth"
-DOCUSIGN_TOKEN_URL = "https://account-d.docusign.com/oauth/token"
-CLIENT_ID = settings.DOCUSIGN_INTEGRATION_KEY
-CLIENT_SECRET = settings.DOCUSIGN_SECRET_KEY
-REDIRECT_URI = settings.DOCUSIGN_REDIRECT_URI
-SCOPE = ["signature"]
-
-def docusign_login(request):
-    oauth = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI, scope=SCOPE)
-    authorization_url, state = oauth.authorization_url(DOCUSIGN_AUTHORIZATION_URL)
-    request.session['oauth_state'] = state
-    return redirect(authorization_url)
-
-def docusign_callback(request):
-    code = request.GET.get('code')
-    if not code:
-        return JsonResponse({"error": "Authorization code not found in redirect URL"}, status=400)
+@csrf_exempt
+def get_oauth_token():
+    # Step 1: Request authorization code
+    auth_url = (
+        f"https://account-d.docusign.com/oauth/auth?response_type=code"
+        f"&scope=signature"
+        f"&client_id={settings.DOCUSIGN_INTEGRATION_KEY}"
+        f"&redirect_uri={settings.DOCUSIGN_REDIRECT_URI}"
+    )
     
-    basic_auth = base64.b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
-    
-    token_request_payload = {
-        "grant_type": "authorization_code",
-        "code": code,
-        "redirect_uri": REDIRECT_URI
-    }
+    # Set up headless browser using Selenium
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")  # Run in headless mode
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
+    # Navigate to the authorization URL
+    driver.get(auth_url)
+    
+    # Wait for the redirection (you might need to handle login here if required)
+    time.sleep(10)  # Adjust the sleep time based on the actual redirection time
+    
+    # Get the current URL after redirection
+    current_url = driver.current_url
+    logger.debug(f"Redirected URL: {current_url}")
+
+    # Parse the authorization code from the URL
+    parsed_url = urlparse(current_url)
+    authorization_code = parse_qs(parsed_url.query).get('code')[0]
+    
+    # Clean up the browser session
+    driver.quit()
+    
+    logger.debug(f"Authorization code: {authorization_code}")
+
+    # Step 2: Exchange the authorization code for an access token
+    token_url = "https://account-d.docusign.com/oauth/token"
+    base64_credentials = base64.b64encode(f"{settings.DOCUSIGN_INTEGRATION_KEY}:{settings.DOCUSIGN_SECRET_KEY}".encode('utf-8')).decode('utf-8')
     headers = {
-        "Authorization": f"Basic {basic_auth}",
+        "Authorization": f"Basic {base64_credentials}",
         "Content-Type": "application/x-www-form-urlencoded"
     }
-
-    response = requests.post(DOCUSIGN_TOKEN_URL, data=token_request_payload, headers=headers)
-
-    if response.status_code != 200:
-        return JsonResponse({"error": "Failed to obtain access token", "details": response.json()}, status=response.status_code)
+    data = {
+        "grant_type": "authorization_code",
+        "code": authorization_code
+    }
     
-    token_data = response.json()
-    request.session['oauth_token'] = token_data
+    token_response = requests.post(token_url, headers=headers, data=data)
+    token_data = token_response.json()
+    access_token = token_data['access_token']
+    
+    return access_token
 
-    return JsonResponse(token_data)
-
-def send_envelope(request):
-    token = request.session.get('oauth_token', {}).get('access_token')
-    if not token:
-        return redirect('docusign_login')  # Redirect to login if no token is found
-
-    api_client = ApiClient()
-    api_client.host = settings.DOCUSIGN_ACCOUNT_BASE_URI + "/restapi"
-    api_client.set_default_header("Authorization", "Bearer " + token)
-
-    envelopes_api = EnvelopesApi(api_client)
-
-    # Your HTML content to convert to PDF
-    html_content = """..."""
-
-    pdf_file_path = 'document.pdf'
-    HTML(string=html_content).write_pdf(pdf_file_path)
-
-    with open(pdf_file_path, "rb") as pdf_file:
-        pdf_bytes = pdf_file.read()
-
-    document_base64 = base64.b64encode(pdf_bytes).decode('utf-8')
-
-    document = Document(
-        document_base64=document_base64,
-        name='Sample Document',
-        file_extension='pdf',
-        document_id='1'
-    )
-
-    signer = Signer(
-        email='recipient@example.com',
-        name='Recipient Name',
-        recipient_id='1',
-        routing_order='1'
-    )
-
-    sign_here = SignHere(
-        document_id='1',
-        page_number='1',
-        recipient_id='1',
-        tab_label='SignHereTab',
-        x_position='100',
-        y_position='100'
-    )
-
-    signer.tabs = {"sign_here_tabs": [sign_here]}
-    recipients = Recipients(signers=[signer])
-    envelope_definition = EnvelopeDefinition(
-        email_subject="Please sign this document",
-        documents=[document],
-        recipients=recipients,
-        status="sent"
-    )
-
-    result = envelopes_api.create_envelope(settings.DOCUSIGN_API_ACCOUNT_ID, envelope_definition=envelope_definition)
-    return JsonResponse({"envelope_id": result.envelope_id})
-
-# URL patterns:
-# path('docusign/login/', docusign_login, name='docusign_login'),
-# path('docusign/oauth/callback/', docusign_callback, name='docusign_callback'),
-# path('docusign/send/', send_envelope, name='send_envelope'),
+# The rest of your function remains the same

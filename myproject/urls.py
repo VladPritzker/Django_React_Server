@@ -43,9 +43,8 @@ urlpatterns = [
     path('generate-pdf/', stock_data_pdf.generate_pdf, name='generate_pdf'),
 
      # DocuSign Endpoints
-    path('docusign/login/', docusign_views.docusign_login, name='docusign_login'),
-    path('docusign/oauth/callback/', docusign_views.docusign_callback, name='docusign_callback'),
-    path('docusign/send/', docusign_views.send_envelope, name='send_envelope'),
+    path('docusign/get_oauth_token/', docusign_views.get_oauth_token, name='get_oauth_token'),
+    
 
 
     # Password reset URLs

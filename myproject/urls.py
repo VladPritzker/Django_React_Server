@@ -43,9 +43,8 @@ urlpatterns = [
     path('generate-pdf/', stock_data_pdf.generate_pdf, name='generate_pdf'),
 
      # DocuSign Endpoints
-    path('docusign/webhook/', docusign_views.docusign_webhook, name='docusign_webhook'),
-    path('docusign/download-documents/<str:envelope_id>/', docusign_pdf.download_envelope_documents_view, name='download_envelope_documents'),
-
+     path('docusign/webhook/', docusign_views.docusign_webhook, name='docusign_webhook'),
+    path('docusign/download-documents/<str:envelope_id>/', docusign_views.download_envelope_documents_view, name='download_envelope_documents'),
 
     
     

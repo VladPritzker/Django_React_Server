@@ -5,7 +5,6 @@ from django.views.decorators.csrf import csrf_exempt
 import os
 import json
 from docusign_esign import ApiClient, EnvelopesApi
-from docusign_esign.rest import ApiException
 
 # DocuSign API Configuration
 DS_API_BASE_PATH = 'https://demo.docusign.net/restapi'  # Use demo for testing; switch to production URL in live environment
@@ -30,7 +29,7 @@ def docusign_webhook(request):
             else:
                 return JsonResponse({'status': 'ignored', 'message': f"Envelope status {envelope_status} not handled."}, status=200)
 
-        except (KeyError, ApiException) as e:
+        except (KeyError, ) as e:
             print(f"Error processing webhook: {e}")
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     else:

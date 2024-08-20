@@ -44,7 +44,7 @@ urlpatterns = [
 
      # DocuSign Endpoints
      path('docusign/webhook/', docusign_views.docusign_webhook, name='docusign_webhook'),
-    path('docusign/download-documents/<str:envelope_id>/', docusign_views.download_envelope_documents_view, name='download_envelope_documents'),
+     path('docusign/download-documents/<str:envelope_id>/', docusign_views.download_envelope_documents, name='download_envelope_documents'),
 
     
     

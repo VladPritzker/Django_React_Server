@@ -3,7 +3,6 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import os
-import json
 from docusign_esign import ApiClient, EnvelopesApi
 from docusign_esign.rest import ApiException
 
@@ -13,25 +12,13 @@ ACCESS_TOKEN = 'eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00
 ACCOUNT_ID = '29035884'  # Replace with your DocuSign account ID
 
 @csrf_exempt
-def docusign_webhook(request):
+def download_envelope_documents_view(request, envelope_id):
     if request.method == 'POST':
         try:
-            # Process the incoming JSON payload
-            envelope_data = json.loads(request.body.decode('utf-8'))
-            
-            # Check the event type and handle accordingly
-            envelope_status = envelope_data.get('status')
-            envelope_id = envelope_data.get('envelopeId')
-
-            if envelope_status == 'sent':
-                # If the envelope is sent, download the documents
-                download_envelope_documents(envelope_id)
-                return JsonResponse({'status': 'success', 'message': f"Documents for envelope {envelope_id} downloaded successfully."}, status=200)
-            else:
-                return JsonResponse({'status': 'ignored', 'message': f"Envelope status {envelope_status} not handled."}, status=200)
-
-        except (KeyError, ApiException) as e:
-            print(f"Error processing webhook: {e}")
+            download_envelope_documents(envelope_id)
+            return JsonResponse({'status': 'success', 'message': f"Documents for envelope {envelope_id} downloaded successfully."}, status=200)
+        except ApiException as e:
+            print(f"Error downloading documents: {e}")
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)

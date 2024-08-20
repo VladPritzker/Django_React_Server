@@ -43,8 +43,8 @@ urlpatterns = [
     path('generate-pdf/', stock_data_pdf.generate_pdf, name='generate_pdf'),
 
      # DocuSign Endpoints
-    path('docusign/get_oauth_token/', docusign_views.get_oauth_token, name='get_oauth_token'),
-    path('docusign/get_code/', docusign_views.get_authorization_code, name='get_authorization_code'),
+    # path('docusign/get_oauth_token/', docusign_views.get_oauth_token, name='get_oauth_token'),
+    # path('docusign/get_code/', docusign_views.get_authorization_code, name='get_authorization_code'),
     
 
 

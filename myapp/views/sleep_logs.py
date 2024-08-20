@@ -67,6 +67,7 @@ class SleepLogsView(View):
             sleep_log = SleepLog.objects.get(id=id, user=user)
         except (User.DoesNotExist, SleepLog.DoesNotExist):
             return JsonResponse({"error": "User or SleepLog not found"}, status=404)
-
+    
         sleep_log.delete()
-        return JsonResponse({"message": "SleepLog deleted successfully"}, status=204)
+        return JsonResponse({"message": "SleepLog deleted successfully"}, status=200)
+

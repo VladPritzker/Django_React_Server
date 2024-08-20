@@ -50,7 +50,7 @@ class MeetingDetailView(View):
     def delete(self, request, user_id, pk):
         meeting = get_object_or_404(Meeting, user_id=user_id, pk=pk)
         meeting.delete()
-        return JsonResponse({'message': 'Meeting deleted successfully'}, status=204)
+        return JsonResponse({'message': 'Meeting deleted successfully'}, status=200)
 
 
 @csrf_exempt

@@ -114,7 +114,7 @@ def delete_financial_record(request, user_id, record_id):
 
             update_spending_by_periods(user)
 
-            return JsonResponse({'message': 'Record deleted successfully'}, status=204)
+            return JsonResponse({'message': 'Record deleted successfully'}, status=200)
         except User.DoesNotExist:
             return JsonResponse({'error': 'User not found'}, status=404)
         except FinancialRecord.DoesNotExist:

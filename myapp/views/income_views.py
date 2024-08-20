@@ -73,7 +73,7 @@ def income_record_detail_view(request, user_id, record_id):
 
             update_income_by_periods(user)
 
-            return JsonResponse({'message': 'Income record deleted successfully'}, status=204)
+            return JsonResponse({'message': 'Income record deleted successfully'}, status=200)
         except IncomeRecord.DoesNotExist:
             return JsonResponse({'error': 'Income record not found'}, status=404)
 

@@ -58,7 +58,7 @@ def monthly_expenses(request, user_id=None, expense_id=None):
         try:
             expense = MonthlyExpense.objects.get(pk=expense_id)
             expense.delete()
-            return JsonResponse({'message': 'Expense deleted successfully'}, status=204)
+            return JsonResponse({'message': 'Expense deleted successfully'}, status=200)
         except MonthlyExpense.DoesNotExist:
             return JsonResponse({'error': 'Expense not found'}, status=404)
         except Exception as e:
@@ -98,7 +98,7 @@ def expense_detail(request, user_id, expense_id):
         try:
             expense = MonthlyExpense.objects.get(user=user, id=expense_id)
             expense.delete()
-            return JsonResponse({'message': 'Expense deleted successfully'}, status=204)
+            return JsonResponse({'message': 'Expense deleted successfully'}, status=200)
         except MonthlyExpense.DoesNotExist:
             return JsonResponse({'error': 'Expense not found'}, status=404)
 

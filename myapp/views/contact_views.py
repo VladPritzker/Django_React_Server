@@ -89,4 +89,4 @@ class ContactDetailView(View):
     def delete(self, request, user_id, pk):
         contact = get_object_or_404(Contact, user_id=user_id, pk=pk)
         contact.delete()
-        return JsonResponse({'message': 'Contact deleted successfully'}, status=204)
+        return JsonResponse({'message': 'Contact deleted successfully'}, status=200)

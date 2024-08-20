@@ -110,6 +110,6 @@ def investing_record_detail_view(request, user_id, record_id):
         try:
             record = get_object_or_404(InvestingRecord, id=record_id, user_id=user_id)
             record.delete()
-            return JsonResponse({'message': 'Record deleted successfully'}, status=204)
+            return JsonResponse({'message': 'Record deleted successfully'}, status=200)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)

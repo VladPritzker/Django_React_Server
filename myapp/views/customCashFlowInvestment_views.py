@@ -101,7 +101,7 @@ def custom_cash_flow_investment_detail(request, user_id, record_id):
     elif request.method == 'DELETE':
         try:
             record.delete()
-            return JsonResponse({'message': 'Record deleted successfully'}, status=204)
+            return JsonResponse({'message': 'Record deleted successfully'}, status=200)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 

@@ -258,7 +258,7 @@ def users_data(request, user_id=None):
         try:
             user = User.objects.get(pk=user_id)
             user.delete()
-            return JsonResponse({'message': 'User deleted successfully'}, status=204)
+            return JsonResponse({'message': 'User deleted successfully'}, status=200)
         except User.DoesNotExist:
             return JsonResponse({'error': 'User not found'}, status=404)
         except Exception as e:

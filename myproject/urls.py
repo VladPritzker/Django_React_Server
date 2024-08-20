@@ -7,7 +7,7 @@ from myapp.views import (
     user_views, income_views, meeting_views, financial_views,
     investing_views, note_views, expense_views, contact_views,
     sleep_logs, home_views, stock_data, customCashFlowInvestment_views,
-    stock_data_pdf, docusign_views, docusign_pdf
+    stock_data_pdf, docusign_views
 )
 
 urlpatterns = [
@@ -43,8 +43,9 @@ urlpatterns = [
     path('generate-pdf/', stock_data_pdf.generate_pdf, name='generate_pdf'),
 
      # DocuSign Endpoints
-     path('docusign/webhook/', docusign_views.docusign_webhook, name='docusign_webhook'),
-     path('docusign/download-documents/<str:envelope_id>/', docusign_views.download_envelope_documents, name='download_envelope_documents'),
+    path('docusign/webhook/', docusign_views.docusign_webhook, name='docusign_webhook'),
+
+     
 
     
     

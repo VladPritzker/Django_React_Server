@@ -44,6 +44,8 @@ def docusign_webhook(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
+import os
+
 
 def download_pdf(envelope_id):
     """Download the combined PDF document for the given envelope ID."""
@@ -55,9 +57,9 @@ def download_pdf(envelope_id):
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
-            # Save the PDF to the filesystem
-            base_dir = os.path.dirname(os.path.abspath(__file__))  # Directory of this script
-            download_dir = os.path.join(base_dir, '../../downloads')  # Adjust as needed
+            # Calculate the correct path relative to the current file
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            download_dir = os.path.join(base_dir, 'downloads')
             file_path = os.path.join(download_dir, f"envelope_{envelope_id}_combined.pdf")
 
             # Ensure the 'downloads' directory exists

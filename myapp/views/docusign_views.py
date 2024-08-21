@@ -50,6 +50,22 @@ def docusign_webhook(request):
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
+@csrf_exempt
+def download_envelope_pdf(request):
+    if request.method == 'GET':
+        envelope_id = request.GET.get('envelope_id')
+        if envelope_id:
+            response = download_pdf(envelope_id)
+            if response:
+                return response
+            else:
+                return HttpResponse('Failed to download PDF', status=500)
+        else:
+            return HttpResponse('Envelope ID is required', status=400)
+
+    return HttpResponse('Invalid request method', status=405)
+
+
 def download_pdf(envelope_id):
     """Download the combined PDF document for the given envelope ID."""
     try:
@@ -67,11 +83,7 @@ def download_pdf(envelope_id):
             return http_response
 
         else:
-            logger.error(f"Failed to download document: {response.text}")
-            print(f"Failed to download document: {response.text}")  # Console log
             return None
 
     except Exception as e:
-        logger.error(f"Error downloading the document: {str(e)}")
-        print(f"Error downloading the document: {str(e)}")  # Console log
         return None

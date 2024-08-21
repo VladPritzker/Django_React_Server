@@ -43,7 +43,7 @@ def docusign_webhook(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
-
+csrf_exempt
 def download_pdf_and_serve(envelope_id):
     """Download the combined PDF document for the given envelope ID and serve it."""
     try:

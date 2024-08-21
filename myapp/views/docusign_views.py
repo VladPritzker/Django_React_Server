@@ -57,14 +57,9 @@ def download_pdf(envelope_id):
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
-            # Calculate the correct path relative to the current file
-            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            download_dir = os.path.join(base_dir, 'downloads')
+            download_dir = os.path.expanduser('~/Downloads')
             file_path = os.path.join(download_dir, f"envelope_{envelope_id}_combined.pdf")
 
-            # Ensure the 'downloads' directory exists
-            if not os.path.exists(download_dir):
-                os.makedirs(download_dir)
 
             with open(file_path, 'wb') as f:
                 f.write(response.content)

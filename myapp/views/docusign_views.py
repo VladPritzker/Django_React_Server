@@ -30,8 +30,13 @@ def docusign_webhook(request):
                 logger.debug(f"Extracted Envelope ID: {envelope_id}")
                 print(f"Extracted Envelope ID: {envelope_id}")  # Console log
 
-                # Download and return the combined PDF document
-                return download_pdf_and_serve(envelope_id)
+                # Download the combined PDF document
+                response = download_pdf(envelope_id)
+
+                if response:
+                    return response  # Return the PDF as an HTTP response
+                else:
+                    return JsonResponse({'status': 'error', 'message': 'Failed to download PDF'}, status=500)
 
             else:
                 logger.error("Envelope ID not found in the request data.")
@@ -44,9 +49,9 @@ def docusign_webhook(request):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-@csrf_exempt
-def download_pdf_and_serve(envelope_id):
-    """Download the combined PDF document for the given envelope ID and serve it."""
+
+def download_pdf(envelope_id):
+    """Download the combined PDF document for the given envelope ID."""
     try:
         url = f'{DS_API_BASE_PATH}/accounts/{ACCOUNT_ID}/envelopes/{envelope_id}/documents/combined'
         headers = {
@@ -55,14 +60,18 @@ def download_pdf_and_serve(envelope_id):
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
-            # Serve the file directly as a download
-            response = HttpResponse(response.content, content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="envelope_{envelope_id}_combined.pdf"'
-            return response
+            # Serve the PDF as a file download
+            file_name = f"envelope_{envelope_id}_combined.pdf"
+            http_response = HttpResponse(response.content, content_type='application/pdf')
+            http_response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+            return http_response
+
         else:
             logger.error(f"Failed to download document: {response.text}")
-            return JsonResponse({'status': 'error', 'message': 'Failed to download document'}, status=400)
+            print(f"Failed to download document: {response.text}")  # Console log
+            return None
 
     except Exception as e:
         logger.error(f"Error downloading the document: {str(e)}")
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        print(f"Error downloading the document: {str(e)}")  # Console log
+        return None

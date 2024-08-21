@@ -12,7 +12,7 @@ DS_API_BASE_PATH = 'https://demo.docusign.net/restapi/v2.1'
 ACCESS_TOKEN = 'eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAUABwAAMWQV78HcSAgAAHGHIzLC3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMACA1fbr7cHcSDcAjwPrez9MtESeuaWmpmPIgA.p9N7l-gBOkdYNgMpYm2QreMNI5RGYy9dEu6SK22RBhjsEipHWLxub5t2TO6hwAbQ3nEjABFVbKrz7CO8KygrtqMn-T8sCgNoEQvUugFWKhbxLRi90BcSv8beGf8r32RIVs_fEnqvooB7xLD3ipPkV-sqktkceiK5Vf-Q-Lj2fq5jbUjSS9hzmXDFbeLnRgZ7mcgKX8wevq5Xo9rmnBOdqm4Ty84bixuy9JTdbQZphxcHxViKaBYWpRAMOsZRoVB-me1-GFK-ewDHmL7egCMwqRsjCBqGtraxek0kdCiHIX-k7BFYLgr7pyLBnkEFdYMrpahlnugLKx842bO97lQ68A'  # Replace with your actual token
 ACCOUNT_ID = '29035884'
 
-csrf_exempt
+@csrf_exempt
 def docusign_webhook(request):
     if request.method == 'POST':
         try:
@@ -43,7 +43,8 @@ def docusign_webhook(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
-csrf_exempt
+
+@csrf_exempt
 def download_pdf_and_serve(envelope_id):
     """Download the combined PDF document for the given envelope ID and serve it."""
     try:

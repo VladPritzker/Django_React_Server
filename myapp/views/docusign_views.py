@@ -56,7 +56,9 @@ def download_pdf(envelope_id):
 
         if response.status_code == 200:
             # Save the PDF to the filesystem
-            file_path = os.path.join('downloads', f"envelope_{envelope_id}_combined.pdf")
+            base_dir = os.path.dirname(os.path.abspath(__file__))  # Directory of this script
+            download_dir = os.path.join(base_dir, '../../downloads')  # Adjust as needed
+            file_path = os.path.join(download_dir, f"envelope_{envelope_id}_combined.pdf")
 
             # Ensure the 'downloads' directory exists
             if not os.path.exists('downloads'):

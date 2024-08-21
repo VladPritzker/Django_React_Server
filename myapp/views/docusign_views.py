@@ -1,6 +1,6 @@
 import json
 import requests
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import logging
 import os
@@ -12,7 +12,7 @@ DS_API_BASE_PATH = 'https://demo.docusign.net/restapi/v2.1'
 ACCESS_TOKEN = 'eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAUABwAAMWQV78HcSAgAAHGHIzLC3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMACA1fbr7cHcSDcAjwPrez9MtESeuaWmpmPIgA.p9N7l-gBOkdYNgMpYm2QreMNI5RGYy9dEu6SK22RBhjsEipHWLxub5t2TO6hwAbQ3nEjABFVbKrz7CO8KygrtqMn-T8sCgNoEQvUugFWKhbxLRi90BcSv8beGf8r32RIVs_fEnqvooB7xLD3ipPkV-sqktkceiK5Vf-Q-Lj2fq5jbUjSS9hzmXDFbeLnRgZ7mcgKX8wevq5Xo9rmnBOdqm4Ty84bixuy9JTdbQZphxcHxViKaBYWpRAMOsZRoVB-me1-GFK-ewDHmL7egCMwqRsjCBqGtraxek0kdCiHIX-k7BFYLgr7pyLBnkEFdYMrpahlnugLKx842bO97lQ68A'  # Replace with your actual token
 ACCOUNT_ID = '29035884'
 
-@csrf_exempt
+csrf_exempt
 def docusign_webhook(request):
     if request.method == 'POST':
         try:
@@ -30,10 +30,9 @@ def docusign_webhook(request):
                 logger.debug(f"Extracted Envelope ID: {envelope_id}")
                 print(f"Extracted Envelope ID: {envelope_id}")  # Console log
 
-                # Download the combined PDF document
-                download_pdf(envelope_id)
+                # Download and return the combined PDF document
+                return download_pdf_and_serve(envelope_id)
 
-                return JsonResponse({'status': 'success', 'envelopeId': envelope_id}, status=200)
             else:
                 logger.error("Envelope ID not found in the request data.")
                 return JsonResponse({'status': 'error', 'message': 'Envelope ID not found'}, status=400)
@@ -44,11 +43,9 @@ def docusign_webhook(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
-import os
 
-
-def download_pdf(envelope_id):
-    """Download the combined PDF document for the given envelope ID."""
+def download_pdf_and_serve(envelope_id):
+    """Download the combined PDF document for the given envelope ID and serve it."""
     try:
         url = f'{DS_API_BASE_PATH}/accounts/{ACCOUNT_ID}/envelopes/{envelope_id}/documents/combined'
         headers = {
@@ -57,18 +54,14 @@ def download_pdf(envelope_id):
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
-            download_dir = os.path.expanduser('~/Downloads')
-            file_path = os.path.join(download_dir, f"envelope_{envelope_id}_combined.pdf")
-
-
-            with open(file_path, 'wb') as f:
-                f.write(response.content)
-                logger.debug(f"Downloaded combined document to {file_path}")
-                print(f"Downloaded combined document to {file_path}")  # Console log
+            # Serve the file directly as a download
+            response = HttpResponse(response.content, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="envelope_{envelope_id}_combined.pdf"'
+            return response
         else:
             logger.error(f"Failed to download document: {response.text}")
-            print(f"Failed to download document: {response.text}")  # Console log
+            return JsonResponse({'status': 'error', 'message': 'Failed to download document'}, status=400)
 
     except Exception as e:
         logger.error(f"Error downloading the document: {str(e)}")
-        print(f"Error downloading the document: {str(e)}")  # Console log
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

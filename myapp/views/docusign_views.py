@@ -19,8 +19,6 @@ def docusign_webhook(request):
             # Retrieve and log the raw POST data
             raw_data = request.body.decode('utf-8')
             logger.debug(f"Received raw POST request: {raw_data}")
-            logger.debug(f"Parsed JSON data: {json.dumps(envelope_data, indent=2)}")
-
 
             # Parse the JSON data
             envelope_data = json.loads(raw_data)
@@ -51,23 +49,6 @@ def docusign_webhook(request):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-
-@csrf_exempt
-def download_envelope_pdf(request):
-    if request.method == 'GET':
-        envelope_id = request.GET.get('envelope_id')
-        if envelope_id:
-            response = download_pdf(envelope_id)
-            if response:
-                return response
-            else:
-                return HttpResponse('Failed to download PDF', status=500)
-        else:
-            return HttpResponse('Envelope ID is required', status=400)
-
-    return HttpResponse('Invalid request method', status=405)
-
-
 def download_pdf(envelope_id):
     """Download the combined PDF document for the given envelope ID."""
     try:
@@ -85,6 +66,25 @@ def download_pdf(envelope_id):
             return http_response
 
         else:
+            logger.error(f"Failed to download PDF, status code: {response.status_code}")
             return None
     except Exception as e:
-        return None 
+        logger.error(f"Exception occurred during PDF download: {str(e)}")
+        return None
+
+    
+
+@csrf_exempt
+def download_envelope_pdf(request):
+    if request.method == 'GET':
+        envelope_id = request.GET.get('envelope_id')
+        if envelope_id:
+            response = download_pdf(envelope_id)
+            if response:
+                return response
+            else:
+                return HttpResponse('Failed to download PDF', status=500)
+        else:
+            return HttpResponse('Envelope ID is required', status=400)
+
+    return HttpResponse('Invalid request method', status=405)    

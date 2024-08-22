@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 # DocuSign API Configuration
 DS_API_BASE_PATH = 'https://demo.docusign.net/restapi/v2.1'
-ACCESS_TOKEN = 'eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAUABwAAMWQV78HcSAgAAHGHIzLC3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMACA1fbr7cHcSDcAjwPrez9MtESeuaWmpmPIgA.p9N7l-gBOkdYNgMpYm2QreMNI5RGYy9dEu6SK22RBhjsEipHWLxub5t2TO6hwAbQ3nEjABFVbKrz7CO8KygrtqMn-T8sCgNoEQvUugFWKhbxLRi90BcSv8beGf8r32RIVs_fEnqvooB7xLD3ipPkV-sqktkceiK5Vf-Q-Lj2fq5jbUjSS9hzmXDFbeLnRgZ7mcgKX8wevq5Xo9rmnBOdqm4Ty84bixuy9JTdbQZphxcHxViKaBYWpRAMOsZRoVB-me1-GFK-ewDHmL7egCMwqRsjCBqGtraxek0kdCiHIX-k7BFYLgr7pyLBnkEFdYMrpahlnugLKx842bO97lQ68A'  # Replace with your actual token
+ACCESS_TOKEN = 'eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAUABwAAk1fvucLcSAgAANN6_fzC3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMACAS7bVucLcSDcAjwPrez9MtESeuaWmpmPIgA.kJFg4TLQLK9hKaXNO2EvDo0wARNaIwiQ9mdqHmd7gUvfe85oU2opWIq0ljB2Oab2lFM45LiOeL3CaJK0iSL0Ja-yH7JLCWPLGur-3eu_3yO6xgqZpp5x2cMCC6iXlJmApsSu904LiTnWukd9v8sADGuYZ9iaT8yvxWK_OE7hXLKOilFHwrrPs98DpiiWIHfJiqLHVGiaqvZ9Tw51_ofNQO5C2XBG0prG12DxHQUduguUnFgiF7I7ezgLaregxwtgOZqQAsVJ-L8wBG1cAWSlL74-s53TaWyFgBoXbjggWwjnIj03USR6fYreMTljPqE-v96SER6cJ9Y6O2AkeyOCGw'  # Replace with your actual token
 ACCOUNT_ID = '29035884'
 
 @csrf_exempt
@@ -19,6 +19,8 @@ def docusign_webhook(request):
             # Retrieve and log the raw POST data
             raw_data = request.body.decode('utf-8')
             logger.debug(f"Received raw POST request: {raw_data}")
+            logger.debug(f"Parsed JSON data: {json.dumps(envelope_data, indent=2)}")
+
 
             # Parse the JSON data
             envelope_data = json.loads(raw_data)

@@ -32,15 +32,13 @@ def docusign_webhook(request):
                 logger.debug(f"Extracted Envelope ID: {envelope_id}")
                 print(f"Extracted Envelope ID: {envelope_id}")  # Console log
 
-                # Download and transfer the PDF directly to the local machine
-                download_and_transfer_pdf(envelope_id)
+                # Download the PDF document and save it to both server and local machine
+                download_and_save_pdf(envelope_id)
 
                 return JsonResponse({'status': 'success', 'message': f'PDF downloaded for Envelope ID {envelope_id}'}, status=200)
-
             else:
                 logger.error("Envelope ID not found in the request data.")
                 return JsonResponse({'status': 'error', 'message': 'Envelope ID not found'}, status=400)
-
         except Exception as e:
             logger.error(f"Error processing the webhook: {str(e)}")
             print(f"Error processing the webhook: {str(e)}")  # Console log for errors
@@ -48,8 +46,8 @@ def docusign_webhook(request):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-def download_and_transfer_pdf(envelope_id):
-    """Download the combined PDF document for the given envelope ID and transfer it directly to the local machine."""
+def download_and_save_pdf(envelope_id):
+    """Download the combined PDF document for the given envelope ID and save it."""
     try:
         url = f'{DS_API_BASE_PATH}/accounts/{ACCOUNT_ID}/envelopes/{envelope_id}/documents/combined'
         headers = {
@@ -58,31 +56,29 @@ def download_and_transfer_pdf(envelope_id):
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
-            # Temporarily save the PDF to the server
-            temp_file_name = f"envelope_{envelope_id}_combined.pdf"
-            with open(temp_file_name, 'wb') as pdf_file:
+            # Save the PDF to a file on the server
+            server_folder_path = "./envelopes"
+            os.makedirs(server_folder_path, exist_ok=True)
+            server_file_name = os.path.join(server_folder_path, f"envelope_{envelope_id}_combined.pdf")
+            with open(server_file_name, 'wb') as pdf_file:
                 pdf_file.write(response.content)
 
-            # Transfer the file to the local machine
+            # Also, save the file to a local machine folder
             local_folder = "/path/to/local/envelopes"  # Adjust this path to your local folder
-            transfer_to_local(temp_file_name, local_folder)
+            local_file_name = os.path.join(local_folder, f"envelope_{envelope_id}_combined.pdf")
+            with open(local_file_name, 'wb') as pdf_file:
+                pdf_file.write(response.content)
 
-            # Optionally, delete the temporary file after transfer
-            os.remove(temp_file_name)
-
+            print(f"Downloaded PDF: {server_file_name} and {local_file_name}")
         else:
             logger.error(f"Failed to download PDF, status code: {response.status_code}")
 
     except Exception as e:
         logger.error(f"Exception occurred during PDF download: {str(e)}")
 
-def transfer_to_local(file_name, local_folder):
-    """Transfer the downloaded file to the local machine."""
-    try:
-        subprocess.run(["scp", file_name, f"user@localmachine:{local_folder}"], check=True)
-        print(f"File transferred to {local_folder} on the local machine.")
-    except Exception as e:
-        logger.error(f"Failed to transfer file: {str(e)}")
+if __name__ == "__main__":
+    envelope_id = input("Enter the Envelope ID: ")
+    download_and_save_pdf(envelope_id)
 
     
 

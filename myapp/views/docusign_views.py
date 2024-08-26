@@ -4,6 +4,8 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import logging
 import os
+import subprocess  # For running shell commands like scp
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +32,8 @@ def docusign_webhook(request):
                 logger.debug(f"Extracted Envelope ID: {envelope_id}")
                 print(f"Extracted Envelope ID: {envelope_id}")  # Console log
 
-                # Automatically download the PDF document
-                download_pdf(envelope_id)
+                # Download and transfer the PDF directly to the local machine
+                download_and_transfer_pdf(envelope_id)
 
                 return JsonResponse({'status': 'success', 'message': f'PDF downloaded for Envelope ID {envelope_id}'}, status=200)
 
@@ -46,8 +48,8 @@ def docusign_webhook(request):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-def download_pdf(envelope_id):
-    """Download the combined PDF document for the given envelope ID."""
+def download_and_transfer_pdf(envelope_id):
+    """Download the combined PDF document for the given envelope ID and transfer it directly to the local machine."""
     try:
         url = f'{DS_API_BASE_PATH}/accounts/{ACCOUNT_ID}/envelopes/{envelope_id}/documents/combined'
         headers = {
@@ -56,24 +58,32 @@ def download_pdf(envelope_id):
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
-            # Save the PDF to a file
-            folder_path = "envelopes"  # Folder where PDFs will be stored
-            os.makedirs(folder_path, exist_ok=True)
-            file_name = os.path.join(folder_path, f"envelope_{envelope_id}_combined.pdf")
-            with open(file_name, 'wb') as pdf_file:
+            # Temporarily save the PDF to the server
+            temp_file_name = f"envelope_{envelope_id}_combined.pdf"
+            with open(temp_file_name, 'wb') as pdf_file:
                 pdf_file.write(response.content)
-            print(f"Downloaded PDF: {file_name}")
-            return HttpResponse(f"PDF downloaded as {file_name}", content_type='application/pdf')
+
+            # Transfer the file to the local machine
+            local_folder = "/path/to/local/envelopes"  # Adjust this path to your local folder
+            transfer_to_local(temp_file_name, local_folder)
+
+            # Optionally, delete the temporary file after transfer
+            os.remove(temp_file_name)
+
         else:
             logger.error(f"Failed to download PDF, status code: {response.status_code}")
-            return None
+
     except Exception as e:
         logger.error(f"Exception occurred during PDF download: {str(e)}")
-        return None
 
-if __name__ == "__main__":
-    envelope_id = input("Enter the Envelope ID: ")
-    download_pdf(envelope_id)
+def transfer_to_local(file_name, local_folder):
+    """Transfer the downloaded file to the local machine."""
+    try:
+        subprocess.run(["scp", file_name, f"user@localmachine:{local_folder}"], check=True)
+        print(f"File transferred to {local_folder} on the local machine.")
+    except Exception as e:
+        logger.error(f"Failed to transfer file: {str(e)}")
+
     
 
 @csrf_exempt

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 # DocuSign API Configuration
 DS_API_BASE_PATH = 'https://demo.docusign.net/restapi/v2.1'
-ACCESS_TOKEN = 'eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAUABwCANs27wsLcSAgAgHbwyQXD3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMACAp4qIwsLcSDcAjwPrez9MtESeuaWmpmPIgA.zcZSO2rOyKsxMvOg9bnGzgJgeCgX2Ol03_ZGP8HX2iwezxLUhRQTw6NIN2hSDbeHR8RFzWREP3hWYskZ31rtTy55udMuO-SrDI8sH_UEo2coL1B70Q11Oh2ZfKEnpsqLJ7tP6PNTL7D-NdaiZiRl7VIp4jgEnCjEoInxIOfpnPuEeF8QhO08vUvOL6CnwV2fVtFoA9ynFQ_vMm7oM6sYoFfJ_ODIbN2veX5pqhDFYJF4qFG3wNr4Yee0alnwFVpxnpfo-cYlt1ocqa0b9t2bB-aVmTqN8tTX8YUjAfowYKB4sc_farw6SonNxF4HKPxnC6ktzcIWV270VvCbJCn6gQ'  # Replace with your actual token
+ACCESS_TOKEN = 'eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAUABwAAkMlA4sXcSAgAANDsTiXG3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMACAxlo24cXcSDcAjwPrez9MtESeuaWmpmPIgA.1DIN3QdBTwetKh8A4xzBXUwhaqWq3eg7hJ_hm5hshBmATH8SF_iTT__BHOAAb8kq3itMBKKp1IBenzYdaBQRMqnFLpNVZNIjaWt2i3bBTRarZLb-1CvCMS_igfRCUFnulStG9RZq6-RxtpGr7vxA3h2tsJCXgset_bJeQgUjZOY7FTLKLcKCpkQ1D9a6i1mHWJffYXx9TxALx7b7koEMVoh5muK7HUFCayRZqqchsac1hLrYPZvLXXlWZFcIsh-4g61pX9F1dRpsVgRb67iAGK5ka8BNkY4T9aqDyES8qMp4P3vYdmYVPiQVl85HOoq5u5_UcSBBrFkb1HHn3elrVg'  
 ACCOUNT_ID = '29035884'
 
 @csrf_exempt
@@ -59,18 +59,22 @@ def download_pdf(envelope_id):
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
-            # Serve the PDF as a file download
+            # Save the PDF to a file
             file_name = f"envelope_{envelope_id}_combined.pdf"
-            http_response = HttpResponse(response.content, content_type='application/pdf')
-            http_response['Content-Disposition'] = f'attachment; filename="{file_name}"'
-            return http_response
-
+            with open(file_name, 'wb') as pdf_file:
+                pdf_file.write(response.content)
+            print(f"Downloaded PDF: {file_name}")
+            return HttpResponse(f"PDF downloaded as {file_name}", content_type='application/pdf')
         else:
             logger.error(f"Failed to download PDF, status code: {response.status_code}")
             return None
     except Exception as e:
         logger.error(f"Exception occurred during PDF download: {str(e)}")
         return None
+
+if __name__ == "__main__":
+    envelope_id = input("Enter the Envelope ID: ")
+    download_pdf(envelope_id)
 
     
 

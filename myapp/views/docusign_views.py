@@ -30,13 +30,10 @@ def docusign_webhook(request):
                 logger.debug(f"Extracted Envelope ID: {envelope_id}")
                 print(f"Extracted Envelope ID: {envelope_id}")  # Console log
 
-                # Download the combined PDF document
-                response = download_pdf(envelope_id)
+                # Automatically download the PDF document
+                download_pdf(envelope_id)
 
-                if response:
-                    return response  # Return the PDF as an HTTP response
-                else:
-                    return JsonResponse({'status': 'error', 'message': 'Failed to download PDF'}, status=500)
+                return JsonResponse({'status': 'success', 'message': f'PDF downloaded for Envelope ID {envelope_id}'}, status=200)
 
             else:
                 logger.error("Envelope ID not found in the request data.")
@@ -60,7 +57,9 @@ def download_pdf(envelope_id):
 
         if response.status_code == 200:
             # Save the PDF to a file
-            file_name = f"envelope_{envelope_id}_combined.pdf"
+            folder_path = "envelopes"  # Folder where PDFs will be stored
+            os.makedirs(folder_path, exist_ok=True)
+            file_name = os.path.join(folder_path, f"envelope_{envelope_id}_combined.pdf")
             with open(file_name, 'wb') as pdf_file:
                 pdf_file.write(response.content)
             print(f"Downloaded PDF: {file_name}")
@@ -75,7 +74,6 @@ def download_pdf(envelope_id):
 if __name__ == "__main__":
     envelope_id = input("Enter the Envelope ID: ")
     download_pdf(envelope_id)
-
     
 
 @csrf_exempt

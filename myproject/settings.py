@@ -205,3 +205,4 @@ DOCUSIGN_ACCOUNT_BASE_URI = 'https://demo.docusign.net'
 DOCUSIGN_INTEGRATION_KEY = '823e6ed8-bb6c-4768-9389-94ea1d725d67'
 DOCUSIGN_SECRET_KEY = '551c9cfd-47b6-4b86-8cd6-96e339a0baaa'
 DOCUSIGN_REDIRECT_URI = 'https://oyster-app-vhznt.ondigitalocean.app'
+TOKEN=config('TOKEN')

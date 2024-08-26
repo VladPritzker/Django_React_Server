@@ -4,11 +4,14 @@ from pathlib import Path
 from decouple import config
 from dotenv import load_dotenv
 
+
 # Load environment variables from .env file
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -205,4 +208,11 @@ DOCUSIGN_ACCOUNT_BASE_URI = 'https://demo.docusign.net'
 DOCUSIGN_INTEGRATION_KEY = '823e6ed8-bb6c-4768-9389-94ea1d725d67'
 DOCUSIGN_SECRET_KEY = '551c9cfd-47b6-4b86-8cd6-96e339a0baaa'
 DOCUSIGN_REDIRECT_URI = 'https://oyster-app-vhznt.ondigitalocean.app'
-TOKEN=config('TOKEN')
+
+
+## docusign
+DOCUSIGN_CLIENT_ID = config('DOCUSIGN_CLIENT_ID')
+DOCUSIGN_CLIENT_SECRET = config('DOCUSIGN_CLIENT_SECRET')
+DOCUSIGN_REFRESH_TOKEN = config('DOCUSIGN_REFRESH_TOKEN')
+DOCUSIGN_ACCESS_TOKEN = config('DOCUSIGN_ACCESS_TOKEN')
+DOCUSIGN_ACCOUNT_ID = config('DOCUSIGN_ACCOUNT_ID')

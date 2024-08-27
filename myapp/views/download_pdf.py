@@ -5,7 +5,8 @@ from django.conf import settings
 
 def download_pdf(request, envelope_id):
     file_name = f'envelope_{envelope_id}_combined.pdf'
-    file_path = os.path.join(settings.MEDIA_ROOT, 'envelopes', file_name)
+    file_path = os.path.join(settings.BASE_DIR, 'envelopes', file_name)
+
 
     if os.path.exists(file_path):
         response = FileResponse(open(file_path, 'rb'))

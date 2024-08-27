@@ -1,100 +1,53 @@
 import os
-import json
 import requests
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import logging
-import os
+from decouple import config
 
+# Load environment variables
+access_token = config('DOCUSIGN_ACCESS_TOKEN')
+account_id = config('DOCUSIGN_ACCOUNT_ID')
+template_id = "17cc51e1-5433-4576-98bb-7c60bde50bbd"  # You can also put this in .env if needed
+url = f"https://demo.docusign.net/restapi/v2.1/accounts/{account_id}/envelopes"
 
+# Prompt for the number of recipients
+num_recipients = int(input("Enter the number of recipients: "))
 
+# Initialize the list to hold template roles
+template_roles = []
 
-from django.conf import settings
-
-
-logger = logging.getLogger(__name__)
-
-# DocuSign API Configuration
-DS_API_BASE_PATH = 'https://demo.docusign.net/restapi/v2.1'
-
-# ACCESS_TOKEN = 'eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAUABwAAkMlA4sXcSAgAANDsTiXG3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMACAxlo24cXcSDcAjwPrez9MtESeuaWmpmPIgA.1DIN3QdBTwetKh8A4xzBXUwhaqWq3eg7hJ_hm5hshBmATH8SF_iTT__BHOAAb8kq3itMBKKp1IBenzYdaBQRMqnFLpNVZNIjaWt2i3bBTRarZLb-1CvCMS_igfRCUFnulStG9RZq6-RxtpGr7vxA3h2tsJCXgset_bJeQgUjZOY7FTLKLcKCpkQ1D9a6i1mHWJffYXx9TxALx7b7koEMVoh5muK7HUFCayRZqqchsac1hLrYPZvLXXlWZFcIsh-4g61pX9F1dRpsVgRb67iAGK5ka8BNkY4T9aqDyES8qMp4P3vYdmYVPiQVl85HOoq5u5_UcSBBrFkb1HHn3elrVg'
-ACCESS_TOKEN = settings.DOCUSIGN_ACCESS_TOKEN
-ACCOUNT_ID = '29035884'
-
-@csrf_exempt
-def docusign_webhook(request):
-    if request.method == 'POST':
-        try:
-            # Retrieve and log the raw POST data
-            raw_data = request.body.decode('utf-8')
-            logger.debug(f"Received raw POST request: {raw_data}")
-
-            # Parse the JSON data
-            envelope_data = json.loads(raw_data)
-            logger.debug(f"Parsed JSON data: {json.dumps(envelope_data, indent=2)}")
-
-            # Extract the envelopeId
-            envelope_id = envelope_data.get('data', {}).get('envelopeId', None)
-            if envelope_id:
-                logger.debug(f"Extracted Envelope ID: {envelope_id}")
-                print(f"Extracted Envelope ID: {envelope_id}")  # Console log
-
-                # Download the PDF document and save it to both server and local machine
-                download_and_save_pdf(envelope_id)
-
-                return JsonResponse({'status': 'success', 'message': f'PDF downloaded for Envelope ID {envelope_id}'}, status=200)
-            else:
-                logger.error("Envelope ID not found in the request data.")
-                return JsonResponse({'status': 'error', 'message': 'Envelope ID not found'}, status=400)
-        except Exception as e:
-            logger.error(f"Error processing the webhook: {str(e)}")
-            print(f"Error processing the webhook: {str(e)}")  # Console log for errors
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    else:
-        return JsonResponse({'error': 'Invalid request method'}, status=405)
-
-def download_and_save_pdf(envelope_id):
-    """Download the combined PDF document for the given envelope ID and save it."""
-    try:
-        url = f'{DS_API_BASE_PATH}/accounts/{ACCOUNT_ID}/envelopes/{envelope_id}/documents/combined'
-        headers = {
-            'Authorization': f'Bearer {ACCESS_TOKEN}'
-        }
-        response = requests.get(url, headers=headers)
-
-        if response.status_code == 200:
-            # Save the PDF to a file on the server
-            server_folder_path = "./envelopes"
-            os.makedirs(server_folder_path, exist_ok=True)
-            server_file_name = os.path.join(server_folder_path, f"envelope_{envelope_id}_combined.pdf")
-            with open(server_file_name, 'wb') as pdf_file:
-                pdf_file.write(response.content)
-
-
-            print(f"Downloaded PDF: {server_file_name}")
-        else:
-            logger.error(f"Failed to download PDF, status code: {response.status_code}")
-
-    except Exception as e:
-        logger.error(f"Exception occurred during PDF download: {str(e)}")
-
-if __name__ == "__main__":
-    envelope_id = input("Enter the Envelope ID: ")
-    download_and_save_pdf(envelope_id)
-
+# Collect information for each recipient
+for i in range(num_recipients):
+    print(f"Enter details for recipient {i+1}:")
+    email = input("Enter email: ")
+    name = input("Enter name: ")
+    role_name = input("Enter role name (e.g., Recipient): ")
     
+    # Create a template role dictionary and append to the list
+    template_roles.append({
+        "email": email,
+        "name": name,
+        "roleName": role_name,
+        "clientUserId": "6444c091-9811-489b-b90e-54652ef532ad"  # This can be dynamic or static
+    })
 
-@csrf_exempt
-def download_envelope_pdf(request):
-    if request.method == 'GET':
-        envelope_id = request.GET.get('envelope_id')
-        if envelope_id:
-            response = download_pdf(envelope_id)
-            if response:
-                return response
-            else:
-                return HttpResponse('Failed to download PDF', status=500)
-        else:
-            return HttpResponse('Envelope ID is required', status=400)
+# Construct the payload
+payload = {
+    "templateId": template_id,
+    "templateRoles": template_roles,
+    "status": "sent"
+}
 
-    return HttpResponse('Invalid request method', status=405)    
+# Set up the headers
+headers = {
+    "Authorization": f"Bearer {access_token}",
+    "Content-Type": "application/json"
+}
+
+# Send the envelope
+response = requests.post(url, headers=headers, json=payload)
+
+# Check the response
+if response.status_code == 201:
+    print("Envelope sent successfully!")
+else:
+    print(f"Failed to send envelope. Status code: {response.status_code}")
+    print(f"Response: {response.json()}")

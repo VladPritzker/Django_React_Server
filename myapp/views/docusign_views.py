@@ -70,13 +70,8 @@ def download_and_save_pdf(envelope_id):
             with open(server_file_name, 'wb') as pdf_file:
                 pdf_file.write(response.content)
 
-            # Also, save the file to a local machine folder
-            local_folder = "./envelopes"  # Adjust this path to your local folder
-            local_file_name = os.path.join(local_folder, f"envelope_{envelope_id}_combined.pdf")
-            with open(local_file_name, 'wb') as pdf_file:
-                pdf_file.write(response.content)
 
-            print(f"Downloaded PDF: {server_file_name} and {local_file_name}")
+            print(f"Downloaded PDF: {server_file_name}")
         else:
             logger.error(f"Failed to download PDF, status code: {response.status_code}")
 

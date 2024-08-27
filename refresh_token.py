@@ -27,3 +27,6 @@ def refresh_docusign_token():
         return tokens['access_token']
     else:
         raise Exception("Failed to refresh token")
+
+if __name__ == "__main__":
+    refresh_docusign_token()

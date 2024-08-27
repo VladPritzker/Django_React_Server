@@ -9,7 +9,7 @@ from myapp.views import (
     sleep_logs, home_views, stock_data, customCashFlowInvestment_views,
     stock_data_pdf, docusign_views
 )
-import download_pdf
+import myapp.views as download_pdf
 
 urlpatterns = [
     path('', home_views.homepage, name='homepage'),

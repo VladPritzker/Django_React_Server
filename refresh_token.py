@@ -1,7 +1,5 @@
 import os
 import django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
-django.setup()
 import base64
 import requests
 from django.conf import settings
@@ -11,6 +9,8 @@ import time
 import logging
 
 # Set up Django environment
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
+django.setup()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -38,6 +38,11 @@ def refresh_docusign_token():
     }
     
     response = requests.post(url, headers=headers, data=data)
+    
+    # Log full response for debugging
+    logging.info(f"Response status code: {response.status_code}")
+    logging.info(f"Response text: {response.text}")
+    
     if response.status_code == 200:
         tokens = response.json()
         # Update the tokens in the database

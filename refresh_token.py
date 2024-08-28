@@ -7,9 +7,9 @@ from myapp.models import DocuSignToken
 import schedule
 import time
 import logging
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
 
 # Set up Django environment
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
 django.setup()
 
 # Configure logging

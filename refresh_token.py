@@ -1,9 +1,15 @@
 import base64
-import os
 import requests
 from django.conf import settings
+from myapp.models import DocuSignToken  # Assuming the model is in the same app
 
 def refresh_docusign_token():
+    # Retrieve the latest tokens from the database
+    token_entry = DocuSignToken.objects.first()
+
+    if not token_entry:
+        raise Exception("No DocuSign token entry found in the database.")
+
     url = "https://account-d.docusign.com/oauth/token"
     
     # Generate the Basic Authorization code
@@ -16,23 +22,16 @@ def refresh_docusign_token():
     }
     data = {
         'grant_type': 'refresh_token',
-        'refresh_token': settings.DOCUSIGN_REFRESH_TOKEN,
+        'refresh_token': token_entry.refresh_token,
     }
     
     response = requests.post(url, headers=headers, data=data)
     if response.status_code == 200:
         tokens = response.json()
-        # Save the new access_token and refresh_token
-        settings.DOCUSIGN_ACCESS_TOKEN = tokens['access_token']
-        settings.DOCUSIGN_REFRESH_TOKEN = tokens['refresh_token']
-        
-        # Write the Basic Authorization code to the .env file
-        with open('.env', 'w') as f:
-            f.write(f"DOCUSIGN_CLIENT_ID={settings.DOCUSIGN_CLIENT_ID}\n")
-            f.write(f"DOCUSIGN_CLIENT_SECRET={settings.DOCUSIGN_CLIENT_SECRET}\n")
-            f.write(f"DOCUSIGN_REFRESH_TOKEN={settings.DOCUSIGN_REFRESH_TOKEN}\n")
-            f.write(f"DOCUSIGN_ACCESS_TOKEN={settings.DOCUSIGN_ACCESS_TOKEN}\n")
-            f.write(f"DOCUSIGN_AUTHORIZATION_CODE=Basic {b64_auth_str}\n")
+        # Update the tokens in the database
+        token_entry.access_token = tokens['access_token']
+        token_entry.refresh_token = tokens['refresh_token']
+        token_entry.save()
         
         return tokens['access_token']
     else:

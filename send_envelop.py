@@ -1,12 +1,18 @@
 import os
 import requests
 from decouple import config
+from myapp.models import DocuSignToken
 
 # Load environment variables
-access_token = config('DOCUSIGN_ACCESS_TOKEN')
 account_id = config('DOCUSIGN_ACCOUNT_ID')
 template_id = "17cc51e1-5433-4576-98bb-7c60bde50bbd"  # You can also put this in .env if needed
 url = f"https://demo.docusign.net/restapi/v2.1/accounts/{account_id}/envelopes"
+
+# Retrieve the latest access token from the database
+token_entry = DocuSignToken.objects.first()
+if not token_entry:
+    raise Exception("No DocuSign token entry found in the database.")
+access_token = token_entry.access_token
 
 # Prompt for the number of recipients
 num_recipients = int(input("Enter the number of recipients: "))

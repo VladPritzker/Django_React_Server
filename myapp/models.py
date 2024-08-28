@@ -229,3 +229,15 @@ class StockData(models.Model):
         return self.ticker
 
 
+
+
+class DocuSignToken(models.Model):
+    access_token = models.TextField()
+    refresh_token = models.TextField()
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'docusign_tokens'    
+    
+    def __str__(self):
+        return f"self.access_token - self.refresh_token - self.last_updated"

@@ -4,22 +4,20 @@ import requests
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import logging
-import os
-
-
-
-
 from django.conf import settings
-
+from myapp.models import DocuSignToken
 
 logger = logging.getLogger(__name__)
 
 # DocuSign API Configuration
 DS_API_BASE_PATH = 'https://demo.docusign.net/restapi/v2.1'
 
-# ACCESS_TOKEN = 'eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAUABwAAkMlA4sXcSAgAANDsTiXG3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMACAxlo24cXcSDcAjwPrez9MtESeuaWmpmPIgA.1DIN3QdBTwetKh8A4xzBXUwhaqWq3eg7hJ_hm5hshBmATH8SF_iTT__BHOAAb8kq3itMBKKp1IBenzYdaBQRMqnFLpNVZNIjaWt2i3bBTRarZLb-1CvCMS_igfRCUFnulStG9RZq6-RxtpGr7vxA3h2tsJCXgset_bJeQgUjZOY7FTLKLcKCpkQ1D9a6i1mHWJffYXx9TxALx7b7koEMVoh5muK7HUFCayRZqqchsac1hLrYPZvLXXlWZFcIsh-4g61pX9F1dRpsVgRb67iAGK5ka8BNkY4T9aqDyES8qMp4P3vYdmYVPiQVl85HOoq5u5_UcSBBrFkb1HHn3elrVg'
-ACCESS_TOKEN = settings.DOCUSIGN_ACCESS_TOKEN
-ACCOUNT_ID = '29035884'
+def get_access_token():
+    """Retrieve the latest access token from the database."""
+    token_entry = DocuSignToken.objects.first()
+    if not token_entry:
+        raise Exception("No DocuSign token entry found in the database.")
+    return token_entry.access_token
 
 @csrf_exempt
 def docusign_webhook(request):
@@ -56,9 +54,10 @@ def docusign_webhook(request):
 def download_and_save_pdf(envelope_id):
     """Download the combined PDF document for the given envelope ID and save it."""
     try:
-        url = f'{DS_API_BASE_PATH}/accounts/{ACCOUNT_ID}/envelopes/{envelope_id}/documents/combined'
+        access_token = get_access_token()
+        url = f'{DS_API_BASE_PATH}/accounts/{settings.DOCUSIGN_ACCOUNT_ID}/envelopes/{envelope_id}/documents/combined'
         headers = {
-            'Authorization': f'Bearer {ACCESS_TOKEN}'
+            'Authorization': f'Bearer {access_token}'
         }
         response = requests.get(url, headers=headers)
 
@@ -70,7 +69,6 @@ def download_and_save_pdf(envelope_id):
             with open(server_file_name, 'wb') as pdf_file:
                 pdf_file.write(response.content)
 
-
             print(f"Downloaded PDF: {server_file_name}")
         else:
             logger.error(f"Failed to download PDF, status code: {response.status_code}")
@@ -81,8 +79,6 @@ def download_and_save_pdf(envelope_id):
 if __name__ == "__main__":
     envelope_id = input("Enter the Envelope ID: ")
     download_and_save_pdf(envelope_id)
-
-    
 
 @csrf_exempt
 def download_envelope_pdf(request):
@@ -97,4 +93,4 @@ def download_envelope_pdf(request):
         else:
             return HttpResponse('Envelope ID is required', status=400)
 
-    return HttpResponse('Invalid request method', status=405)    
+    return HttpResponse('Invalid request method', status=405)

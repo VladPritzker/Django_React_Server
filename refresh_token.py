@@ -1,16 +1,16 @@
 import os
-import base64
 import django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
+django.setup()
+import base64
 import requests
 from django.conf import settings
 from myapp.models import DocuSignToken
 import schedule
 import time
 import logging
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
 
 # Set up Django environment
-django.setup()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

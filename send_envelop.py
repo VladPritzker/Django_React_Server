@@ -1,4 +1,6 @@
 import os
+import django
+import os
 import requests
 from decouple import config
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')

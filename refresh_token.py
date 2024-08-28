@@ -10,9 +10,12 @@ import logging
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
-django.setup()
 
+# Set the environment variable for Django settings
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
+
+# Initialize Django
+django.setup()
 
 def refresh_docusign_token():
     # Retrieve the latest tokens from the database
@@ -44,12 +47,10 @@ def refresh_docusign_token():
         token_entry.refresh_token = tokens['refresh_token']
         token_entry.save()
         
+        logging.info("Token refreshed successfully.")
         return tokens['access_token']
     else:
         raise Exception(f"Failed to refresh token: {response.text}")
-
-if __name__ == "__main__":
-    refresh_docusign_token()
 
 # Schedule the task to run every 5 minutes
 schedule.every(5).minutes.do(refresh_docusign_token)

@@ -1,7 +1,18 @@
+import os
 import base64
+import django
 import requests
 from django.conf import settings
-from myapp.models import DocuSignToken  # Assuming the model is in the same app
+from myapp.models import DocuSignToken
+import schedule
+import time
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
+django.setup()
+
 
 def refresh_docusign_token():
     # Retrieve the latest tokens from the database
@@ -39,3 +50,13 @@ def refresh_docusign_token():
 
 if __name__ == "__main__":
     refresh_docusign_token()
+
+# Schedule the task to run every 5 minutes
+schedule.every(5).minutes.do(refresh_docusign_token)
+
+# Keep the script running
+if __name__ == "__main__":
+    logging.info("Starting the token refresh scheduler...")
+    while True:
+        schedule.run_pending()
+        time.sleep(1)

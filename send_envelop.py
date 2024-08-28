@@ -1,6 +1,8 @@
 import os
 import requests
 from decouple import config
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
+django.setup()
 from myapp.models import DocuSignToken
 
 # Load environment variables

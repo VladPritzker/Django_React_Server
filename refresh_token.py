@@ -58,7 +58,7 @@ def refresh_docusign_token():
             logging.error("The refresh token is invalid or expired. Manual intervention required.")
         raise Exception(f"Failed to refresh token: {response.text}")
 
-ef start_scheduler():
+def start_scheduler():
     schedule.every(5).hours.do(refresh_docusign_token)
 
     logging.info("Starting the token refresh scheduler...")
@@ -68,3 +68,4 @@ ef start_scheduler():
 
 if __name__ == "__main__":
     start_scheduler()
+ 

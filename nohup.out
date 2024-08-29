@@ -1,0 +1,222 @@
+Starting the token refresh scheduler...
+Running job Job(interval=5, unit=minutes, do=refresh_docusign_token, args=(), kwargs={})
+Starting new HTTPS connection (1): account-d.docusign.com:443
+https://account-d.docusign.com:443 "POST /oauth/token HTTP/11" 400 25
+Response status code: 400
+Response text: {"error":"invalid_grant"}
+Traceback (most recent call last):
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/myproject/Django_React_Server/refresh_token.py", line 64, in <module>
+    schedule.run_pending()
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/schedule/__init__.py", line 854, in run_pending
+    default_scheduler.run_pending()
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/schedule/__init__.py", line 101, in run_pending
+    self._run_job(job)
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/schedule/__init__.py", line 173, in _run_job
+    ret = job.run()
+          ^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/schedule/__init__.py", line 691, in run
+    ret = self.job_func()
+          ^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/myproject/Django_React_Server/refresh_token.py", line 55, in refresh_docusign_token
+    raise Exception(f"Failed to refresh token: {response.text}")
+Exception: Failed to refresh token: {"error":"invalid_grant"}
+Starting the token refresh scheduler...
+Starting the token refresh scheduler...
+Running job Job(interval=1, unit=minutes, do=refresh_docusign_token, args=(), kwargs={})
+Starting new HTTPS connection (1): account-d.docusign.com:443
+https://account-d.docusign.com:443 "POST /oauth/token HTTP/11" 200 1475
+Token refreshed successfully
+Running job Job(interval=1, unit=minutes, do=refresh_docusign_token, args=(), kwargs={})
+Running job Job(interval=5, unit=minutes, do=refresh_docusign_token, args=(), kwargs={})
+Starting new HTTPS connection (1): account-d.docusign.com:443
+Starting new HTTPS connection (1): account-d.docusign.com:443
+Traceback (most recent call last):
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connection.py", line 196, in _new_conn
+Traceback (most recent call last):
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connection.py", line 196, in _new_conn
+    sock = connection.create_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/util/connection.py", line 60, in create_connection
+    sock = connection.create_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/util/connection.py", line 60, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socket.py", line 963, in getaddrinfo
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socket.py", line 963, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 8] nodename nor servname provided, or not known
+socket.gaierror: [Errno 8] nodename nor servname provided, or not known
+
+
+The above exception was the direct cause of the following exception:
+The above exception was the direct cause of the following exception:
+
+
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 789, in urlopen
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 789, in urlopen
+    response = self._make_request(
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 490, in _make_request
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 490, in _make_request
+    raise new_e
+    raise new_e
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 466, in _make_request
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 466, in _make_request
+    self._validate_conn(conn)
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 1095, in _validate_conn
+    self._validate_conn(conn)
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 1095, in _validate_conn
+    conn.connect()
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connection.py", line 615, in connect
+    conn.connect()
+    self.sock = sock = self._new_conn()
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connection.py", line 615, in connect
+                       ^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connection.py", line 203, in _new_conn
+    raise NameResolutionError(self.host, self, e) from e
+    self.sock = sock = self._new_conn()
+urllib3.exceptions.NameResolutionError: <urllib3.connection.HTTPSConnection object at 0x10e9d61e0>: Failed to resolve 'account-d.docusign.com' ([Errno 8] nodename nor servname provided, or not known)
+
+The above exception was the direct cause of the following exception:
+                       ^^^^^^^^^^^^^^^^
+
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connection.py", line 203, in _new_conn
+Traceback (most recent call last):
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/requests/adapters.py", line 667, in send
+    raise NameResolutionError(self.host, self, e) from e
+urllib3.exceptions.NameResolutionError: <urllib3.connection.HTTPSConnection object at 0x10cce99a0>: Failed to resolve 'account-d.docusign.com' ([Errno 8] nodename nor servname provided, or not known)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 843, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/util/retry.py", line 519, in increment
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 843, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/urllib3/util/retry.py", line 519, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='account-d.docusign.com', port=443): Max retries exceeded with url: /oauth/token (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x10e9d61e0>: Failed to resolve 'account-d.docusign.com' ([Errno 8] nodename nor servname provided, or not known)"))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='account-d.docusign.com', port=443): Max retries exceeded with url: /oauth/token (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x10cce99a0>: Failed to resolve 'account-d.docusign.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/myproject/Django_React_Server/refresh_token.py", line 61, in <module>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/myproject/Django_React_Server/refresh_token.py", line 65, in <module>
+    # Keep the script running
+    schedule.run_pending()
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/schedule/__init__.py", line 854, in run_pending
+    default_scheduler.run_pending()
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/schedule/__init__.py", line 101, in run_pending
+            ^^^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/schedule/__init__.py", line 854, in run_pending
+    self._run_job(job)
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/schedule/__init__.py", line 173, in _run_job
+    default_scheduler.run_pending()
+    ret = job.run()
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/schedule/__init__.py", line 101, in run_pending
+          ^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/schedule/__init__.py", line 691, in run
+    self._run_job(job)
+    ret = self.job_func()
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/schedule/__init__.py", line 173, in _run_job
+          ^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/myproject/Django_React_Server/refresh_token.py", line 40, in refresh_docusign_token
+    response = requests.post(url, headers=headers, data=data)
+    ret = job.run()
+          ^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/schedule/__init__.py", line 691, in run
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/requests/api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+    ret = self.job_func()
+          ^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/myproject/Django_React_Server/refresh_token.py", line 40, in refresh_docusign_token
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    response = requests.post(url, headers=headers, data=data)
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/requests/api.py", line 59, in request
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/requests/api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/requests/api.py", line 59, in request
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/requests/sessions.py", line 703, in send
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/requests/adapters.py", line 700, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='account-d.docusign.com', port=443): Max retries exceeded with url: /oauth/token (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x10e9d61e0>: Failed to resolve 'account-d.docusign.com' ([Errno 8] nodename nor servname provided, or not known)"))
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance /Django_server/djangoenv/lib/python3.12/site-packages/requests/adapters.py", line 700, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='account-d.docusign.com', port=443): Max retries exceeded with url: /oauth/token (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x10cce99a0>: Failed to resolve 'account-d.docusign.com' ([Errno 8] nodename nor servname provided, or not known)"))
+Starting the token refresh scheduler...
+Running job Job(interval=1, unit=minutes, do=refresh_docusign_token, args=(), kwargs={})
+Old Access Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQsAAAABAAUABwCA7rSbUcjcSAgAgC7YqZTI3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgBIAAQAAAA0AAAByZWZyZXNoX3Rva2Vu.AEzLqbzeInVn5D7_Own9CSWtpX7Dq5n7pqrt0LcweOwiXE6RglcGRQrlCabDvyy2Vpo6ZzoXf-0ViheCkfKgYqZIMyJ0UMMJcbGb5FpC8G9-yr8ToTiUT-q3koeOnTWWwQvTy2zy95cLU_vuhy-3ALk2d6u-n6oMbBZJ9Fm8fcY04sTK6CvEoI33Ah4L2VKShwwr9NZ8fc2VLgJ8VEhTl6NEjO1p6Xyj0BpFY1X0eKhe4V2lMXH5nb4No3oSNrH-ANwECoY4ht_HYSZPMvDMaFD_NNRt1ZCZQx8zKl6HdmRl1IFXs7Qz5XsOifS308yZ1krYsqgxGMkrccv4LvHPtw
+Old Refresh Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAgABwCA7rSbUcjcSAgAgG4ZlOTf3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgA.iNPdP2rrocUtcU4MpsIacrt0fwys6ff-yHC-trxmVSNqNRIMVFqQS38CBTBREVrKw7asS4aTBDtJ8dwcmku1o4reXEN33YuCWidMxRmDsEeIreDSo7kiMW-S8C774UjeLtISU5fCDdYqJSXnoSm-IuzREQFZt2G-V4nOPhdGa9tqzaZOIt9cHCLmK5Y1HB4PqiBcAStDpc3xhOEkHaqCgKCrTuEYaWv2pzYLj10ip_H59EWbE5V5vShtJxQBhP8oQ4PHOwkfVtWsdgWT288xmBsKtQCJ8nG_g57Tp-AjwO4Wk9LyuFrr0PJQLpk4uU8tH6P8qgfIvPHWgRIVofuKVQ
+Starting new HTTPS connection (1): account-d.docusign.com:443
+https://account-d.docusign.com:443 "POST /oauth/token HTTP/11" 200 1475
+New Access Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQsAAAABAAUABwCAHR31UcjcSAgAgF1AA5XI3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgBIAAQAAAA0AAAByZWZyZXNoX3Rva2Vu.IUjVLwwfjd1n3uCtwFN4f7nC4wP9MdNViBEI-OYeFavvqFAmG9xQWnfmn7Qjz8iqxzy1SVHNnhmHLbzNQorExhMLI4iON5QBoTsuz0u1gaI6EbIOFrqKRDt-MJLuMZRIfKLzQmgEn5MAE5D6_Lfne5asaoe8edNfdEa6e9jqrlUVWfdk7YHTJ3599ZBVgtiYqaIH_H8e4ZAvbD_cV3DvUOyhmNqw0nMS1y_3BL1gkAjv05W_4-Hz9_XgJnzrko0Mgjsa1LJ6vK9jIfAWFPoShjoj0GW10_5P7wbbfIbT_Fx1dv_oFpz5wyvt8TJ9EdG8NZrByWUk1FF0aKNZ22-5BQ
+New Refresh Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAgABwCAHR31UcjcSAgAgJ2B7eTf3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgA.EFud1RvfToJ0V2P45TjAbRBaqAr26V4ttYah_o8pc2wjmNA5_Nba9XUkdeZpuat2C43tRUV_qZc-ZRcibyMC5JcelpLw7kbJsdRxn-Cy_SAFnd9QFS2khxS4uz3qx9pCey-OE5fTLFpdyORQfVNZ-k8pJ0rTZiwhupPgERFva9YY3DqsvVjnGkuOQ3fu1X7iWrmdcfmkVKuoBy22sotbkywCYiEfWaewU0OAlrd5X0biJxfX_BMCzdwVpjvWJhKp7v3mf4XkDZShfgUMvjR52Nw2xpKHbZSut8-hFeeeWO-6va3Vc0AglmyjfGSTxgL9dhLKSEvov8ekZ8YpEanaNg
+Token refreshed successfully
+Running job Job(interval=1, unit=minutes, do=refresh_docusign_token, args=(), kwargs={})
+Old Access Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQsAAAABAAUABwCAHR31UcjcSAgAgF1AA5XI3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgBIAAQAAAA0AAAByZWZyZXNoX3Rva2Vu.IUjVLwwfjd1n3uCtwFN4f7nC4wP9MdNViBEI-OYeFavvqFAmG9xQWnfmn7Qjz8iqxzy1SVHNnhmHLbzNQorExhMLI4iON5QBoTsuz0u1gaI6EbIOFrqKRDt-MJLuMZRIfKLzQmgEn5MAE5D6_Lfne5asaoe8edNfdEa6e9jqrlUVWfdk7YHTJ3599ZBVgtiYqaIH_H8e4ZAvbD_cV3DvUOyhmNqw0nMS1y_3BL1gkAjv05W_4-Hz9_XgJnzrko0Mgjsa1LJ6vK9jIfAWFPoShjoj0GW10_5P7wbbfIbT_Fx1dv_oFpz5wyvt8TJ9EdG8NZrByWUk1FF0aKNZ22-5BQ
+Old Refresh Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAgABwCAHR31UcjcSAgAgJ2B7eTf3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgA.EFud1RvfToJ0V2P45TjAbRBaqAr26V4ttYah_o8pc2wjmNA5_Nba9XUkdeZpuat2C43tRUV_qZc-ZRcibyMC5JcelpLw7kbJsdRxn-Cy_SAFnd9QFS2khxS4uz3qx9pCey-OE5fTLFpdyORQfVNZ-k8pJ0rTZiwhupPgERFva9YY3DqsvVjnGkuOQ3fu1X7iWrmdcfmkVKuoBy22sotbkywCYiEfWaewU0OAlrd5X0biJxfX_BMCzdwVpjvWJhKp7v3mf4XkDZShfgUMvjR52Nw2xpKHbZSut8-hFeeeWO-6va3Vc0AglmyjfGSTxgL9dhLKSEvov8ekZ8YpEanaNg
+Starting new HTTPS connection (1): account-d.docusign.com:443
+https://account-d.docusign.com:443 "POST /oauth/token HTTP/11" 200 1475
+New Access Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQsAAAABAAUABwCAY-AYUsjcSAgAgKMDJ5XI3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgBIAAQAAAA0AAAByZWZyZXNoX3Rva2Vu.WfVsiHV81rxz9usDymTjiA8JX2-vS9ASerJJptmw_gugfo-j3paMdAMfmoGUfSeDmvy17VJ-d0U2RSd5W9gYAg9JGEWO7ze4p8MWP4arkA_2vOeTIpqLGgX6qtqilTdgJ58o9fwwnvQd_PimN6oSzdTHChS-IMh42XvePXbmXqnHhzFLy_wkEG9L_ExI0Vcm9GsvCBx5MjMgTvatd-C9x_P4rXTpDIouu5_bcXFMWru0ponQR2ahghELpu7kM7vdK2wG0rEZqpbmQTWn4MwMoJ2g-PTmgoDLhaWZ3JCbg21DOr5kFAN4kYnobAKMAmbEgTwk2PAriUx9YXcn1TeBQA
+New Refresh Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAgABwCAY-AYUsjcSAgAgONEEeXf3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgA.2a_XZLj6TGitsCw1jYtLmBE4ARSFEM6uAvjpbPRNbjVnNMpCy2bmwJFWb3uhyokvAkDPWZCLXmpgGi8JkpEua46Qx8nZDVxUB3kldWkVBN1eTFOishRBsNQ754XPsJGhonzrWtqGYORN5y-NFL20j2WjDdlB1_d8pvUTUzG3EFrpcGM06s766Cm268oHMB7aLUpMSNMX_Iiv1ZoMqStKy5brgMYjpTOjr94kTBGZQ664mU7ir6dtiCVx3H55cgvdGV1YMlu1IObm2uiQewUjsOyT3FJpNOYtbzpmbP4u2n6Q2ACZqUkumSn73iq6VqbVNMnXvjuzrlGJKhPD85_BVA
+Token refreshed successfully
+Running job Job(interval=1, unit=minutes, do=refresh_docusign_token, args=(), kwargs={})
+Old Access Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQsAAAABAAUABwCAY-AYUsjcSAgAgKMDJ5XI3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgBIAAQAAAA0AAAByZWZyZXNoX3Rva2Vu.WfVsiHV81rxz9usDymTjiA8JX2-vS9ASerJJptmw_gugfo-j3paMdAMfmoGUfSeDmvy17VJ-d0U2RSd5W9gYAg9JGEWO7ze4p8MWP4arkA_2vOeTIpqLGgX6qtqilTdgJ58o9fwwnvQd_PimN6oSzdTHChS-IMh42XvePXbmXqnHhzFLy_wkEG9L_ExI0Vcm9GsvCBx5MjMgTvatd-C9x_P4rXTpDIouu5_bcXFMWru0ponQR2ahghELpu7kM7vdK2wG0rEZqpbmQTWn4MwMoJ2g-PTmgoDLhaWZ3JCbg21DOr5kFAN4kYnobAKMAmbEgTwk2PAriUx9YXcn1TeBQA
+Old Refresh Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAgABwCAY-AYUsjcSAgAgONEEeXf3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgA.2a_XZLj6TGitsCw1jYtLmBE4ARSFEM6uAvjpbPRNbjVnNMpCy2bmwJFWb3uhyokvAkDPWZCLXmpgGi8JkpEua46Qx8nZDVxUB3kldWkVBN1eTFOishRBsNQ754XPsJGhonzrWtqGYORN5y-NFL20j2WjDdlB1_d8pvUTUzG3EFrpcGM06s766Cm268oHMB7aLUpMSNMX_Iiv1ZoMqStKy5brgMYjpTOjr94kTBGZQ664mU7ir6dtiCVx3H55cgvdGV1YMlu1IObm2uiQewUjsOyT3FJpNOYtbzpmbP4u2n6Q2ACZqUkumSn73iq6VqbVNMnXvjuzrlGJKhPD85_BVA
+Starting new HTTPS connection (1): account-d.docusign.com:443
+https://account-d.docusign.com:443 "POST /oauth/token HTTP/11" 200 1475
+New Access Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQsAAAABAAUABwCA1tQ9UsjcSAgAgBb4S5XI3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgBIAAQAAAA0AAAByZWZyZXNoX3Rva2Vu.17MCw2n6tHuze897DPdoUN--9IUTj-w4ILwdSDi0Nv0uWVrGFKNMp__37ATsVEH1Yy0OPvHmPIP_rJfzQ160vPwuHzjr1_k-lU-L8D2PWPTanBfcUCC-mppl9oHVDiRC5F1O7u3G3rJseN9Y-CdGNgyefOBdikoj_x6oNj9dgB96Ed1H052Fh56W-Uwelt_mF1cPORFZLOHUSyb1Gf27DmaS_2Nh6r3McJkV6KxA8UofLYUmoDWXcw-oBne70VC8aahTD6V1b0WND09oHjLqHLZFHeuVdQoYKBuIFbWO9oyJ878S6S725E1YJEdtPhtxw1DRR_PwsoZkUChBNOEfTw
+New Refresh Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAgABwCA1tQ9UsjcSAgAgFY5NuXf3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgA.PeT2-DCYy_kgzBRwq9sohsi1XZ1itQ2pTCJ_fPy-roKp5SJPx4qCUrWAFoCtTRWuctm3P0X-gebDA6k098YMu4WRnP8pdL8Z3oTUhWJ7XdqSd4Tmd7urmCskoRsTHVZC6dG356fqW7Mb7LDMHj6gkEFFZCqv28SUTtPhy4VWd2TPRitjRFVymmNX324r4M6O3AwbLp7yJ4K3SnrJT9fF2T-8EyhqUxr60NC96UzqQb1m2Ygl-74px958lGw2hV6OPmg8PV-V6gn25xI_64LzeQDC3ZNlxtl5bpUr6bsdrgmoYNiXrDSEGYwmY5VZg55Vv39KvH7Xldhbo5yfIbMdFQ
+Token refreshed successfully
+Running job Job(interval=1, unit=minutes, do=refresh_docusign_token, args=(), kwargs={})
+Old Access Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQsAAAABAAUABwCA1tQ9UsjcSAgAgBb4S5XI3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgBIAAQAAAA0AAAByZWZyZXNoX3Rva2Vu.17MCw2n6tHuze897DPdoUN--9IUTj-w4ILwdSDi0Nv0uWVrGFKNMp__37ATsVEH1Yy0OPvHmPIP_rJfzQ160vPwuHzjr1_k-lU-L8D2PWPTanBfcUCC-mppl9oHVDiRC5F1O7u3G3rJseN9Y-CdGNgyefOBdikoj_x6oNj9dgB96Ed1H052Fh56W-Uwelt_mF1cPORFZLOHUSyb1Gf27DmaS_2Nh6r3McJkV6KxA8UofLYUmoDWXcw-oBne70VC8aahTD6V1b0WND09oHjLqHLZFHeuVdQoYKBuIFbWO9oyJ878S6S725E1YJEdtPhtxw1DRR_PwsoZkUChBNOEfTw
+Old Refresh Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAgABwCA1tQ9UsjcSAgAgFY5NuXf3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgA.PeT2-DCYy_kgzBRwq9sohsi1XZ1itQ2pTCJ_fPy-roKp5SJPx4qCUrWAFoCtTRWuctm3P0X-gebDA6k098YMu4WRnP8pdL8Z3oTUhWJ7XdqSd4Tmd7urmCskoRsTHVZC6dG356fqW7Mb7LDMHj6gkEFFZCqv28SUTtPhy4VWd2TPRitjRFVymmNX324r4M6O3AwbLp7yJ4K3SnrJT9fF2T-8EyhqUxr60NC96UzqQb1m2Ygl-74px958lGw2hV6OPmg8PV-V6gn25xI_64LzeQDC3ZNlxtl5bpUr6bsdrgmoYNiXrDSEGYwmY5VZg55Vv39KvH7Xldhbo5yfIbMdFQ
+Starting new HTTPS connection (1): account-d.docusign.com:443
+https://account-d.docusign.com:443 "POST /oauth/token HTTP/11" 200 1475
+New Access Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQsAAAABAAUABwCAHJhhUsjcSAgAgFy7b5XI3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgBIAAQAAAA0AAAByZWZyZXNoX3Rva2Vu.jWtue5HfvZjWcUuby04Km0jQjsW316yZntL8pCyjvQ8D-4RC5Odmsh09GoJheYvrHKnkMSRVeWwmDebnbzjLz_8i7riq1rY93xSe-k1xW9aruckHIrJdCyiZ2haSOY1K4rPdDVZzb3HtRtuNpdz3gH5o3I2vBkXIgsHlgdn4c01qb0eZO7_yUBGHfGNtzrqa8g3IspoC0WRdsrSzsIrOvh7FfAHHYcJKuMcuBlJgZ9Yfq2toJ3rfOf6ofOv4dQHJIwrgVNUgsVQzsTdB8J0ZET9vc0Y5smFdGCwOuL65J64dBR4Kt--Mo714WeYuTYai2E6BOPQtwIBfv5N2kGKRSA
+New Refresh Token: eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAgABwCAHJhhUsjcSAgAgJz8WeXf3EgCAJHARGQRmJtIuQ5UZS71Mq0VAAEAAAAYAAEAAAAFAAAADQAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkIgAkAAAAN2E2ZDg3NTgtMWU2Zi00NmJiLWFkMGEtNTVmOTBlOTEwNGVkMAAAseviSsjcSDcAjwPrez9MtESeuaWmpmPIgA.Ae7aXdoPfkQheYpR1vMjUXxqccPQhVyrWknDlvGsNUCNNLy-dgJRyQ0JaT8TKFgHY3Tf0YwPr137D-r4VWEgNdkbFa3HSWuMaTV96twV8sSsI1n_b6HxOKUdHJc9NGBah4DGWyIP3zoLJo3A_pqTzzTqIwjzzl_3RT4SeJogC5jCQ0GgWo3eFRnRSPQJVKd9PnPQNr9rRMsmQV3NY_SQyr2mg2bjZCurp01nG2J2v5z2t6zUirRK1odhJMye_ieSdygUfaeWbfu-dQmNt9k6atVbDRdvVHJ11RHGaZvOZrOqpcHlCCIh6H_3tPquuMPpZY9NfIJs7kzbKSDhmkhCmA
+Token refreshed successfully

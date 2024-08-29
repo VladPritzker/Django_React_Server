@@ -1,16 +1,15 @@
 import os
 import django
+# Set up Django environment
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
+django.setup()
 import base64
 import requests
 from django.conf import settings
 from myapp.models import DocuSignToken
+import logging
 import schedule
 import time
-import logging
-
-# Set up Django environment
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
-django.setup()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -20,13 +19,17 @@ def refresh_docusign_token():
     token_entry = DocuSignToken.objects.first()
 
     if not token_entry:
-        raise Exception("No DocuSign token entry found in the database.")
+        logging.error("No DocuSign token entry found in the database.")
+        return
+
+    logging.info(f"Old Access Token: {token_entry.access_token}")
+    logging.info(f"Old Refresh Token: {token_entry.refresh_token}")
 
     url = "https://account-d.docusign.com/oauth/token"
     
     # Generate the Basic Authorization code
     auth_str = f"{settings.DOCUSIGN_CLIENT_ID}:{settings.DOCUSIGN_CLIENT_SECRET}"
-    b64_auth_str = base64.b64encode(auth_str.encode()).decode()  # Base64 encode the client_id:client_secret
+    b64_auth_str = base64.b64encode(auth_str.encode()).decode()
     
     headers = {
         'Authorization': f'Basic {b64_auth_str}',
@@ -38,28 +41,30 @@ def refresh_docusign_token():
     }
     
     response = requests.post(url, headers=headers, data=data)
-    
-    # Log full response for debugging
-    logging.info(f"Response status code: {response.status_code}")
-    logging.info(f"Response text: {response.text}")
-    
     if response.status_code == 200:
         tokens = response.json()
         # Update the tokens in the database
         token_entry.access_token = tokens['access_token']
         token_entry.refresh_token = tokens['refresh_token']
         token_entry.save()
-        
+
+        logging.info(f"New Access Token: {tokens['access_token']}")
+        logging.info(f"New Refresh Token: {tokens['refresh_token']}")
+        logging.info("Token refreshed successfully")
         return tokens['access_token']
     else:
+        logging.error(f"Failed to refresh token: {response.text}")
+        if 'invalid_grant' in response.text:
+            logging.error("The refresh token is invalid or expired. Manual intervention required.")
         raise Exception(f"Failed to refresh token: {response.text}")
 
-# Schedule the task to run every 5 minutes
-schedule.every(5).minutes.do(refresh_docusign_token)
+def start_scheduler():
+    schedule.every(1).minutes.do(refresh_docusign_token)
 
-# Keep the script running
-if __name__ == "__main__":
     logging.info("Starting the token refresh scheduler...")
     while True:
         schedule.run_pending()
         time.sleep(1)
+
+if __name__ == "__main__":
+    start_scheduler()

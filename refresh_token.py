@@ -59,7 +59,7 @@ def refresh_docusign_token():
         raise Exception(f"Failed to refresh token: {response.text}")
 
 def start_scheduler():
-    schedule.every(5).hours.do(refresh_docusign_token)
+    schedule.every(7).hours.do(refresh_docusign_token)
 
     logging.info("Starting the token refresh scheduler...")
     while True:

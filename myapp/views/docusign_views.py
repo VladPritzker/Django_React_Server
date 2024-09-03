@@ -1,9 +1,10 @@
 import os
 import json
 import requests
+import logging
+from datetime import datetime
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-import logging
 from django.conf import settings
 from myapp.models import DocuSignToken, DocuSignSignature
 
@@ -44,7 +45,7 @@ def docusign_webhook(request):
                 form_data = envelope_data.get('formData', [])
                 recipient_data = envelope_data.get('recipientFormData', [])[0] if envelope_data.get('recipientFormData') else None
 
-                if recipient_data:
+                if recipient_data and len(recipient_data.get('formData', [])) >= 4:
                     signer_email = recipient_data['formData'][0].get('value')
                     signer_name = recipient_data['formData'][1].get('value')
                     date_of_birth = recipient_data['formData'][2].get('value')
@@ -101,18 +102,14 @@ def download_and_save_pdf(envelope_id):
     except Exception as e:
         logger.error(f"Exception occurred during PDF download: {str(e)}")
 
-if __name__ == "__main__":
-    envelope_id = input("Enter the Envelope ID: ")
-    download_and_save_pdf(envelope_id)
-
 @csrf_exempt
 def download_envelope_pdf(request):
     if request.method == 'GET':
         envelope_id = request.GET.get('envelope_id')
         if envelope_id:
-            response = download_pdf(envelope_id)
+            response = download_and_save_pdf(envelope_id)
             if response:
-                return response
+                return HttpResponse('PDF downloaded successfully', status=200)
             else:
                 return HttpResponse('Failed to download PDF', status=500)
         else:

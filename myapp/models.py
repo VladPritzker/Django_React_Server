@@ -241,3 +241,19 @@ class DocuSignToken(models.Model):
     
     def __str__(self):
         return f"self.access_token - self.refresh_token - self.last_updated"
+
+
+class DocuSignSignature(models.Model):
+    envelope_id = models.CharField(max_length=255, null=False)
+    recipient_id = models.CharField(max_length=255, null=False)
+    email_of_signer = models.CharField(max_length=255, blank=True, null=True)
+    name_of_signer = models.CharField(max_length=255, blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    date_signed = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'docusign_signatures'    
+
+    def __str__(self):
+        return f"Envelope ID: {self.envelope_id}, Recipient ID: {self.recipient_id}"        

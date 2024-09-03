@@ -5,7 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import logging
 from django.conf import settings
-from myapp.models import DocuSignToken
+from myapp.models import DocuSignToken, DocuSignSignature
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,32 @@ def docusign_webhook(request):
                 # Download the PDF document and save it to both server and local machine
                 download_and_save_pdf(envelope_id)
 
-                return JsonResponse({'status': 'success', 'message': f'PDF downloaded for Envelope ID {envelope_id}'}, status=200)
+                # Extract signer information
+                form_data = envelope_data.get('formData', [])
+                recipient_data = envelope_data.get('recipientFormData', [])[0] if envelope_data.get('recipientFormData') else None
+
+                if recipient_data:
+                    signer_email = recipient_data['formData'][0].get('value')
+                    signer_name = recipient_data['formData'][1].get('value')
+                    date_of_birth = recipient_data['formData'][2].get('value')
+                    date_signed = recipient_data['formData'][3].get('value')
+                    recipient_id = recipient_data.get('recipientId')
+
+                    # Convert date format if necessary
+                    date_of_birth = datetime.strptime(date_of_birth, '%m.%d.%Y').date()  # assuming format is mm.dd.yyyy
+                    date_signed = datetime.strptime(date_signed, '%m/%d/%Y').date()  # assuming format is mm/dd/yyyy
+
+                    # Store the extracted data in the database
+                    DocuSignSignature.objects.create(
+                        envelope_id=envelope_id,
+                        recipient_id=recipient_id,
+                        email_of_signer=signer_email,
+                        name_of_signer=signer_name,
+                        date_of_birth=date_of_birth,
+                        date_signed=date_signed
+                    )
+
+                return JsonResponse({'status': 'success', 'message': f'PDF downloaded and data stored for Envelope ID {envelope_id}'}, status=200)
             else:
                 logger.error("Envelope ID not found in the request data.")
                 return JsonResponse({'status': 'error', 'message': 'Envelope ID not found'}, status=400)

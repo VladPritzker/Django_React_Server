@@ -1,10 +1,12 @@
 import os
 import django
-import os
 import requests
 from decouple import config
+
+# Set up Django environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
 django.setup()
+
 from myapp.models import DocuSignToken
 
 # Load environment variables
@@ -17,6 +19,9 @@ token_entry = DocuSignToken.objects.first()
 if not token_entry:
     raise Exception("No DocuSign token entry found in the database.")
 access_token = token_entry.access_token
+
+# Print the retrieved access token to verify
+print(f"Access Token retrieved from DB: {access_token}")
 
 # Prompt for the number of recipients
 num_recipients = int(input("Enter the number of recipients: "))

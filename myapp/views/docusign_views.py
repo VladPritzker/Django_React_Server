@@ -7,8 +7,17 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from myapp.models import DocuSignToken, DocuSignSignature
+import boto3
+from botocore.exceptions import NoCredentialsError
+
 
 logger = logging.getLogger(__name__)
+
+DO_SPACES_KEY = 'DO004MHYF2464638EKXE'
+DO_SPACES_SECRET = '7MzQUzaWWwPHQGmzmyRBQBg6wb31DKurv6sM2UFBbmI'
+DO_SPACES_REGION = 'nyc3'
+DO_SPACES_BUCKET = 'docusign55'
+DO_SPACES_ENDPOINT = f'https://{DO_SPACES_BUCKET}.{DO_SPACES_REGION}.digitaloceanspaces.com'
 
 # DocuSign API Configuration
 DS_API_BASE_PATH = 'https://demo.docusign.net/restapi/v2.1'
@@ -83,45 +92,6 @@ def docusign_webhook(request):
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
-def download_and_save_pdf(envelope_id):
-    """Download the combined PDF document for the given envelope ID and save it."""
-    try:
-        access_token = get_access_token()
-        url = f'{DS_API_BASE_PATH}/accounts/{settings.DOCUSIGN_ACCOUNT_ID}/envelopes/{envelope_id}/documents/combined'
-        headers = {
-            'Authorization': f'Bearer {access_token}'
-        }
-        response = requests.get(url, headers=headers)
-
-        if response.status_code == 200:
-            # Save the PDF to a file on the server
-            server_folder_path = "./envelopes"
-            os.makedirs(server_folder_path, exist_ok=True)
-            server_file_name = os.path.join(server_folder_path, f"envelope_{envelope_id}_combined.pdf")
-            with open(server_file_name, 'wb') as pdf_file:
-                pdf_file.write(response.content)
-
-            print(f"Downloaded PDF: {server_file_name}")
-        else:
-            logger.error(f"Failed to download PDF, status code: {response.status_code}")
-
-    except Exception as e:
-        logger.error(f"Exception occurred during PDF download: {str(e)}")
-
-@csrf_exempt
-def download_envelope_pdf(request):
-    if request.method == 'GET':
-        envelope_id = request.GET.get('envelope_id')
-        if envelope_id:
-            response = download_and_save_pdf(envelope_id)
-            if response:
-                return HttpResponse('PDF downloaded successfully', status=200)
-            else:
-                return HttpResponse('Failed to download PDF', status=500)
-        else:
-            return HttpResponse('Envelope ID is required', status=400)
-
-    return HttpResponse('Invalid request method', status=405)
 
 
 def fetch_envelope_form_data(envelope_id):
@@ -144,4 +114,47 @@ def fetch_envelope_form_data(envelope_id):
 
     except Exception as e:
         logger.error(f"Exception occurred while fetching form data: {str(e)}")
-        return None
+
+
+s3_client = boto3.client(
+    's3',
+    endpoint_url=DO_SPACES_ENDPOINT,
+    aws_access_key_id=DO_SPACES_KEY,
+    aws_secret_access_key=DO_SPACES_SECRET
+)
+
+def download_and_save_pdf(envelope_id):
+    """Download the combined PDF document for the given envelope ID and upload it to DigitalOcean Spaces."""
+    try:
+        access_token = get_access_token()
+        url = f'{DS_API_BASE_PATH}/accounts/{settings.DOCUSIGN_ACCOUNT_ID}/envelopes/{envelope_id}/documents/combined'
+        headers = {
+            'Authorization': f'Bearer {access_token}'
+        }
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            # Create an in-memory file-like object for the PDF
+            pdf_data = response.content
+            file_name = f"envelope_{envelope_id}_combined.pdf"
+            bucket_folder = 'Docusign_PDF/'
+
+            try:
+                # Upload the PDF to DigitalOcean Spaces
+                s3_client.put_object(
+                    Bucket=DO_SPACES_BUCKET,
+                    Key=bucket_folder + file_name,
+                    Body=pdf_data,
+                    ContentType='application/pdf'
+                )
+                print(f"Uploaded PDF to DigitalOcean Spaces: {DO_SPACES_ENDPOINT}/{bucket_folder}{file_name}")
+            except NoCredentialsError as e:
+                logger.error(f"Credentials not available for DigitalOcean Spaces: {str(e)}")
+            except Exception as e:
+                logger.error(f"Failed to upload PDF to DigitalOcean Spaces: {str(e)}")
+
+        else:
+            logger.error(f"Failed to download PDF, status code: {response.status_code}")
+
+    except Exception as e:
+        logger.error(f"Exception occurred during PDF download: {str(e)}")

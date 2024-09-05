@@ -45,7 +45,6 @@ urlpatterns = [
 
      # DocuSign Endpoints
     path('docusign/webhook/', docusign_views.docusign_webhook, name='docusign_webhook'),
-    path('download-envelope-pdf/', docusign_views.download_envelope_pdf, name='download-envelope-pdf'),
     path('download_pdf/<str:envelope_id>/', download_pdf, name='download_pdf'),
  
     # Password reset URLs

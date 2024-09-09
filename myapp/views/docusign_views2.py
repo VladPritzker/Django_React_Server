@@ -41,160 +41,145 @@ s3_client = boto3.client(
 def docusign_webhook(request):
     if request.method == 'POST':
         try:
-            # Retrieve and log the raw POST data
             raw_data = request.body.decode('utf-8')
-            logger.debug(f"Received raw POST request: {raw_data}")
-
-            # Parse the JSON data
             envelope_data = json.loads(raw_data)
-            logger.debug(f"Parsed JSON data: {json.dumps(envelope_data, indent=2)}")
 
-            # Extract the envelopeId and templateId
             envelope_id = envelope_data.get('data', {}).get('envelopeId', None)
             template_id = envelope_data.get('data', {}).get('templateId', None)
 
-            logger.debug(f"Extracted Envelope ID: {envelope_id}, Template ID: {template_id}")
-            print(f"Extracted Envelope ID: {envelope_id}, Template ID: {template_id}")  # Console log
-
             if envelope_id:
-                # If template_id is None, fetch it via API
-                if not template_id:
-                    template_id = fetch_template_id(envelope_id)
-
-                # Fetch the form data JSON
+                # Fetch form data
                 form_data = fetch_envelope_form_data(envelope_id)
 
                 if form_data:
-                    # Store the form data and PDF based on the template_id
+                    # Store the PDF and recipient data based on template_id
                     if template_id == "17cc51e1-5433-4576-98bb-7c60bde50bbd":
-                        # Store for Template 1 (Different Folder and Table)
-                        store_template1_data(form_data, envelope_id)
-                        download_and_save_pdf(envelope_id, "Template1")
+                        store_template1_data(envelope_id)  # Store PDF
+                        save_recipient_data(form_data, envelope_id, 'template1')  # Save recipient data
                     elif template_id == "fc1fa3af-f87d-4558-aa10-6b275852c78e":
-                        # Store for Template 2 (Different Folder and Table)
-                        store_template2_data(form_data, envelope_id)
-                        download_and_save_pdf(envelope_id, "Template2")
+                        store_template2_data(envelope_id)  # Store PDF
+                        save_recipient_data(form_data, envelope_id, 'template2')  # Save recipient data
                     else:
-                        logger.error("Unknown template ID.")
                         return JsonResponse({'status': 'error', 'message': 'Unknown template ID'}, status=400)
 
-                return JsonResponse({'status': 'success', 'message': f'PDF and form data retrieved and stored for Envelope ID {envelope_id}'}, status=200)
+                return JsonResponse({'status': 'success', 'message': 'PDF and form data saved.'}, status=200)
             else:
-                logger.error("Envelope ID not found in the request data.")
                 return JsonResponse({'status': 'error', 'message': 'Envelope ID not found'}, status=400)
         except Exception as e:
             logger.error(f"Error processing the webhook: {str(e)}")
-            print(f"Error processing the webhook: {str(e)}")  # Console log for errors
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-def store_template1_data(form_data, envelope_id):
-    """Store form data for Template 1 in the corresponding table and folder."""
-    json_data = json.dumps(form_data, indent=2).encode('utf-8')
-    file_name = f"envelope_{envelope_id}_formdata.json"
+def store_template1_data(envelope_id):
+    """Download and store the combined PDF for Template 1 in DigitalOcean Spaces."""
+    file_name = f"envelope_{envelope_id}_combined.pdf"
     
     # Folder for Template 1
-    bucket_folder = 'Docusign_JSON/Template1/'
+    bucket_folder = 'Docusign_PDF/Template1/'
 
     try:
-        # Upload the JSON to DigitalOcean Spaces for Template 1
-        s3_client.put_object(
-            Bucket=DO_SPACES_BUCKET,
-            Key=bucket_folder + file_name,
-            Body=json_data,
-            ContentType='application/json'
-        )
-        print(f"Uploaded JSON to DigitalOcean Spaces: {DO_SPACES_ENDPOINT}/{bucket_folder}{file_name}")
-
-        # Save to Template 1 specific table in the database
-        recipient_data = form_data.get('recipientFormData', [])[0]
-        DocuSignSignature.objects.create(
-            envelope_id=envelope_id,
-            recipient_id=recipient_data.get('recipientId'),
-            email_of_signer=recipient_data.get('email'),
-            name_of_signer=recipient_data.get('name'),
-            date_of_birth=recipient_data.get('date_of_birth')
-        )
-        logger.info(f"Stored data for Envelope ID {envelope_id} in Template 1 table")
-
-    except NoCredentialsError as e:
-        logger.error(f"Credentials not available for DigitalOcean Spaces: {str(e)}")
-    except Exception as e:
-        logger.error(f"Failed to store Template 1 data: {str(e)}")
-
-def store_template2_data(form_data, envelope_id):
-    """Store form data for Template 2 in the corresponding table and folder."""
-    json_data = json.dumps(form_data, indent=2).encode('utf-8')
-    file_name = f"envelope_{envelope_id}_formdata.json"
-    
-    # Folder for Template 2
-    bucket_folder = 'Docusign_JSON/Template2/'
-
-    try:
-        # Upload the JSON to DigitalOcean Spaces for Template 2
-        s3_client.put_object(
-            Bucket=DO_SPACES_BUCKET,
-            Key=bucket_folder + file_name,
-            Body=json_data,
-            ContentType='application/json'
-        )
-        print(f"Uploaded JSON to DigitalOcean Spaces: {DO_SPACES_ENDPOINT}/{bucket_folder}{file_name}")
-
-        # Save to Template 2 specific table in the database
-        recipient_data = form_data.get('recipientFormData', [])[0]
-        DocuSignSignatureTemplate2.objects.create(
-            envelope_id=envelope_id,
-            recipient_id=recipient_data.get('recipientId'),
-            email_of_signer=recipient_data.get('email'),
-            name_of_signer=recipient_data.get('name'),
-            date_of_birth=recipient_data.get('date_of_birth')
-        )
-        logger.info(f"Stored data for Envelope ID {envelope_id} in Template 2 table")
-
-    except NoCredentialsError as e:
-        logger.error(f"Credentials not available for DigitalOcean Spaces: {str(e)}")
-    except Exception as e:
-        logger.error(f"Failed to store Template 2 data: {str(e)}")
-
-def download_and_save_pdf(envelope_id, template_folder):
-    """Download the combined PDF document for the given envelope ID and upload it to DigitalOcean Spaces."""
-    try:
+        # Download the combined PDF
         access_token = get_access_token()
         url = f'{DS_API_BASE_PATH}/accounts/{settings.DOCUSIGN_ACCOUNT_ID}/envelopes/{envelope_id}/documents/combined'
         headers = {
             'Authorization': f'Bearer {access_token}'
         }
+
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
-            # Create an in-memory file-like object for the PDF
+            # Store the PDF in DigitalOcean Spaces
             pdf_data = response.content
-            file_name = f"envelope_{envelope_id}_combined.pdf"
-            
-            # Folder for each template
-            bucket_folder = f'Docusign_PDF/{template_folder}/'
+            s3_client.put_object(
+                Bucket=DO_SPACES_BUCKET,
+                Key=bucket_folder + file_name,
+                Body=pdf_data,
+                ContentType='application/pdf'
+            )
+            print(f"Uploaded PDF to DigitalOcean Spaces: {DO_SPACES_ENDPOINT}/{bucket_folder}{file_name}")
 
-            try:
-                # Upload the PDF to DigitalOcean Spaces
-                s3_client.put_object(
-                    Bucket=DO_SPACES_BUCKET,
-                    Key=bucket_folder + file_name,
-                    Body=pdf_data,
-                    ContentType='application/pdf'
-                )
-                print(f"Uploaded PDF to DigitalOcean Spaces: {DO_SPACES_ENDPOINT}/{bucket_folder}{file_name}")
-            except NoCredentialsError as e:
-                logger.error(f"Credentials not available for DigitalOcean Spaces: {str(e)}")
-            except Exception as e:
-                logger.error(f"Failed to upload PDF to DigitalOcean Spaces: {str(e)}")
+            logger.info(f"Stored PDF for Envelope ID {envelope_id} in Template 1 folder")
 
         else:
-            logger.error(f"Failed to download PDF, status code: {response.status_code}")
+            logger.error(f"Failed to download PDF for Envelope ID {envelope_id}, status code: {response.status_code}")
+
+    except NoCredentialsError as e:
+        logger.error(f"Credentials not available for DigitalOcean Spaces: {str(e)}")
+    except Exception as e:
+        logger.error(f"Failed to store PDF for Template 1: {str(e)}")
+
+def store_template2_data(envelope_id):
+    """Download and store the combined PDF for Template 2 in DigitalOcean Spaces."""
+    file_name = f"envelope_{envelope_id}_combined.pdf"
+    
+    # Folder for Template 2
+    bucket_folder = 'Docusign_PDF/Template2/'
+
+    try:
+        # Download the combined PDF
+        access_token = get_access_token()
+        url = f'{DS_API_BASE_PATH}/accounts/{settings.DOCUSIGN_ACCOUNT_ID}/envelopes/{envelope_id}/documents/combined'
+        headers = {
+            'Authorization': f'Bearer {access_token}'
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            # Store the PDF in DigitalOcean Spaces
+            pdf_data = response.content
+            s3_client.put_object(
+                Bucket=DO_SPACES_BUCKET,
+                Key=bucket_folder + file_name,
+                Body=pdf_data,
+                ContentType='application/pdf'
+            )
+            print(f"Uploaded PDF to DigitalOcean Spaces: {DO_SPACES_ENDPOINT}/{bucket_folder}{file_name}")
+
+            logger.info(f"Stored PDF for Envelope ID {envelope_id} in Template 2 folder")
+
+        else:
+            logger.error(f"Failed to download PDF for Envelope ID {envelope_id}, status code: {response.status_code}")
+
+    except NoCredentialsError as e:
+        logger.error(f"Credentials not available for DigitalOcean Spaces: {str(e)}")
+    except Exception as e:
+        logger.error(f"Failed to store PDF for Template 2: {str(e)}")
+
+def save_recipient_data(form_data, envelope_id, template_type='template1'):
+    """Save recipient data to the correct database table based on the template type."""
+    try:
+        recipient_data = form_data.get('recipientFormData', [])[0]  # Assuming only one recipient
+        if recipient_data:
+            recipient_id = recipient_data.get('recipientId')
+            email_of_signer = recipient_data.get('email')
+            name_of_signer = recipient_data.get('name')
+            date_of_birth = recipient_data.get('date_of_birth')
+
+            if template_type == 'template1':
+                DocuSignSignature.objects.create(
+                    envelope_id=envelope_id,
+                    recipient_id=recipient_id,
+                    email_of_signer=email_of_signer,
+                    name_of_signer=name_of_signer,
+                    date_of_birth=date_of_birth
+                )
+                logger.info(f"Stored data for Envelope ID {envelope_id} in Template 1 table")
+            else:
+                DocuSignSignatureTemplate2.objects.create(
+                    envelope_id=envelope_id,
+                    recipient_id=recipient_id,
+                    email_of_signer=email_of_signer,
+                    name_of_signer=name_of_signer,
+                    date_of_birth=date_of_birth
+                )
+                logger.info(f"Stored data for Envelope ID {envelope_id} in Template 2 table")
+        else:
+            logger.error(f"No recipient data found for Envelope ID {envelope_id}")
 
     except Exception as e:
-        logger.error(f"Exception occurred during PDF download: {str(e)}")
-
+        logger.error(f"Failed to store recipient data for Envelope ID {envelope_id}: {str(e)}")
 
 def fetch_envelope_form_data(envelope_id):
     """Fetch form data for a given envelope using the DocuSign API."""
@@ -218,33 +203,4 @@ def fetch_envelope_form_data(envelope_id):
 
     except Exception as e:
         logger.error(f"Exception occurred while fetching form data for Envelope ID {envelope_id}: {str(e)}")
-        return None
-
-def fetch_template_id(envelope_id):
-    """Fetch template ID for a given envelope using the DocuSign API."""
-    try:
-        access_token = get_access_token()
-        url = f'{DS_API_BASE_PATH}/accounts/{settings.DOCUSIGN_ACCOUNT_ID}/envelopes/{envelope_id}/templates'
-        headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Accept': 'application/json'
-        }
-
-        response = requests.get(url, headers=headers)
-
-        if response.status_code == 200:
-            templates = response.json()
-            if templates and "templates" in templates:
-                template_id = templates["templates"][0].get("templateId")  # Assuming you need the first template
-                logger.info(f"Template ID retrieved for Envelope ID {envelope_id}: {template_id}")
-                return template_id
-            else:
-                logger.error(f"No templates found for Envelope ID {envelope_id}")
-                return None
-        else:
-            logger.error(f"Failed to fetch template ID for Envelope ID {envelope_id}, status code: {response.status_code}")
-            return None
-
-    except Exception as e:
-        logger.error(f"Exception occurred while fetching template ID for Envelope ID {envelope_id}: {str(e)}")
         return None

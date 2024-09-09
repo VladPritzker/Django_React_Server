@@ -265,6 +265,7 @@ class DocuSignSignatureTemplate2(models.Model):
     email_of_signer = models.CharField(max_length=255, blank=True, null=True)
     name_of_signer = models.CharField(max_length=255, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
+    date_signed = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

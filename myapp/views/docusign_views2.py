@@ -85,6 +85,7 @@ def docusign_webhook(request):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+
 def store_template1_data(form_data, envelope_id):
     """Store form data for Template 1 in the corresponding table and folder."""
     json_data = json.dumps(form_data, indent=2).encode('utf-8')
@@ -190,3 +191,28 @@ def download_and_save_pdf(envelope_id, template_folder):
 
     except Exception as e:
         logger.error(f"Exception occurred during PDF download: {str(e)}")
+
+
+def fetch_envelope_form_data(envelope_id):
+    """Fetch form data for a given envelope using the DocuSign API."""
+    try:
+        access_token = get_access_token()
+        url = f'{DS_API_BASE_PATH}/accounts/{settings.DOCUSIGN_ACCOUNT_ID}/envelopes/{envelope_id}/form_data'
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Accept': 'application/json'
+        }
+        
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            form_data = response.json()
+            logger.info(f"Form data retrieved for Envelope ID {envelope_id}: {json.dumps(form_data, indent=2)}")
+            return form_data
+        else:
+            logger.error(f"Failed to fetch form data for Envelope ID {envelope_id}, status code: {response.status_code}")
+            return None
+
+    except Exception as e:
+        logger.error(f"Exception occurred while fetching form data for Envelope ID {envelope_id}: {str(e)}")
+        return None

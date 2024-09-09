@@ -57,6 +57,10 @@ def docusign_webhook(request):
             print(f"Extracted Envelope ID: {envelope_id}, Template ID: {template_id}")  # Console log
 
             if envelope_id:
+                # If template_id is None, fetch it via API
+                if not template_id:
+                    template_id = fetch_template_id(envelope_id)
+
                 # Fetch the form data JSON
                 form_data = fetch_envelope_form_data(envelope_id)
 
@@ -84,7 +88,6 @@ def docusign_webhook(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
-
 
 def store_template1_data(form_data, envelope_id):
     """Store form data for Template 1 in the corresponding table and folder."""
@@ -215,4 +218,33 @@ def fetch_envelope_form_data(envelope_id):
 
     except Exception as e:
         logger.error(f"Exception occurred while fetching form data for Envelope ID {envelope_id}: {str(e)}")
+        return None
+
+def fetch_template_id(envelope_id):
+    """Fetch template ID for a given envelope using the DocuSign API."""
+    try:
+        access_token = get_access_token()
+        url = f'{DS_API_BASE_PATH}/accounts/{settings.DOCUSIGN_ACCOUNT_ID}/envelopes/{envelope_id}/templates'
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Accept': 'application/json'
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            templates = response.json()
+            if templates and "templates" in templates:
+                template_id = templates["templates"][0].get("templateId")  # Assuming you need the first template
+                logger.info(f"Template ID retrieved for Envelope ID {envelope_id}: {template_id}")
+                return template_id
+            else:
+                logger.error(f"No templates found for Envelope ID {envelope_id}")
+                return None
+        else:
+            logger.error(f"Failed to fetch template ID for Envelope ID {envelope_id}, status code: {response.status_code}")
+            return None
+
+    except Exception as e:
+        logger.error(f"Exception occurred while fetching template ID for Envelope ID {envelope_id}: {str(e)}")
         return None

@@ -7,7 +7,7 @@ from myapp.views import (
     user_views, income_views, meeting_views, financial_views,
     investing_views, note_views, expense_views, contact_views,
     sleep_logs, home_views, stock_data, customCashFlowInvestment_views,
-    stock_data_pdf, docusign_views
+    stock_data_pdf, docusign_views, docusign_views2
 )
 from myapp.views.download_pdf import download_pdf
 
@@ -44,7 +44,7 @@ urlpatterns = [
     path('generate-pdf/', stock_data_pdf.generate_pdf, name='generate_pdf'),
 
      # DocuSign Endpoints
-    path('docusign/webhook/', docusign_views.docusign_webhook, name='docusign_webhook'),
+    path('docusign/webhook/', docusign_views2.docusign_webhook, name='docusign_webhook'),
     path('download_pdf/<str:envelope_id>/', download_pdf, name='download_pdf'),
  
     # Password reset URLs

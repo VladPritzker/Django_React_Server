@@ -142,7 +142,7 @@ def download_and_save_pdf(envelope_id):
             try:
                 # Upload the PDF to DigitalOcean Spaces
                 s3_client.put_object(
-                    Bucket=DO_SPACES_BUCKET,
+                    # Bucket=DO_SPACES_BUCKET,
                     Key=bucket_folder + file_name,
                     Body=pdf_data,
                     ContentType='application/pdf'

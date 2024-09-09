@@ -163,17 +163,23 @@ def store_template2_data(envelope_id):
 def save_recipient_data(form_data, envelope_id, template_type):
     """Save recipient data to the correct database table based on the template type."""
     try:
-        recipient_data = form_data.get('recipientFormData', [])[0]  # Assuming only one recipient
-        if recipient_data:
-            recipient_id = recipient_data.get('recipientId')
-            email_of_signer = recipient_data.get('email')
-            name_of_signer = recipient_data.get('name')
-            date_of_birth = None
-            date_signed = recipient_data.get('SignedTime')  # Extract the signed time
+        recipient_form_data = form_data.get('recipientFormData', [])[0]  # Assuming only one recipient
+        
+        if recipient_form_data:
+            # Extract the form data fields
+            form_fields = {item['name']: item['value'] for item in recipient_form_data.get('formData', [])}
+            
+            recipient_id = recipient_form_data.get('recipientId')
+            email_of_signer = form_fields.get('email_of_signer')
+            name_of_signer = form_fields.get('name_of_signer')
+            date_of_birth_str = form_fields.get('date_of_birth')
+            date_signed_str = form_fields.get('date_signed')
 
-            
-            
-            # Choose the correct table based on the template
+            # Convert date_of_birth and date_signed to proper date formats
+            date_of_birth = datetime.strptime(date_of_birth_str, "%m.%d.%Y").date() if date_of_birth_str else None
+            date_signed = datetime.strptime(date_signed_str, "%m/%d/%Y").replace(tzinfo=None) if date_signed_str else None
+
+            # Save to the appropriate table based on the template type
             if template_type == 'template1':
                 DocuSignSignature.objects.create(
                     envelope_id=envelope_id,
@@ -181,7 +187,7 @@ def save_recipient_data(form_data, envelope_id, template_type):
                     email_of_signer=email_of_signer,
                     name_of_signer=name_of_signer,
                     date_of_birth=date_of_birth,
-                    date_signed=date_signed  # Save signed time
+                    date_signed=date_signed
                 )
                 logger.info(f"Stored data for Envelope ID {envelope_id} in Template 1 table")
             else:
@@ -191,7 +197,7 @@ def save_recipient_data(form_data, envelope_id, template_type):
                     email_of_signer=email_of_signer,
                     name_of_signer=name_of_signer,
                     date_of_birth=date_of_birth,
-                    date_signed=date_signed  # Save signed time
+                    date_signed=date_signed
                 )
                 logger.info(f"Stored data for Envelope ID {envelope_id} in Template 2 table")
         else:
@@ -199,7 +205,6 @@ def save_recipient_data(form_data, envelope_id, template_type):
 
     except Exception as e:
         logger.error(f"Failed to store recipient data for Envelope ID {envelope_id}: {str(e)}")
-
 
 
 def fetch_envelope_form_data(envelope_id):

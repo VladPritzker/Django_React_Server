@@ -48,21 +48,29 @@ def docusign_webhook(request):
             template_id = envelope_data.get('data', {}).get('templateId', None)
 
             if envelope_id:
-                # Fetch form data
-                form_data = fetch_envelope_form_data(envelope_id)
+                # If template ID is missing, fetch it using the additional API request
+                if not template_id:
+                    template_id = fetch_template_id(envelope_id)
 
-                if form_data:
-                    # Store the PDF and recipient data based on template_id
-                    if template_id == "17cc51e1-5433-4576-98bb-7c60bde50bbd":
-                        store_template1_data(envelope_id)  # Store PDF
-                        save_recipient_data(form_data, envelope_id, 'template1')  # Save recipient data
-                    elif template_id == "fc1fa3af-f87d-4558-aa10-6b275852c78e":
-                        store_template2_data(envelope_id)  # Store PDF
-                        save_recipient_data(form_data, envelope_id, 'template2')  # Save recipient data
-                    else:
-                        return JsonResponse({'status': 'error', 'message': 'Unknown template ID'}, status=400)
+                if template_id:
+                    # Fetch form data from DocuSign
+                    form_data = fetch_envelope_form_data(envelope_id)
 
-                return JsonResponse({'status': 'success', 'message': 'PDF and form data saved.'}, status=200)
+                    if form_data:
+                        # Store the PDF and recipient data based on template_id
+                        if template_id == "17cc51e1-5433-4576-98bb-7c60bde50bbd":
+                            store_template1_data(envelope_id)  # Store PDF
+                            save_recipient_data(form_data, envelope_id, 'template1')  # Save recipient data
+                        elif template_id == "fc1fa3af-f87d-4558-aa10-6b275852c78e":
+                            store_template2_data(envelope_id)  # Store PDF
+                            save_recipient_data(form_data, envelope_id, 'template2')  # Save recipient data
+                        else:
+                            return JsonResponse({'status': 'error', 'message': 'Unknown template ID'}, status=400)
+
+                    return JsonResponse({'status': 'success', 'message': 'PDF and form data saved.'}, status=200)
+                else:
+                    logger.error(f"Could not retrieve template ID for Envelope ID {envelope_id}")
+                    return JsonResponse({'status': 'error', 'message': 'Template ID not found'}, status=400)
             else:
                 return JsonResponse({'status': 'error', 'message': 'Envelope ID not found'}, status=400)
         except Exception as e:
@@ -70,6 +78,8 @@ def docusign_webhook(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
 
 
 def store_template1_data(envelope_id):
@@ -214,4 +224,34 @@ def fetch_envelope_form_data(envelope_id):
 
     except Exception as e:
         logger.error(f"Exception occurred while fetching form data for Envelope ID {envelope_id}: {str(e)}")
+        return None
+
+
+def fetch_template_id(envelope_id):
+    """Fetch the template ID using the DocuSign API for a given envelope ID."""
+    try:
+        access_token = get_access_token()
+        url = f'{DS_API_BASE_PATH}/accounts/{settings.DOCUSIGN_ACCOUNT_ID}/envelopes/{envelope_id}/templates'
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Accept': 'application/json'
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            template_data = response.json()
+            # Check if any templates exist and extract the first template's ID
+            if template_data.get('templates'):
+                template_id = template_data['templates'][0].get('templateId')
+                logger.info(f"Retrieved template ID: {template_id} for Envelope ID: {envelope_id}")
+                return template_id
+            else:
+                logger.error(f"No templates found for Envelope ID: {envelope_id}")
+                return None
+        else:
+            logger.error(f"Failed to fetch template ID, status code: {response.status_code}")
+            return None
+    except Exception as e:
+        logger.error(f"Error fetching template ID for Envelope ID {envelope_id}: {str(e)}")
         return None

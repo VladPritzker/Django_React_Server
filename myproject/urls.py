@@ -10,7 +10,7 @@ from myapp.views import (
     stock_data_pdf, docusign_views, 
 )
 from myapp.views.download_pdf import download_pdf
-from myapp.views.send_envelop import send_envelop
+
 
 urlpatterns = [
     path('', home_views.homepage, name='homepage'),
@@ -47,7 +47,7 @@ urlpatterns = [
      # DocuSign Endpoints
     path('docusign/webhook/', docusign_views.docusign_webhook, name='docusign_webhook'),
     path('download_pdf/<str:envelope_id>/', download_pdf, name='download_pdf'),
-    path('send-envelop/', send_envelop, name='send_envelope'),
+    
 
  
     # Password reset URLs

@@ -1,4 +1,3 @@
-bind = "0.0.0.0:8000"
+bind = "0.0.0.0:8080"
 workers = 3
-accesslog = "-"
-errorlog = "-"
+timeout = 120

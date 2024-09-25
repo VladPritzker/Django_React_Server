@@ -30,6 +30,7 @@ ALLOWED_HOSTS = [
     'clownfish-app-dsl46.ondigitalocean.app',
     'http://localhost:3000',
     'http://pritzker-finance.com',
+    'http://127.0.0.1:8081'
  
 ]
 
@@ -40,6 +41,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://oyster-app-vhznt.ondigitalocean.app',  # Production backend
     'http://127.0.0.1:3000',
     'http://pritzker-finance.com',
+    'http://127.0.0.1:8081'
  
 ]
 
@@ -50,6 +52,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:3000',
     'http://pritzker-finance.com',
+    'http://127.0.0.1:8081'
  
 
 ]
@@ -206,3 +209,4 @@ CORS_ALLOW_METHODS = [
 DOCUSIGN_CLIENT_ID = config('DOCUSIGN_CLIENT_ID')
 DOCUSIGN_CLIENT_SECRET = config('DOCUSIGN_CLIENT_SECRET')
 DOCUSIGN_ACCOUNT_ID = config('DOCUSIGN_ACCOUNT_ID')
+OPENAI_API_KEY = config('REACT_APP_OPENAI_API_KEY')

@@ -7,7 +7,8 @@ from myapp.views import (
     user_views, income_views, meeting_views, financial_views,
     investing_views, note_views, expense_views, contact_views,
     sleep_logs, home_views, stock_data, customCashFlowInvestment_views,
-    stock_data_pdf, 
+    stock_data_pdf, assistant_views
+
 )
 
 
@@ -43,6 +44,8 @@ urlpatterns = [
     path('api/stock-data/', stock_data.stock_data_view, name='stock_data_view'),
     path('fetch-stock-data/', stock_data_pdf.fetch_stock_data, name='fetch_stock_data'),
     path('generate-pdf/', stock_data_pdf.generate_pdf, name='generate_pdf'),
+    path('api/assistant/', assistant_views.assistant_views , name='assistant'),
+
 
  
     # Password reset URLs

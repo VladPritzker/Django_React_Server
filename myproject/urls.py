@@ -7,9 +7,10 @@ from myapp.views import (
     user_views, income_views, meeting_views, financial_views,
     investing_views, note_views, expense_views, contact_views,
     sleep_logs, home_views, stock_data, customCashFlowInvestment_views,
-    stock_data_pdf, assistant_views
+    stock_data_pdf
 
 )
+from myapp.views.assistant_views import assistant_views
 
 
 

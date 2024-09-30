@@ -31,7 +31,7 @@ def assistant_views(request):
           "record_date": "Date (YYYY-MM-DD)"       // Include only for adding income records
         }
         
-        If the user's request does not involve adding, deleting, or listing contacts or income records, respond normally.
+        If the user's request does not involve any listed above actions, answer normally, means not in json format.
         """
 
                 

@@ -37,23 +37,7 @@ def handle_income_action(action_data, user_id):
         )
         # Update income summaries
         update_income_by_periods(user)
-        return JsonResponse({'reply': f'Income record "{title}" added successfully!'}, status=200)
-    
-    # elif action == 'delete_income':
-    #     if not title:
-    #         return JsonResponse({'error': 'Title is required to delete an income record.'}, status=400)
-    #     elif not amount:
-    #         return JsonResponse({'error': 'Amount is required to delete an income record.'}, status=400)
-    #     # Delete the income record
-    #     income_record = IncomeRecord.objects.filter(user=user, title=title, amount=amount).first()
-    #     if income_record:
-    #         income_record.delete()
-    #         # Update income summaries
-    #         update_income_by_periods(user)
-    #         return JsonResponse({'reply': f'Income record "{title}" deleted successfully!'}, status=200)
-    #     else:
-    #         return JsonResponse({'reply': f'Income record "{title}" not found.'}, status=404)
-    
+        return JsonResponse({'reply': f'Income record "{title}" added successfully!'}, status=200)    
     elif action == 'list_income':
         # Fetch the income records for the user
         income_records = IncomeRecord.objects.filter(user=user).order_by('-record_date')

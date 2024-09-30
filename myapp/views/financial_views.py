@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from myapp.models import FinancialRecord, User
-import json
+import json 
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.db.models import Sum

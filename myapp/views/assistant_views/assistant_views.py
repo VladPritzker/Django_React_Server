@@ -7,6 +7,7 @@ import logging
 from myapp.views.assistant_views.assistant_add_contact import handle_contact_action
 from myapp.views.assistant_views.assistant_income import handle_income_action  # Import this
 from myapp.views.assistant_views.assistant_spending import handle_spending_action  # Import this
+from myapp.views.assistant_views.assistant_sleep_logs import handle_sleep_log_action  # Import this
 from myapp.models import FinancialRecord, User  # Import models for financial records and user
 from datetime import datetime
 from decimal import Decimal
@@ -23,18 +24,20 @@ def assistant_views(request):
 
         system_prompt = """
         You are a helpful assistant integrated into a user application that manages contacts, income, and spending records.
-        When a user wants to add, delete, or list their contacts, income, or spending records, extract the intent and details.
+        When a user wants to add, delete, or list their contacts, add income or list income, add or list spending records, or add sleep logs record, add sleep log extract the intent and details.
         Respond in the following JSON format without additional text:
         
         {
-          "action": "add_contact" or "delete_contact" or "list_contacts" or "add_income" or "list_income" or "add_spending" or "list_spending",
-          "name": "Contact Name or Income/Spending Title",  // Include for adding or deleting contacts, income, or spending records
-          "phone_number": "Phone Number",                  // Include only for adding contacts
-          "amount": "Income or Spending Amount",           // Include for adding income or spending records
-          "record_date": "Date (YYYY-MM-DD)"               // Include for adding income or spending records
+          "action": "add_contact" or "delete_contact" or "list_contacts" or "add_income" or "list_income" or "add_spending" or "list_spending" or "add_sleep_log"
+          "name": "Title",  // Include for adding or deleting contacts, add or list income, add or list spending records (don't use for add sleep log)
+          "phone_number": "Phone Number",                         // Include only! for adding contacts
+          "amount": "Income or Spending Amount",                  // Include for adding income or spending records
+          "record_date": "Date (YYYY-MM-DD)",                     // Include for adding income, add spending, or add sleep logs records
+          "sleep_time": "Time (YYYY-MM-DD HH:MM:SS)",             // Include for add_sleep_log
+          "wake_time": "Time (YYYY-MM-DD HH:MM:SS)"               // Include for add_sleep_log
         }
         
-        If the user's request does not involve any listed actions, answer normally.
+        If the user's request does not involve any listed actions, answer normally, (not in json format!).
         """
 
         # Convert messages to OpenAI format
@@ -66,6 +69,8 @@ def assistant_views(request):
                     return handle_income_action(action_data, user_id)
                 elif action in ['add_spending', 'list_spending']:
                     return handle_spending_action(action_data, user_id)  # Handle spending actions
+                elif action in ['add_sleep_log', 'list_sleep_logs']:
+                    return handle_sleep_log_action(action_data, user_id)
                 else:
                     return JsonResponse({'error': 'Invalid action specified.'}, status=400)
 

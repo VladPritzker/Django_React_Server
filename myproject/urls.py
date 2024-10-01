@@ -10,6 +10,8 @@ from myapp.views import (
     stock_data_pdf
 
 )
+from myapp.views.docusign_views.docusign_UI_send import send_docusign_envelope
+from myapp.views.docusign_views.endpoint_download_new_envelop import download_new_envelopes
 from myapp.views.assistant_views import assistant_views
 
 
@@ -46,14 +48,18 @@ urlpatterns = [
     path('fetch-stock-data/', stock_data_pdf.fetch_stock_data, name='fetch_stock_data'),
     path('generate-pdf/', stock_data_pdf.generate_pdf, name='generate_pdf'),
     path('api/assistant/', assistant_views.assistant_views , name='assistant'),
-
+    path('send-envelope/', send_docusign_envelope, name='send-envelope'),
+    path('download-new-envelopes/', download_new_envelopes, name='download-new-envelopes'),
 
  
+
+
     # Password reset URLs
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+
 ]
 
 if settings.DEBUG:

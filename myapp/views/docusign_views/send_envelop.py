@@ -64,7 +64,7 @@ def send_envelop(recipient_email, recipient_name):
 
 
 # Example usage
-recipient_email = "example@example.com"
-recipient_name = "Example Name"
+# recipient_email = "example@example.com"
+# recipient_name = "Example Name"
 
-send_envelop(recipient_email, recipient_name)
+# send_envelop(recipient_email, recipient_name)

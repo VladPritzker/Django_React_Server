@@ -49,7 +49,7 @@ ACCOUNT_ID = settings.DOCUSIGN_ACCOUNT_ID
 
 def get_signed_envelopes():
     access_token = TOKEN
-    account_id = settings.DOCUSIGN_ACCOUNT_ID
+    account_id = ACCOUNT_ID
 
 
 

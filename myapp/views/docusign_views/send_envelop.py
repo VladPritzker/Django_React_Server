@@ -3,28 +3,28 @@ import requests
 from django.conf import settings  # Correct import for Django settings
 
 # File paths for tokens (assuming token.txt is in the root of your project)
-TOKEN_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../myapp/views/docusign_views/token.txt'))
+# TOKEN_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../myapp/views/docusign_views/token.txt'))
 
-def load_access_token():
-    """Load the access token from the token.txt file."""
-    if not os.path.exists(TOKEN_FILE):
-        raise Exception(f"Token file not found: {TOKEN_FILE}")
+# def load_access_token():
+#     """Load the access token from the token.txt file."""
+#     if not os.path.exists(TOKEN_FILE):
+#         raise Exception(f"Token file not found: {TOKEN_FILE}")
 
-    with open(TOKEN_FILE, 'r') as file:
-        lines = file.readlines()
-        for line in lines:
-            if line.startswith("token="):
-                return line.split('=')[1].strip()
-    raise Exception("Access token not found in the token file")
+#     with open(TOKEN_FILE, 'r') as file:
+#         lines = file.readlines()
+#         for line in lines:
+#             if line.startswith("token="):
+#                 return line.split('=')[1].strip()
+#     raise Exception("Access token not found in the token file")
 
 # Token = 'eyJ0eXAiOiJNVCIsImFsZyI6IlJTMjU2Iiwia2lkIjoiNjgxODVmZjEtNGU1MS00Y2U5LWFmMWMtNjg5ODEyMjAzMzE3In0.AQoAAAABAAUABwCATV8vSuLcSAgAgI2CPY3i3EgCALlaeBAx3T9DhTXhXpK7bj8VAAEAAAAYAAEAAAAFAAAADQAkAAAAOTYzOGE4MzItM2Q4ZC00YzczLWI4YzQtMDMyM2ZmM2FhMWE3IgAkAAAAOTYzOGE4MzItM2Q4ZC00YzczLWI4YzQtMDMyM2ZmM2FhMWE3EgACAAAACwAAAGludGVyYWN0aXZlBwAAAHNlY19rZXkwAAA2qwJK4txI.BExQ4a4nk6LTRj2BWZEJe-BHLep40TrKXrSWpr3_q6__0uqlIV2n58T4KAl-hQM8giOPiRhw1MT7WokKJrokHbwmt8ukFHS_Q-1Gm_p4o0rv9yX2uGJQfZ_WQCPn9xukoKrQPXO7fyvHLQpcIp7W93GmAFYm7-v-QYEMaIAU-7YToUcMidW2LPmxKiHeU1r5INsrzvVlqyskwDkf44rptZcTZr3TDH107cJ2yEELYLdJda9uPvFcxpEQaDZJR56z6ctuorfOoNk8wg-W0r61z2YXuKHi126CoanEE588Gxl3LqsUGboUPUG-833BSYXkh1F8p3gtTUlPRzt2oArgEw'
 
-
+TOKEN = settings.DOCUSIGN_ACCESS_TOKEN
 def send_envelop(recipient_email, recipient_name):
     """Send an envelope using a predefined template ID and recipient details."""
     
     # Load the access token from the file
-    access_token = load_access_token()
+    access_token = TOKEN
 
     # Retrieve account ID and template ID from settings
     account_id = settings.DOCUSIGN_ACCOUNT_ID

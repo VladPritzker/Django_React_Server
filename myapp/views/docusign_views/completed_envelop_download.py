@@ -3,10 +3,10 @@ import os
 from django.conf import settings  # Correct import for Django settings
 
 
-# File to store the downloaded envelope IDs
 ENVELOPE_LOG_FILE = "downloaded_envelopes.txt"
-TOKEN_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../myapp/views/docusign_views/token.txt'))
-ACCOUNT_ID = "docusign_config.txt"
+# File to store the downloaded envelope IDs
+# TOKEN_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../myapp/views/docusign_views/token.txt'))
+# ACCOUNT_ID = "docusign_config.txt"
 
 def load_config(file_path):
     """Load DocuSign account_id configuration file."""
@@ -33,21 +33,22 @@ def save_downloaded_envelope(envelope_id):
     with open(ENVELOPE_LOG_FILE, 'a') as file:
         file.write(f"{envelope_id}\n")
 
-def load_access_token():
-    """Load the access token from the token.txt file."""
-    if not os.path.exists(TOKEN_FILE):
-        raise Exception(f"Token file not found: {TOKEN_FILE}")
+TOKEN = settings.DOCUSIGN_ACCESS_TOKEN
+ACCOUNT_ID = settings.DOCUSIGN_ACCOUNT_ID
+# def load_access_token():
+#     """Load the access token from the token.txt file."""
+#     if not os.path.exists(TOKEN_FILE):
+#         raise Exception(f"Token file not found: {TOKEN_FILE}")
 
-    with open(TOKEN_FILE, 'r') as file:
-        lines = file.readlines()
-        for line in lines:
-            if line.startswith("token="):
-                return line.split('=')[1].strip()
-    raise Exception("Access token not found in the token file")
+#     with open(TOKEN_FILE, 'r') as file:
+#         lines = file.readlines()
+#         for line in lines:
+#             if line.startswith("token="):
+#                 return line.split('=')[1].strip()
+#     raise Exception("Access token not found in the token file")
 
 def get_signed_envelopes():
-    access_token = load_access_token()
-    # config = load_config(ACCOUNT_ID)
+    access_token = TOKEN
     account_id = settings.DOCUSIGN_ACCOUNT_ID
 
 
@@ -73,7 +74,7 @@ def get_signed_envelopes():
         return []
 
 def download_pdf(envelope_id):
-    access_token = load_access_token()
+    access_token = TOKEN
     url = f'https://demo.docusign.net/restapi/v2.1/accounts/28621645/envelopes/{envelope_id}/documents/combined'
     headers = {
         'Authorization': f'Bearer {access_token}'
@@ -91,6 +92,7 @@ def download_pdf(envelope_id):
     else:
         print(f"Failed to download PDF for envelope {envelope_id}: {response.status_code}")
         return False
+
 def process_envelopes():
     downloaded_envelopes = get_downloaded_envelopes()
     signed_envelopes = get_signed_envelopes()

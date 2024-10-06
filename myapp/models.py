@@ -232,3 +232,16 @@ class StockData(models.Model):
 
 
 
+class PlaidItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Link it to the user
+    access_token = models.CharField(max_length=500)  # To store the access token securely
+    item_id = models.CharField(max_length=500)  # Store the Plaid item ID
+    created_at = models.DateTimeField(auto_now_add=True)  # Timestamp when it was created
+    updated_at = models.DateTimeField(auto_now=True)  # Timestamp when it was last updated
+
+    def __str__(self):
+        return f"{self.user.username}'s Plaid Item"
+
+
+
+

@@ -71,7 +71,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'myapp',
+    'rest_framework.authtoken',
+    'myapp',    
 ]
 
 MIDDLEWARE = [
@@ -214,3 +215,10 @@ DOCUSIGN_ACCOUNT_ID = config('DOCUSIGN_ACCOUNT_ID')
 DOCUSIGN_TEMPLATE_ID = config('DOCUSIGN_TEMPLATE_ID')
 DOCUSIGN_ACCESS_TOKEN = config('DOCUSIGN_ACCESS_TOKEN')
 # DOCUSIGN_REFRESH_TOKEN = config('DOCUSIGN_REFRESH_TOKEN')
+
+
+## Plaid
+PLAID_CLIENT_ID = config('PLAID_CLIENT_ID')
+PLAID_SECRET = config('PLAID_SECRET')
+PLAID_HOST = 'https://sandbox.plaid.com'  # Use 'https://development.plaid.com' or 'https://production.plaid.com' if applicable
+PLAID_ENV = 'sandbox'  # Change to 'development' or 'production' when ready

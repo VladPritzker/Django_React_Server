@@ -34,7 +34,7 @@ def assistant_views(request):
           "record_date": "Date (YYYY-MM-DD)"               // Include for adding income or spending records
         }
         
-        If the user's request does not involve any listed actions, answer normally (not in json format).
+        If for spendings or income request not exist the record_date, show it as the response, If the user's request does not involve any listed actions, answer normally (not in json format).
         """
 
         # Convert messages to OpenAI format

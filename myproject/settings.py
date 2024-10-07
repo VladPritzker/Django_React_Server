@@ -222,3 +222,11 @@ PLAID_CLIENT_ID = config('PLAID_CLIENT_ID')
 PLAID_SECRET = config('PLAID_SECRET')
 PLAID_HOST = 'https://sandbox.plaid.com'  # Use 'https://development.plaid.com' or 'https://production.plaid.com' if applicable
 PLAID_ENV = 'sandbox'  # Change to 'development' or 'production' when ready
+
+
+if PLAID_ENV == 'sandbox':
+    PLAID_HOST = 'https://sandbox.plaid.com'
+elif PLAID_ENV == 'development':
+    PLAID_HOST = 'https://development.plaid.com'
+else:
+    PLAID_HOST = 'https://production.plaid.com'

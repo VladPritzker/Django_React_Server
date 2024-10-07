@@ -11,7 +11,7 @@ from myapp.views import (
 
 )
 from myapp.views.docusign_views.docusign_UI_send import send_docusign_envelope
-from myapp.views.docusign_views.endpoint_download_new_envelop import download_new_envelopes
+# from myapp.views.docusign_views.endpoint_download_new_envelop import download_new_envelopes
 from myapp.views.assistant_views import assistant_views
 
 from myapp.views.plaid.plaid_helpers import get_plaid_client, exchange_public_token, create_link_token, get_account_balances
@@ -50,7 +50,7 @@ urlpatterns = [
     path('generate-pdf/', stock_data_pdf.generate_pdf, name='generate_pdf'),
     path('api/assistant/', assistant_views.assistant_views , name='assistant'),
     path('send-envelope/', send_docusign_envelope, name='send-envelope'),
-    path('download-new-envelopes/', download_new_envelopes, name='download-new-envelopes'),
+    # path('download-new-envelopes/', download_new_envelopes, name='download-new-envelopes'),
 
     #plaid
     path('create_link_token/', create_link_token, name='create_link_token'),

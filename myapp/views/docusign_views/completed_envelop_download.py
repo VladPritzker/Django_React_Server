@@ -73,37 +73,37 @@ def get_signed_envelopes():
         print(f"Error fetching envelopes: {response.status_code}")
         return []
 
-def download_pdf(envelope_id):
-    access_token = TOKEN
-    url = f'https://demo.docusign.net/restapi/v2.1/accounts/28621645/envelopes/{envelope_id}/documents/combined'
-    headers = {
-        'Authorization': f'Bearer {access_token}'
-    }
+# def download_pdf(envelope_id):
+#     access_token = TOKEN
+#     url = f'https://demo.docusign.net/restapi/v2.1/accounts/28621645/envelopes/{envelope_id}/documents/combined'
+#     headers = {
+#         'Authorization': f'Bearer {access_token}'
+#     }
 
-    response = requests.get(url, headers=headers)
+#     response = requests.get(url, headers=headers)
 
-    if response.status_code == 200:
-        # Save the PDF with the envelope ID as the filename
-        file_path = f'/Users/vladbuzhor/downloads/hosted_completed_envelopes/{envelope_id}.pdf'
-        with open(file_path, 'wb') as file:
-            file.write(response.content)
-        print(f"PDF for envelope {envelope_id} downloaded successfully!")
-        return True
-    else:
-        print(f"Failed to download PDF for envelope {envelope_id}: {response.status_code}")
-        return False
+#     if response.status_code == 200:
+#         # Save the PDF with the envelope ID as the filename
+#         file_path = f'/Users/vladbuzhor/downloads/hosted_completed_envelopes/{envelope_id}.pdf'
+#         with open(file_path, 'wb') as file:
+#             file.write(response.content)
+#         print(f"PDF for envelope {envelope_id} downloaded successfully!")
+#         return True
+#     else:
+#         print(f"Failed to download PDF for envelope {envelope_id}: {response.status_code}")
+#         return False
 
-def process_envelopes():
-    downloaded_envelopes = get_downloaded_envelopes()
-    signed_envelopes = get_signed_envelopes()
+# def process_envelopes():
+#     downloaded_envelopes = get_downloaded_envelopes()
+#     signed_envelopes = get_signed_envelopes()
 
-    for envelope in signed_envelopes:
-        envelope_id = envelope['envelopeId']
-        if envelope_id not in downloaded_envelopes:
-            print(f"Downloading PDF for new envelope: {envelope_id}")
-            if download_pdf(envelope_id):
-                save_downloaded_envelope(envelope_id)
-        else:
-            print(f"Envelope {envelope_id} already downloaded. Skipping...")
-# Execute the envelope processing function
-process_envelopes()
+#     for envelope in signed_envelopes:
+#         envelope_id = envelope['envelopeId']
+#         if envelope_id not in downloaded_envelopes:
+#             print(f"Downloading PDF for new envelope: {envelope_id}")
+#             if download_pdf(envelope_id):
+#                 save_downloaded_envelope(envelope_id)
+#         else:
+#             print(f"Envelope {envelope_id} already downloaded. Skipping...")
+# # Execute the envelope processing function
+# process_envelopes()

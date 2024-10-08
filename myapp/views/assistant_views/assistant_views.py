@@ -22,20 +22,22 @@ def assistant_views(request):
         user_id = data.get('user_id', None)
 
         system_prompt = """
-        You are a helpful assistant integrated into a user application that manages contacts, income, and spending records.
-        When a user wants to add, delete, or list their contacts, income, or spending records, extract the intent and details.
-        Respond in the following JSON format without additional text:
-        
-        {
-          "action": "add_contact" or "delete_contact" or "list_contacts" or "add_income" or "list_income" or "add_spending" or "list_spending",
-          "name": "Contact Name or Income/Spending Title",  // Include for adding or deleting contacts, income, or spending records
-          "phone_number": "Phone Number",                  // Include only for adding contacts
-          "amount": "Income or Spending Amount",           // Include for adding income or spending records
-          "record_date": "Date (YYYY-MM-DD)"               // Include for adding income or spending records
-        }
-        
-        If for spendings or income request not exist the record_date, show it as the response, If the user's request does not involve any listed actions, answer normally (not in json format).
-        """
+            You are a helpful assistant integrated into a user application that manages contacts, income, and spending records.
+            When a user wants to add, delete, or list their contacts, income, or spending records, extract the intent and details.
+            Respond in the following JSON format without additional text:
+
+            {
+                "action": "add_contact" or "delete_contact" or "list_contacts" or "add_income" or "list_income" or "add_spending" or "list_spending",
+                "name": "Contact Name or Income/Spending Title",  // Include for adding or deleting contacts, income, or spending records
+                "phone_number": "Phone Number",                  // Include only for adding contacts
+                "amount": "Income or Spending Amount",           // Include for adding income or spending records
+                "record_date": "Date (YYYY-MM-DD)"               // Include for adding income or spending records
+            }
+
+                If the user requests to add income or spending records but doesn't provide a `record_date`, show the following warning:
+                "Please provide a date for the income or spending record in the format YYYY-MM-DD."
+                If the user's request does not involve any listed actions, answer normally (not in json format).
+                """
 
         # Convert messages to OpenAI format
         openai_messages = [{"role": "system", "content": system_prompt}]
@@ -59,7 +61,15 @@ def assistant_views(request):
             try:
                 action_data = json.loads(assistant_reply)
                 action = action_data.get('action')
+
+                # Check for add_income or add_spending actions without record_date
+                if action in ['add_income', 'add_spending']:
+                    record_date = action_data.get('record_date')
+                    if not record_date:
+                        # Return a warning if the date is missing
+                        return JsonResponse({'warning': 'Please include a date when adding income or spending.'}, status=400)
                 
+                # Proceed with the actual action handling
                 if action in ['add_contact', 'delete_contact', 'list_contacts']:
                     return handle_contact_action(action_data, user_id)
                 elif action in ['add_income', 'list_income']:

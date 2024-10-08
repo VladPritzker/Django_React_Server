@@ -19,9 +19,12 @@ def handle_income_action(action_data, user_id):
     amount = action_data.get('amount')
     record_date = action_data.get('record_date')
     
+    if not title or not amount or not record_date:
+        return JsonResponse({'error': 'Title, amount, and date are required to add an income record.'}, status=400)
+    elif not record_date:
+        return JsonResponse({'warning': 'Please include a date when adding income or spending.'}, status=400)
     if action == 'add_income':
-        if not title or not amount or not record_date:
-            return JsonResponse({'error': 'Title, amount, and date are required to add an income record.'}, status=400)
+
         try:
             # Parse amount and date
             amount = Decimal(amount)

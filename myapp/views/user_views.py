@@ -14,15 +14,20 @@ import json
 import traceback
 from django.template import TemplateDoesNotExist
 from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
+import pyotp  # OTP library
 import os
-
 
 from myapp.views.income_views import update_income_by_periods
 from myapp.views.financial_views import update_spending_by_periods
 
 User = get_user_model()
+otp_storage = {}  # To store the OTPs temporarily
 
-@ensure_csrf_cookie
+
+
+@csrf_exempt
 def csrf_token_view(request):
     return JsonResponse({'csrftoken': request.COOKIES['csrftoken']})
 
@@ -39,15 +44,52 @@ def users(request):
                     email=data['email'],
                     password=data['password']
                 )
-                print(f"User created: {user}")  # Debugging line
                 return JsonResponse({'message': 'User registered successfully', 'id': user.id}, status=201)
             except Exception as e:
-                print(f"Error creating user: {e}")  # Debugging line
                 return JsonResponse({'error': str(e)}, status=400)
 
         elif action == 'login':
             user = authenticate(email=data.get('email'), password=data.get('password'))
             if user is not None:
+                # Generate OTP
+                otp = pyotp.random_base32()
+                otp_code = pyotp.TOTP(otp).now()
+                
+                # Store OTP with expiration
+                otp_storage[user.email] = {
+                    'otp': otp_code,
+                    'expires_at': timezone.now() + timedelta(minutes=5)
+                }
+
+                # Send OTP to user's email
+                try:
+                    send_mail(
+                        'Your Login OTP',
+                        f'Welcome to Pritzker Finance. Your OTP code is: {otp_code}',
+                        'no-reply@yourdomain.com',
+                        [user.email],
+                        fail_silently=False
+                    )
+                    return JsonResponse({
+                        'message': 'OTP sent to your email. Please verify.',
+                        'id': user.id,
+                    }, status=200)
+                except Exception as e:
+                    return JsonResponse({'error': 'Failed to send OTP'}, status=500)
+            else:
+                return JsonResponse({'error': 'Invalid credentials'}, status=401)
+        
+        elif action == 'verify_otp':
+            email = data.get('email')
+            otp = data.get('otp')
+
+            # Verify the OTP
+            stored_otp = otp_storage.get(email)
+            if not stored_otp:
+                return JsonResponse({'error': 'OTP expired or invalid'}, status=400)
+
+            if stored_otp['otp'] == otp and timezone.now() <= stored_otp['expires_at']:
+                user = User.objects.get(email=email)
                 update_income_by_periods(user)
                 update_spending_by_periods(user)
                 return JsonResponse({
@@ -69,7 +111,7 @@ def users(request):
                     'is_superuser': user.is_superuser
                 }, status=200)
             else:
-                return JsonResponse({'error': 'Invalid credentials'}, status=401)
+                return JsonResponse({'error': 'OTP is incorrect or expired'}, status=401)
         
         
 

@@ -8,13 +8,17 @@ from myapp.views import (
     investing_views, note_views, expense_views, contact_views,
     sleep_logs, home_views, stock_data, customCashFlowInvestment_views,
     stock_data_pdf
-
 )
+from myapp.views.plaid.plaid_helpers import create_link_token, exchange_public_token, get_account_data
+
+
 from myapp.views.docusign_views.docusign_UI_send import send_docusign_envelope
 # from myapp.views.docusign_views.endpoint_download_new_envelop import download_new_envelopes
 from myapp.views.assistant_views import assistant_views
 
-from myapp.views.plaid.plaid_helpers import get_plaid_client, exchange_public_token, create_link_token, get_account_balances
+
+from myapp.views.plaid.account_balance import get_account_data, get_transaction_data
+
 
 
 urlpatterns = [
@@ -51,11 +55,17 @@ urlpatterns = [
     path('api/assistant/', assistant_views.assistant_views , name='assistant'),
     path('send-envelope/', send_docusign_envelope, name='send-envelope'),
     # path('download-new-envelopes/', download_new_envelopes, name='download-new-envelopes'),
+    path('get_csrf_token/', user_views.csrf_token_view, name='get_csrf_token'),
+
 
     #plaid
     path('create_link_token/', create_link_token, name='create_link_token'),
     path('exchange_public_token/', exchange_public_token, name='exchange_public_token'),
-    path('get_account_balances/', get_account_balances, name='get_account_balances'),
+    path('get_account_data/', get_account_data, name='get_account_data'),
+    path('get_transaction_data/', get_transaction_data, name='get_transaction_data'),  # Add this line
+
+
+
 
 
 

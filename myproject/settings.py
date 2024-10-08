@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 from decouple import config
 from dotenv import load_dotenv
+LOGIN_URL = '/users/'  # This will make sure any request that requires authentication redirects here
+
 
 
 # Load environment variables from .env file
@@ -20,7 +22,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
+SESSION_COOKIE_SAMESITE = 'None'  # Options: 'Lax', 'Strict', 'None'
+SESSION_COOKIE_SECURE = False   # Set to True in production with HTTPS
+
 
 # Allowed hosts
 ALLOWED_HOSTS = [
@@ -39,9 +43,8 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # Local frontend
     'https://clownfish-app-dsl46.ondigitalocean.app',  # Production frontend
     'https://oyster-app-vhznt.ondigitalocean.app',  # Production backend
-    'http://127.0.0.1:3000',
     'http://pritzker-finance.com',
-    'http://127.0.0.1:8081'
+    
  
 ]
 
@@ -49,13 +52,11 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',  # Local frontend
     'https://clownfish-app-dsl46.ondigitalocean.app',  # Production frontend
     'https://oyster-app-vhznt.ondigitalocean.app',  # Production backend
-    'http://127.0.0.1:8000',
-    'http://localhost:3000',
-    'http://pritzker-finance.com',
-    'http://127.0.0.1:8081'
- 
-
+    'http://pritzker-finance.com'
 ]
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SECURE = True
 
 
 
@@ -73,6 +74,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'myapp',    
+    'sslserver'
 ]
 
 MIDDLEWARE = [

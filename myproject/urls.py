@@ -10,6 +10,12 @@ from myapp.views import (
     stock_data_pdf
 )
 from myapp.views.plaid.plaid_helpers import create_link_token, exchange_public_token, get_account_data
+from myapp.views.user_views import (
+    register_user, login_with_otp, verify_otp, reset_password, fetch_user_details, send_otp, simple_login
+)
+from django.contrib.auth import views as auth_views
+
+
 
 
 from myapp.views.docusign_views.docusign_UI_send import send_docusign_envelope
@@ -24,7 +30,7 @@ from myapp.views.plaid.account_balance import get_account_data, get_transaction_
 urlpatterns = [
     path('', home_views.homepage, name='homepage'),
     path('admin/', admin.site.urls),
-    path('users/', user_views.users, name='users'),
+    # path('users/', user_views.users, name='users'),
     path('users/<int:user_id>/', user_views.users_data, name='users_data'),
     path('financial_records/', financial_views.financial_records, name='financial_records'),
     path('financial_records/<int:user_id>/<int:record_id>/', financial_views.delete_financial_record, name='delete_financial_record'),
@@ -48,14 +54,13 @@ urlpatterns = [
     path('users/<int:user_id>/upload_photo/', user_views.upload_photo, name='upload_photo'),
     path('sleeplogs/<int:user_id>/', sleep_logs.SleepLogsView.as_view(), name='sleep_logs_list'),
     path('sleeplogs/<int:user_id>/<int:id>/', sleep_logs.SleepLogsView.as_view(), name='sleep_log_detail'),
-    path('get_csrf_token/', user_views.csrf_token_view, name='get_csrf_token'),
     path('api/stock-data/', stock_data.stock_data_view, name='stock_data_view'),
     path('fetch-stock-data/', stock_data_pdf.fetch_stock_data, name='fetch_stock_data'),
     path('generate-pdf/', stock_data_pdf.generate_pdf, name='generate_pdf'),
     path('api/assistant/', assistant_views.assistant_views , name='assistant'),
     path('send-envelope/', send_docusign_envelope, name='send-envelope'),
     # path('download-new-envelopes/', download_new_envelopes, name='download-new-envelopes'),
-    path('get_csrf_token/', user_views.csrf_token_view, name='get_csrf_token'),
+    
 
 
     #plaid
@@ -64,19 +69,24 @@ urlpatterns = [
     path('get_account_data/', get_account_data, name='get_account_data'),
     path('get_transaction_data/', get_transaction_data, name='get_transaction_data'),  # Add this line
 
+    # sendgrid
+    path('send-otp/', send_otp, name='send_otp'),
+    path('verify-otp/', verify_otp, name='verify_otp'),
+    
+    path('register/', register_user, name='register'),
+    path('login/', login_with_otp, name='login_with_otp'),
+    path('verify-otp/', verify_otp, name='verify_otp'),
+    path('reset-password/', reset_password, name='reset_password'),
+    path('fetch-user-details/', fetch_user_details, name='fetch_user_details'),
 
-
-
-
-
- 
-
-
-    # Password reset URLs
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('simple-login/', simple_login, name='simple_login'),
+
+
+
 
 ]
 

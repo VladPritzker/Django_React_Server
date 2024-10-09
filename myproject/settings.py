@@ -3,7 +3,8 @@ import os
 from pathlib import Path
 from decouple import config
 from dotenv import load_dotenv
-LOGIN_URL = '/users/'  # This will make sure any request that requires authentication redirects here
+LOGIN_URL = 'https://pritzker-finance.com/'  # Update with the correct login URL
+
 
 
 
@@ -185,14 +186,14 @@ DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 USE_TZ = False
 CORS_ALLOW_ALL_ORIGINS = True
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False  # Ensure this line is set to False
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = 'no-reply@yourdomain.com'
+DEFAULT_FROM_EMAIL = 'no-reply@pritzker-finance.com'
 
 STOCK_DATA_KEY = config('STOCK_DATA_KEY')
 CORS_ALLOW_CREDENTIALS = True
@@ -238,3 +239,12 @@ PASSWORD_RESET_TIMEOUT = 86400  # 1 day (you can adjust this value)
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Ensure this directory exists and is correctly set up
+
+# SendGrid settings 
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+SENDGRID_API_KEY = config('SENDGRID_API_KEY')
+
+# Additional SendGrid settings (optional)
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False  # Set to True if you want to test without sending emails
+SENDGRID_ECHO_TO_STDOUT = True  # Print emails to the console while in DEBUG mode
+DEFAULT_FROM_EMAIL = "pritzkervlad@gmail.com"

@@ -119,26 +119,12 @@ def users(request):
         elif action == 'reset_password':
             email = data.get('email')
             try:
-                user = User.objects.get(email=email)
+                user = get_object_or_404(User, email=email)
                 token = default_token_generator.make_token(user)
                 uid = urlsafe_base64_encode(force_bytes(user.pk))
                 reset_link = f"{request.scheme}://{request.get_host()}/reset/{uid}/{token}/"
                 
-                try:
-                    # Attempt to load the template
-                    template = get_template('reset_password_email.html')
-                    print(f"Template found at: {template.origin}")
-                except TemplateDoesNotExist:
-                    print("Template reset_password_email.html does not exist.")
-                    print(f"Template directories: {settings.TEMPLATES[0]['DIRS']}")
-                    for directory in settings.TEMPLATES[0]['DIRS']:
-                        if os.path.exists(directory):
-                            print(f"Contents of {directory}: {os.listdir(directory)}")
-                        else:
-                            print(f"Directory does not exist: {directory}")
-                    return JsonResponse({'error': 'Email template not found.'}, status=500)
-
-                # Render the email content
+                # Send password reset email
                 message = render_to_string('reset_password_email.html', {
                     'user': user,
                     'reset_link': reset_link,
@@ -146,18 +132,19 @@ def users(request):
                 send_mail(
                     'Password Reset Request',
                     message,
-                    'no-reply@yourdomain.com',
+                    settings.DEFAULT_FROM_EMAIL,
                     [user.email],
                     fail_silently=False,
-                    html_message=message,  # This is where the HTML content is passed
-
+                    html_message=message,
                 )
-                return JsonResponse({'message': 'Password reset link sent to your email.'}, status=200)
+                return JsonResponse({'message': 'Password reset link sent.'}, status=200)
             except User.DoesNotExist:
                 return JsonResponse({'error': 'User with this email does not exist.'}, status=404)
             except Exception as e:
-                print(f"SMTP error: {e}")
-                return JsonResponse({'error': 'Failed to send email.'}, status=500)
+                print(f"Error: {e}")
+                traceback.print_exc()
+                return JsonResponse({'error': 'Failed to send password reset email.'}, status=500)
+
         
         elif action == 'fetch_user_details':
             user_id = data.get('user_id')

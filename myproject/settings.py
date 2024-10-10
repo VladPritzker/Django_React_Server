@@ -172,12 +172,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
 
 # Ensure you have the correct storage backend set up
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
@@ -248,3 +247,24 @@ SENDGRID_API_KEY = config('SENDGRID_API_KEY')
 SENDGRID_SANDBOX_MODE_IN_DEBUG = False  # Set to True if you want to test without sending emails
 SENDGRID_ECHO_TO_STDOUT = True  # Print emails to the console while in DEBUG mode
 DEFAULT_FROM_EMAIL = "pritzkervlad@gmail.com"
+
+
+
+
+# DigitalOcean Spaces configuration
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+DIGITALOCEAN_SPACES_KEY = config('DO_SPACE_ACCESS_KEY_ID')
+DIGITALOCEAN_SPACES_SECRET = config('DO_SPACE_SECRET_ACCESS_KEY')
+DIGITALOCEAN_STORAGE_BUCKET_NAME = 'photopritzkerinance'
+DIGITALOCEAN_ENDPOINT_URL = 'https://nyc3.digitaloceanspaces.com'
+
+AWS_ACCESS_KEY_ID = DIGITALOCEAN_SPACES_KEY
+AWS_SECRET_ACCESS_KEY = DIGITALOCEAN_SPACES_SECRET
+AWS_STORAGE_BUCKET_NAME = DIGITALOCEAN_STORAGE_BUCKET_NAME
+AWS_S3_ENDPOINT_URL = DIGITALOCEAN_ENDPOINT_URL
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+AWS_LOCATION = ''
+AWS_DEFAULT_ACL = None

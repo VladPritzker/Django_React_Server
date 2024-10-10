@@ -45,7 +45,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     income_by_year = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     income_by_month = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     password = models.CharField(max_length=100)
-    photo = models.ImageField(upload_to='user_photos/', blank=True, null=True)  # Save photos in 'user_photos/' directory
+    photo = models.URLField(max_length=255, null=True, blank=True)  # URL field for storing image URLs
     groups = models.ManyToManyField(Group, related_name='custom_user_groups', blank=True)
     user_permissions = models.ManyToManyField(Permission, related_name='custom_user_permissions', blank=True)
 

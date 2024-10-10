@@ -1,3 +1,4 @@
+from django.http import HttpResponse, JsonResponse
 from django.core.mail import send_mail
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.tokens import default_token_generator
@@ -5,11 +6,10 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
 from django.utils import timezone
 from datetime import timedelta
-from django.core.files.storage import default_storage  # Import for file storage
-from django.core.files.base import ContentFile  # Import for handling uploaded files
+from django.core.files.storage import default_storage  # For file storage (DigitalOcean Spaces)
+from django.core.files.base import ContentFile  # For handling uploaded files
 from decimal import Decimal, InvalidOperation  
 import json
 import traceback
@@ -19,6 +19,8 @@ from django.conf import settings
 from myapp.views.income_views import update_income_by_periods
 from myapp.views.financial_views import update_spending_by_periods
 from myapp.models import User
+
+
 
 
 
@@ -232,7 +234,7 @@ def fetch_user_details(request):
         try:
             user = User.objects.get(id=user_id)
             update_income_by_periods(user)
-            update_spending_by_periods(user)
+            update_spending_by_periods(user)            
             return JsonResponse({
                 'id': user.id,
                 'username': user.username,
@@ -250,12 +252,13 @@ def fetch_user_details(request):
                 'is_active': user.is_active,
                 'is_staff': user.is_staff,
                 'is_superuser': user.is_superuser,
-                'photo': user.photo.url if user.photo else None
+                'photo': default_storage.url(user.photo) if user.photo else None  # Return the photo URL
             })
         except User.DoesNotExist:
             return JsonResponse({'error': 'User not found'}, status=404)
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+
 
 
 
@@ -284,9 +287,7 @@ def users_data(request, user_id=None):
                         return JsonResponse({'error': f'Invalid value for field {key}: {value}'}, status=400)
                 else:
                     return JsonResponse({'error': f'Invalid field: {key}'}, status=400)
-
-            user.save()
-
+                user.save()
             # Refetch the user to get updated values
             user.refresh_from_db()
 
@@ -307,7 +308,7 @@ def users_data(request, user_id=None):
                 'is_active': user.is_active,
                 'is_staff': user.is_staff,
                 'is_superuser': user.is_superuser,
-                'photo': user.photo.url if user.photo else None
+                'photo': user.photo
             }
 
             return JsonResponse({'message': 'User updated successfully', 'user': response_data}, status=200)
@@ -323,7 +324,8 @@ def users_data(request, user_id=None):
             try:
                 user = User.objects.get(pk=user_id)
                 update_income_by_periods(user)
-                update_spending_by_periods(user)
+                update_spending_by_periods(user)                
+
                 return JsonResponse({
                     'id': user.id,
                     'username': user.username,
@@ -341,7 +343,7 @@ def users_data(request, user_id=None):
                     'is_active': user.is_active,
                     'is_staff': user.is_staff,
                     'is_superuser': user.is_superuser,
-                    'photo': user.photo.url if user.photo else None  # Convert ImageField to URL
+                    'photo': user.photo  # Return the URL for the photo
                 })
             except User.DoesNotExist:
                 return JsonResponse({'error': 'User not found'}, status=404)
@@ -370,29 +372,31 @@ def users_data(request, user_id=None):
 
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
-
+    
 @csrf_exempt
 def upload_photo(request, user_id):
-    if request.method == 'POST':
+    user = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST' and request.FILES.get('photo'):
         try:
-            user = get_object_or_404(User, id=user_id)
-            photo = request.FILES.get('photo')
+            photo = request.FILES['photo']
+            # Store the uploaded file using Django's default storage (DigitalOcean Spaces)
+            file_name = f"user_{user.id}/{photo.name}"
+            saved_file = default_storage.save(file_name, ContentFile(photo.read()))
 
-            if not photo:
-                return JsonResponse({'error': 'No photo uploaded'}, status=400)
+            # Get the URL of the uploaded file
+            photo_url = default_storage.url(saved_file)
 
-            # Save the photo to the user's directory
-            file_path = default_storage.save(f'user_{user_id}/{photo.name}', ContentFile(photo.read()))
-
-            # Assuming you want to save the photo path to the user's profile
-            user.photo = file_path
+            # Update the user's photo field with the URL
+            user.photo = photo_url
             user.save()
 
-            return JsonResponse({'message': 'Photo uploaded successfully', 'file_url': file_path}, status=201)
+            return JsonResponse({'message': 'Photo uploaded successfully', 'photo_url': photo_url}, status=200)
+
         except Exception as e:
-            # Log the error for debugging purposes
-            error_trace = traceback.format_exc()
-            print(error_trace)  # Print the error trace to the console or use logging
+            traceback.print_exc()
             return JsonResponse({'error': str(e)}, status=500)
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    return JsonResponse({'error': 'No photo uploaded'}, status=400)
+
+

@@ -11,7 +11,7 @@ from myapp.views import (
 )
 from myapp.views.plaid.plaid_helpers import create_link_token, exchange_public_token, get_account_data
 from myapp.views.user_views import (
-    register_user, login_with_otp, verify_otp, reset_password, fetch_user_details, send_otp, simple_login
+    register_user, login_with_otp, verify_otp, reset_password, fetch_user_details, send_otp, simple_login,
 )
 from django.contrib.auth import views as auth_views
 
@@ -88,7 +88,5 @@ urlpatterns = [
 
 
 
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -70,6 +70,7 @@ def register_user(request):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
+
 ### OTP-Based Login View
 @csrf_exempt
 def login_with_otp(request):

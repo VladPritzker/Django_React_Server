@@ -266,6 +266,8 @@ AWS_STORAGE_BUCKET_NAME = DIGITALOCEAN_STORAGE_BUCKET_NAME
 AWS_S3_ENDPOINT_URL = DIGITALOCEAN_ENDPOINT_URL
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
+    'ACL': 'public-read'  # Ensure files are publicly readable by default
+
 }
 AWS_LOCATION = ''
 AWS_DEFAULT_ACL = None

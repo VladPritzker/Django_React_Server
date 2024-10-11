@@ -1,3 +1,4 @@
+import boto3
 from django.http import HttpResponse, JsonResponse
 from django.core.mail import send_mail
 from django.contrib.auth import authenticate, get_user_model, login
@@ -381,8 +382,9 @@ def upload_photo(request, user_id):
     if request.method == 'POST' and request.FILES.get('photo'):
         try:
             photo = request.FILES['photo']
-            # Store the uploaded file using Django's default storage (DigitalOcean Spaces)
             file_name = f"user_{user.id}/{photo.name}"
+
+            # Store the uploaded file using Django's default storage (DigitalOcean Spaces)
             saved_file = default_storage.save(file_name, ContentFile(photo.read()))
 
             # Get the URL of the uploaded file
@@ -399,5 +401,3 @@ def upload_photo(request, user_id):
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'No photo uploaded'}, status=400)
-
-

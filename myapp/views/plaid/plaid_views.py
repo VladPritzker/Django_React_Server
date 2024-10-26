@@ -24,15 +24,16 @@ def create_link_token(request):
         user_id = "34"  # Replace with the actual user ID as needed
         logger.info(f"Creating link token for client_user_id: {user_id}")
 
-        # Create the request data structure with the correct type for `CountryCode`
+        # Create the request data structure with the webhook URL
         request_data = LinkTokenCreateRequest(
             user=LinkTokenCreateRequestUser(client_user_id=user_id),
             client_id=settings.PLAID_CLIENT_ID,
             secret=settings.PLAID_SECRET,
             client_name="Pritzker Finance",
             products=[Products("transactions")],
-            country_codes=[CountryCode("US")],  # Use the CountryCode enum instead of a string
-            language="en"
+            country_codes=[CountryCode("US")],
+            language="en",
+            webhook="https://pritzker-finance.com/plaid/webhook/"  # Your webhook URL
         )
 
         # Send the request to Plaid
@@ -52,24 +53,24 @@ def get_access_token(request):
     try:
         data = json.loads(request.body)
         public_token = data.get('public_token')
-        logger.info(f"Received public token: {public_token}")
-
-        # Match the structure of the Postman `curl` request
-        exchange_request_data = {
-            "client_id": settings.PLAID_CLIENT_ID,
-            "secret": settings.PLAID_SECRET,
-            "public_token": public_token
-        }
+        user_id = data.get('user_id')  # Fetch user_id from request data
+        logger.info(f"Received public token: {public_token} for user_id: {user_id}")
 
         # Exchange public token for access token
-        exchange_response = plaid_client.item_public_token_exchange(
-            ItemPublicTokenExchangeRequest(**exchange_request_data)
-        )
+        exchange_request = ItemPublicTokenExchangeRequest(public_token=public_token)
+        exchange_response = plaid_client.item_public_token_exchange(exchange_request)
 
         # Extract access token and item ID
         access_token = exchange_response.access_token
         item_id = exchange_response.item_id
         logger.info(f"Access token: {access_token}, Item ID: {item_id}")
+
+        # Link item_id and access_token with the user
+        PlaidItem.objects.update_or_create(
+            user_id=user_id,
+            item_id=item_id,
+            defaults={'access_token': access_token}
+        )
 
         return JsonResponse({'message': 'Access token obtained successfully.', 'access_token': access_token})
     except Exception as e:

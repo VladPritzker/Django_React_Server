@@ -1,75 +1,95 @@
 from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from .plaid_client import plaid_client
-from plaid.model.country_code import CountryCode
-from plaid.model.products import Products
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
 from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
 from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
-from plaid.model.accounts_get_request import AccountsGetRequest  # For fetching account data
-from django.conf import settings
+from plaid.model.accounts_get_request import AccountsGetRequest
+from plaid.model.country_code import CountryCode  # Ensure this import is present
+from django.conf import settings  # Import settings for accessing environment variables
+from plaid.model.products import Products
+from myapp.models import PlaidItem  # Import the PlaidItem model
+
+
+
 import json
+import logging
 
-# Mock storage for access tokens (use a database in production)
-user_access_tokens = {}
+# Set up logging
+logger = logging.getLogger(__name__)
 
-@require_http_methods(["GET"])
+@csrf_exempt
 def create_link_token(request):
     try:
-        # Generate a unique user ID (use the logged-in user's ID in a real application)
-        user_id = str(request.user.id) if request.user.is_authenticated else 'anonymous_user'
+        user_id = "34"  # Replace with the actual user ID as needed
+        logger.info(f"Creating link token for client_user_id: {user_id}")
 
+        # Create the request data structure with the correct type for `CountryCode`
         request_data = LinkTokenCreateRequest(
             user=LinkTokenCreateRequestUser(client_user_id=user_id),
-            client_name='Your App Name',
-            products=[Products('transactions')],
-            country_codes=[CountryCode('US')],
-            language='en',
+            client_id=settings.PLAID_CLIENT_ID,
+            secret=settings.PLAID_SECRET,
+            client_name="Pritzker Finance",
+            products=[Products("transactions")],
+            country_codes=[CountryCode("US")],  # Use the CountryCode enum instead of a string
+            language="en"
         )
+
+        # Send the request to Plaid
         response = plaid_client.link_token_create(request_data)
         link_token = response.link_token
+
+        # Log and return the link token
+        logger.info(f"Link token generated: {link_token}")
         return JsonResponse({'link_token': link_token})
+
     except Exception as e:
+        logger.error(f"Error creating link token: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
 
-@csrf_exempt  # Handle CSRF tokens properly in production
-@require_http_methods(["POST"])
+@csrf_exempt
 def get_access_token(request):
     try:
         data = json.loads(request.body)
         public_token = data.get('public_token')
+        logger.info(f"Received public token: {public_token}")
 
-        # Create the exchange request
-        exchange_request = ItemPublicTokenExchangeRequest(public_token=public_token)
-        exchange_response = plaid_client.item_public_token_exchange(exchange_request)
+        # Match the structure of the Postman `curl` request
+        exchange_request_data = {
+            "client_id": settings.PLAID_CLIENT_ID,
+            "secret": settings.PLAID_SECRET,
+            "public_token": public_token
+        }
+
+        # Exchange public token for access token
+        exchange_response = plaid_client.item_public_token_exchange(
+            ItemPublicTokenExchangeRequest(**exchange_request_data)
+        )
+
+        # Extract access token and item ID
         access_token = exchange_response.access_token
         item_id = exchange_response.item_id
+        logger.info(f"Access token: {access_token}, Item ID: {item_id}")
 
-        # Store access_token and item_id securely in your database associated with the user
-        user_access_tokens[request.user.id] = access_token  # Mock storing token for demo purposes
-
-        print(f'Access Token: {access_token}')
-        print(f'Item ID: {item_id}')
-
-        return JsonResponse({'message': 'Access token obtained successfully.'})
+        return JsonResponse({'message': 'Access token obtained successfully.', 'access_token': access_token})
     except Exception as e:
+        logger.error(f"Error getting access token: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
 
-@require_http_methods(["GET"])
+@csrf_exempt
 def get_account_data(request):
     try:
-        user_id = request.user.id
-        access_token = user_access_tokens.get(user_id)  # Retrieve access token from mock storage
-        
+        data = json.loads(request.body)
+        access_token = data.get('access_token')
         if not access_token:
-            return JsonResponse({'error': 'No access token found for this user.'}, status=400)
-
-        # Create the request to fetch account data
+            return JsonResponse({'error': 'Access token missing'}, status=400)
+        
+        # Fetch account data from Plaid using the access token
         request_data = AccountsGetRequest(access_token=access_token)
         response = plaid_client.accounts_get(request_data)
-
+        
         # Return the account data
         return JsonResponse(response.to_dict())
     except Exception as e:
+        logger.error(f"Error getting account data: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)

@@ -41,6 +41,8 @@ ALLOWED_HOSTS = [
     'fpinit.itunes.apple.com',
     'westus-0.in.applicationinsights.azure.com',
     'mobile.events.data.microsoft.com',
+    'dns.google',
+    'mdbxgxqa.api.lncldglobal.com'
 ]
 
 # CORS and CSRF settings

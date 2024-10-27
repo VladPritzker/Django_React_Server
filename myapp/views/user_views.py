@@ -1,3 +1,4 @@
+from rest_framework_simplejwt.tokens import RefreshToken
 import boto3
 from django.http import HttpResponse, JsonResponse
 from django.core.mail import send_mail
@@ -20,6 +21,8 @@ from django.conf import settings
 from myapp.views.income_views import update_income_by_periods
 from myapp.views.financial_views import update_spending_by_periods
 from myapp.models import User
+from rest_framework.authtoken.models import Token
+
 
 
 
@@ -35,16 +38,21 @@ def simple_login(request):
         user = authenticate(email=email, password=password)
 
         if user is not None:
-            # If authentication is successful, log the user in
+            # Log the user in
             login(request, user)
+
+            # Generate JWT tokens (refresh and access tokens)
+            refresh = RefreshToken.for_user(user)
+
             return JsonResponse({
                 'message': 'Login successful',
                 'id': user.id,
                 'username': user.username,
-                'email': user.email
+                'email': user.email,
+                'access': str(refresh.access_token),  # Send the access token
+                'refresh': str(refresh),  # Send the refresh token
             }, status=200)
         else:
-            # If authentication fails
             return JsonResponse({'error': 'Invalid email or password'}, status=401)
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)

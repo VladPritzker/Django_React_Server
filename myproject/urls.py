@@ -23,6 +23,8 @@ from myapp.views.assistant_views import assistant_views
 
 # plaid
 from myapp.views.plaid.plaid_views import get_access_token, create_link_token, get_account_data
+from myapp.views.plaid.plaid_webhook import plaid_webhook
+
 
 
 
@@ -72,6 +74,9 @@ urlpatterns = [
     path('create_link_token/', create_link_token, name='create_link_token'),
     path('get_access_token/', get_access_token, name='get_access_token'),
     path('get_account_data/', get_account_data, name='get_account_data'),
+    path('plaid/webhook/', plaid_webhook, name='plaid_webhook'),
+
+    
 
 
 

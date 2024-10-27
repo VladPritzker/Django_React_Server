@@ -223,7 +223,7 @@ class StockData(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'stock_data'    
+        db_table = 'stock_data'            
     
     def __str__(self):
         return self.ticker
@@ -236,9 +236,13 @@ class PlaidItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     access_token = models.CharField(max_length=255)
     item_id = models.CharField(max_length=255)
-    
+
+    class Meta:
+        db_table = 'PlaidItem'
+
     def __str__(self):
         return f"{self.user.username}'s Plaid Item"
+
 
 
 

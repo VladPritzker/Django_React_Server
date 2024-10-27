@@ -12,6 +12,7 @@ def handle_contact_action(action_data, user_id):
     if action == 'add_contact':
         if not name or not phone_number:
             return JsonResponse({'error': 'Name and phone number are required to add a contact.'}, status=400)
+        
         contact, created = Contact.objects.get_or_create(
             user_id=user_id,
             name=name,

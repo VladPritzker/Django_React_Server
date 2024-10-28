@@ -22,14 +22,12 @@ logger = logging.getLogger(__name__)
 @csrf_exempt
 def create_link_token(request):
     try:
-        user_id = "34"  # Replace with the actual user ID as needed
+        user_id = "34"  # Replace with actual user ID as needed
         logger.info(f"Creating link token for client_user_id: {user_id}")
 
-        # Create the request data structure with the webhook URL
+        # Remove client_id and secret from the request data
         request_data = LinkTokenCreateRequest(
             user=LinkTokenCreateRequestUser(client_user_id=user_id),
-            client_id=settings.PLAID_CLIENT_ID,
-            secret=settings.PLAID_SANDBOX_SECRET,
             client_name="Pritzker Finance",
             products=[Products("transactions")],
             country_codes=[CountryCode("US")],

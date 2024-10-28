@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 from decouple import config
 from dotenv import load_dotenv
+import environ
+
 LOGIN_URL = 'https://pritzker-finance.com/'  # Update with the correct login URL
 
 
@@ -230,12 +232,16 @@ DOCUSIGN_ACCESS_TOKEN = config('DOCUSIGN_ACCESS_TOKEN')
 # DOCUSIGN_REFRESH_TOKEN = config('DOCUSIGN_REFRESH_TOKEN')
 
 
-PLAID_ENV = os.getenv('PLAID_ENV',)  # Default to development if not set
+
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))  # Ensure this points to the correct path for .env
+env = environ.Env()
+PLAID_ENV = env('PLAID_ENV', default='sandbox')
 
 # Plaid credentials
 PLAID_CLIENT_ID = os.getenv('PLAID_CLIENT_ID', '66fda6e6e90824001ac9f646')  # Replace with your client ID
 PLAID_SECRET = os.getenv('PLAID_SECRET', '8c0e67c007c2b48e98a2499652f982')  # Replace
-PLAID_SANDBOX_SECRET = os.getenv('PLAID_SANDBOX_SECRET' 'b975402f6416411b11fb5a86f4eb39')
+PLAID_SANDBOX_SECRET = os.getenv('PLAID_SANDBOX_SECRET', 'b975402f6416411b11fb5a86f4eb39')
+
  
 
 

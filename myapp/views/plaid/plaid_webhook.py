@@ -35,16 +35,23 @@ def plaid_webhook(request):
         # Handle TRANSACTIONS webhooks
         if webhook_type == "TRANSACTIONS" and webhook_code in ["INITIAL_UPDATE", "HISTORICAL_UPDATE", "DEFAULT_UPDATE"]:
             # Fetch new transactions using the transactions_sync endpoint
-            cursor = plaid_item.cursor  # Get the last saved cursor or None
+            cursor = plaid_item.cursor  # May be None initially
             has_more = True
 
             while has_more:
                 request_options = TransactionsSyncRequestOptions(count=100)
-                sync_request = TransactionsSyncRequest(
-                    access_token=access_token,
-                    cursor=cursor,
-                    options=request_options
-                )
+                # Conditionally include 'cursor' only if it's not None
+                if cursor:
+                    sync_request = TransactionsSyncRequest(
+                        access_token=access_token,
+                        cursor=cursor,
+                        options=request_options
+                    )
+                else:
+                    sync_request = TransactionsSyncRequest(
+                        access_token=access_token,
+                        options=request_options
+                    )
                 sync_response = plaid_client.transactions_sync(sync_request)
 
                 # Process added transactions
@@ -60,6 +67,10 @@ def plaid_webhook(request):
                             # Add other fields as necessary
                         }
                     )
+
+                    # Update user's balance
+                    user.balance -= Decimal(transaction.amount)
+                    user.save()
 
                 # Process modified transactions (optional)
                 for transaction in sync_response.modified:

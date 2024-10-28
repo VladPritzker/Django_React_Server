@@ -48,7 +48,8 @@ ALLOWED_HOSTS = [
     'westus-0.in.applicationinsights.azure.com',
     'gspe35-ssl.ls.apple.com',
     'freedom.to',
-    'gs-loc.apple.com'
+    'gs-loc.apple.com',
+    'mobile.events.data.microsoft.com',
 
     
 

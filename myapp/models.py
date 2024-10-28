@@ -63,10 +63,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class FinancialRecord(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='financial_records')
-    record_date = models.DateField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    transaction_id = models.CharField(max_length=255, null=True, blank=True)  # New field
     title = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    record_date = models.DateField()
+
 
     class Meta:
         db_table = 'financial_records'
@@ -236,6 +238,7 @@ class PlaidItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     access_token = models.CharField(max_length=255)
     item_id = models.CharField(max_length=255)
+    cursor = models.CharField(max_length=255, null=True, blank=True)  
 
     class Meta:
         db_table = 'PlaidItem'

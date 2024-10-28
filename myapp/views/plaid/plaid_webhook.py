@@ -1,3 +1,4 @@
+#  webhook file
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -6,6 +7,8 @@ from myapp.models import FinancialRecord, User, PlaidItem
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.db.models import Sum
+from plaid.model.transactions_refresh_request import TransactionsRefreshRequest
+from .plaid_client import plaid_client
 
 
 import json
@@ -13,6 +16,8 @@ import logging
 
 # Set up logging
 logger = logging.getLogger(__name__)
+
+from plaid.model.transactions_refresh_request import TransactionsRefreshRequest
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -28,9 +33,14 @@ def plaid_webhook(request):
         # Find the associated user using item_id
         plaid_item = get_object_or_404(PlaidItem, item_id=item_id)
         user = plaid_item.user
+        access_token = plaid_item.access_token  # Retrieve the access token
 
-        # Process new transactions for the item
+        # Trigger transaction refresh when specific webhook codes are received
         if webhook_type == "TRANSACTIONS" and webhook_code == "DEFAULT_UPDATE":
+            # Call transactions/refresh to request Plaid to check for new transactions
+            refresh_request_data = TransactionsRefreshRequest(access_token=access_token)
+            plaid_client.transactions_refresh(refresh_request_data)
+
             transactions = data.get("new_transactions", [])
 
             # Store each transaction as a FinancialRecord
@@ -53,6 +63,7 @@ def plaid_webhook(request):
     except Exception as e:
         logger.error(f"Error processing Plaid webhook: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
+
 
 def update_spending_by_periods(user, skip_update=False):
     if skip_update:

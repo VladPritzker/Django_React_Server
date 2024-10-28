@@ -42,7 +42,12 @@ ALLOWED_HOSTS = [
     'westus-0.in.applicationinsights.azure.com',
     'mobile.events.data.microsoft.com',
     'dns.google',
-    'mdbxgxqa.api.lncldglobal.com'
+    'mdbxgxqa.api.lncldglobal.com',
+    'westus-0.in.applicationinsights.azure.com',
+    'gspe35-ssl.ls.apple.com',
+
+    
+
 ]
 
 # CORS and CSRF settings

@@ -1,3 +1,4 @@
+#  plaid_views file
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .plaid_client import plaid_client
@@ -33,7 +34,7 @@ def create_link_token(request):
             products=[Products("transactions")],
             country_codes=[CountryCode("US")],
             language="en",
-            webhook="https://pritzker-finance.com/plaid/webhook/"  # Your webhook URL
+            webhook="https://oyster-app-vhznt.ondigitalocean.app/plaid/webhook/"
         )
 
         # Send the request to Plaid
@@ -63,7 +64,7 @@ def get_access_token(request):
         # Extract access token and item ID
         access_token = exchange_response.access_token
         item_id = exchange_response.item_id
-        logger.info(f"Access token: {access_token}, Item ID: {item_id}")
+        logger.info(f"Access token: {access_token}, Item ID: {item_id}")  # Log the access token
 
         # Link item_id and access_token with the user
         PlaidItem.objects.update_or_create(

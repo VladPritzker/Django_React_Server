@@ -68,8 +68,7 @@ class FinancialRecord(models.Model):
     title = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     record_date = models.DateField()
-
-
+    
     class Meta:
         db_table = 'financial_records'
 
@@ -235,10 +234,12 @@ class StockData(models.Model):
 
 
 class PlaidItem(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     access_token = models.CharField(max_length=255)
     item_id = models.CharField(max_length=255)
-    cursor = models.CharField(max_length=255, null=True, blank=True)  
+    previous_item_id = models.CharField(max_length=255, null=True, blank=True)
+    cursor = models.CharField(max_length=255, null=True, blank=True)
+
 
     class Meta:
         db_table = 'PlaidItem'

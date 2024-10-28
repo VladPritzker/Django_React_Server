@@ -52,7 +52,7 @@ def get_access_token(request):
     try:
         data = json.loads(request.body)
         public_token = data.get('public_token')
-        user_id = data.get('user_id')  # Fetch user_id from request data
+        user_id = data.get('user_id')
         logger.info(f"Received public token: {public_token} for user_id: {user_id}")
 
         # Exchange public token for access token
@@ -62,14 +62,15 @@ def get_access_token(request):
         # Extract access token and item ID
         access_token = exchange_response.access_token
         item_id = exchange_response.item_id
-        logger.info(f"Access token: {access_token}, Item ID: {item_id}")  # Log the access token
+        logger.info(f"Access token: {access_token}, Item ID: {item_id}")
 
-        # Link item_id and access_token with the user
-        PlaidItem.objects.update_or_create(
-            user_id=user_id,
-            defaults={'item_id': item_id, 'access_token': access_token}
-        )
-
+        # Update the PlaidItem for the user
+        plaid_item, created = PlaidItem.objects.get_or_create(user_id=user_id)
+        if plaid_item.item_id != item_id:
+            plaid_item.previous_item_id = plaid_item.item_id
+            plaid_item.item_id = item_id
+        plaid_item.access_token = access_token
+        plaid_item.save()
 
         return JsonResponse({'message': 'Access token obtained successfully.', 'access_token': access_token})
     except Exception as e:

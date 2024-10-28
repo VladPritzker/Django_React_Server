@@ -27,8 +27,13 @@ def plaid_webhook(request):
         item_id = data.get("item_id")
         logger.info(f"Received webhook for item_id: {item_id}, type: {webhook_type}, code: {webhook_code}")
 
-        # Find the associated PlaidItem and user using item_id
-        plaid_item = get_object_or_404(PlaidItem, item_id=item_id)
+        # Find the associated PlaidItem using item_id or previous_item_id
+        try:
+            plaid_item = PlaidItem.objects.get(Q(item_id=item_id) | Q(previous_item_id=item_id))
+        except PlaidItem.DoesNotExist:
+            logger.warning(f"PlaidItem with item_id {item_id} not found. Webhook will be ignored.")
+            return JsonResponse({"status": "item_not_found"}, status=200)
+
         user = plaid_item.user
         access_token = plaid_item.access_token  # Retrieve the access token
 
@@ -39,19 +44,27 @@ def plaid_webhook(request):
             has_more = True
 
             while has_more:
-                request_options = TransactionsSyncRequestOptions(count=100)
-                # Conditionally include 'cursor' only if it's not None
+                # Prepare request options if needed
+                request_options = TransactionsSyncRequestOptions(
+                    include_personal_finance_category=True
+                )
+
+                # Prepare the TransactionsSyncRequest
                 if cursor:
                     sync_request = TransactionsSyncRequest(
                         access_token=access_token,
                         cursor=cursor,
+                        count=100,
                         options=request_options
                     )
                 else:
                     sync_request = TransactionsSyncRequest(
                         access_token=access_token,
+                        count=100,
                         options=request_options
                     )
+
+                # Make the API call
                 sync_response = plaid_client.transactions_sync(sync_request)
 
                 # Process added transactions
@@ -106,7 +119,6 @@ def plaid_webhook(request):
     except Exception as e:
         logger.error(f"Error processing Plaid webhook: {str(e)}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
-
 
 
 def update_spending_by_periods(user, skip_update=False):

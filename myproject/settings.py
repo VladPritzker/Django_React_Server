@@ -56,8 +56,6 @@ CORS_ALLOWED_ORIGINS = [
     'https://clownfish-app-dsl46.ondigitalocean.app',  # Production frontend
     'https://oyster-app-vhznt.ondigitalocean.app',  # Production backend
     'http://pritzker-finance.com',
-    
- 
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -235,7 +233,8 @@ PLAID_ENV = os.getenv('PLAID_ENV', 'production')  # Default to development if no
 # Plaid credentials
 PLAID_CLIENT_ID = os.getenv('PLAID_CLIENT_ID', '66fda6e6e90824001ac9f646')  # Replace with your client ID
 PLAID_SECRET = os.getenv('PLAID_SECRET', '8c0e67c007c2b48e98a2499652f982')  # Replace
-
+PLAID_SANDBOX_SECRET = os.getenv('PLAID_SANDBOX_SECRET' 'b975402f6416411b11fb5a86f4eb39')
+ 
 # PLAID_HOST = 'https://production.plaid.com'  # Use 'https://development.plaid.com' or 'https://production.plaid.com' if applicable
 # if PLAID_ENV == 'sandbox':
 #     PLAID_HOST = 'https://sandbox.plaid.com'

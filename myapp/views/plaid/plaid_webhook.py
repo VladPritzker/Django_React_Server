@@ -12,8 +12,6 @@ from .plaid_client import plaid_client
 import json
 import logging
 
-
-
 # Set up logging
 logger = logging.getLogger(__name__)
 
@@ -77,7 +75,7 @@ def plaid_webhook(request):
                             'user': user,
                             'title': transaction.name,
                             'amount': Decimal(transaction.amount),
-                            'record_date': datetime.strptime(transaction.date, '%Y-%m-%d'),
+                            'record_date': transaction.date,  # Use date object directly
                             # Add other fields as necessary
                         }
                     )
@@ -95,7 +93,7 @@ def plaid_webhook(request):
                             'user': user,
                             'title': transaction.name,
                             'amount': Decimal(transaction.amount),
-                            'record_date': datetime.strptime(transaction.date, '%Y-%m-%d'),
+                            'record_date': transaction.date,  # Use date object directly
                             # Update other fields as necessary
                         }
                     )
@@ -120,8 +118,6 @@ def plaid_webhook(request):
     except Exception as e:
         logger.error(f"Error processing Plaid webhook: {str(e)}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
-
-
 
 def update_spending_by_periods(user, skip_update=False):
     if skip_update:

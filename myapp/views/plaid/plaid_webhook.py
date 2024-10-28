@@ -1,8 +1,7 @@
-# webhook.py
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
+from django.db.models import Q  # Import Q for complex queries
 from myapp.models import FinancialRecord, PlaidItem
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -12,6 +11,8 @@ from plaid.model.transactions_sync_request_options import TransactionsSyncReques
 from .plaid_client import plaid_client
 import json
 import logging
+
+
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -119,6 +120,7 @@ def plaid_webhook(request):
     except Exception as e:
         logger.error(f"Error processing Plaid webhook: {str(e)}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
+
 
 
 def update_spending_by_periods(user, skip_update=False):

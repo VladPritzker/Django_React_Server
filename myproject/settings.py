@@ -45,6 +45,8 @@ ALLOWED_HOSTS = [
     'mdbxgxqa.api.lncldglobal.com',
     'westus-0.in.applicationinsights.azure.com',
     'gspe35-ssl.ls.apple.com',
+    'freedom.to',
+    'gs-loc.apple.com'
 
     
 

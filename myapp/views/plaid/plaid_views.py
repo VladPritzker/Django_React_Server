@@ -69,9 +69,9 @@ def get_access_token(request):
         # Link item_id and access_token with the user
         PlaidItem.objects.update_or_create(
             user_id=user_id,
-            item_id=item_id,
-            defaults={'access_token': access_token}
+            defaults={'item_id': item_id, 'access_token': access_token}
         )
+
 
         return JsonResponse({'message': 'Access token obtained successfully.', 'access_token': access_token})
     except Exception as e:

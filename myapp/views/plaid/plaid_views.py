@@ -29,7 +29,7 @@ def create_link_token(request):
         request_data = LinkTokenCreateRequest(
             user=LinkTokenCreateRequestUser(client_user_id=user_id),
             client_id=settings.PLAID_CLIENT_ID,
-            secret=settings.PLAID_SECRET,
+            secret=settings.PLAID_SANDBOX_SECRET,
             client_name="Pritzker Finance",
             products=[Products("transactions")],
             country_codes=[CountryCode("US")],

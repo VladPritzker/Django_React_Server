@@ -8,15 +8,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Determine the Plaid environment based on settings
-plaid_env = getattr(settings, 'PLAID_ENV', 'sandbox')  # Use 'sandbox' as default if PLAID_ENV is not set
+plaid_env = 'sandbox'  # Use 'sandbox' as default if PLAID_ENV is not set
 
 # Choose the appropriate host and credentials based on environment
 if plaid_env == 'production':
     plaid_host = "https://production.plaid.com"
     plaid_secret = settings.PLAID_SECRET  # Production secret
-else:
+else: 
     plaid_host = "https://sandbox.plaid.com"
-    plaid_secret = settings.PLAID_SANDBOX_SECRET  # Sandbox secret
+    plaid_secret = 'b975402f6416411b11fb5a86f4eb39' # Sandbox secret
 
 # Log the environment and credentials for debugging
 logger.info(f"Using Plaid Environment: {plaid_env}")

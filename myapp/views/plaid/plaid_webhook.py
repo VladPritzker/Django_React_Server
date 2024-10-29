@@ -12,6 +12,7 @@ from .plaid_client import plaid_client
 from .plaid_views import get_account_data_util  # Import the utility function
 import json
 import logging
+import uuid  # For generating random transaction IDs when needed
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -51,9 +52,15 @@ def plaid_webhook(request):
             logger.error("Failed to retrieve account data.")
             return JsonResponse({"error": "Failed to retrieve account data."}, status=500)
 
-        # Create a mapping from account_id to account_name
-        account_id_to_name = {account.account_id: account.name for account in accounts}
-        logger.info(f"Account ID to Name Mapping: {account_id_to_name}")
+        # Create a mapping from account_id to account info (name and mask)
+        account_id_to_info = {
+            account.account_id: {
+                'name': account.name,
+                'mask': account.mask
+            }
+            for account in accounts
+        }
+        logger.info(f"Account ID to Info Mapping: {account_id_to_info}")
 
         # Handle TRANSACTIONS webhooks
         if webhook_type == "TRANSACTIONS" and webhook_code in [
@@ -98,11 +105,15 @@ def plaid_webhook(request):
                     title = transaction.name
                     account_id = transaction.account_id
 
-                    # Get the account name using the mapping
-                    target_account_id = 'dOjAOoNZQyi59qLaYAp8uEgnBdNAKMHjxZY74'
+                    # Get the account info using the mapping
+                    account_info = account_id_to_info.get(account_id, {})
+                    account_name = account_info.get('name', '')
+                    account_mask = account_info.get('mask', '')
+
+                    logger.info(f"Processing transaction {transaction_id} from account {account_name} ending with {account_mask}")
 
                     # Check if the transaction is from the specified card
-                    if account_id == target_account_id:
+                    if account_name == "Customized Cash Rewards Visa Signature" and account_mask == "7360":
                         # Check if transaction_id already exists
                         if not FinancialRecord.objects.filter(user=user, transaction_id=transaction_id).exists():
                             # Treat all amounts as expenses and store as positive

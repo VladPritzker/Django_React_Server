@@ -7,6 +7,7 @@ import json
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.db.models import Sum
+import uuid  # For generating random transaction IDs
 import logging
 
 logger = logging.getLogger(__name__)
@@ -57,34 +58,30 @@ def financial_records(request):
             title = data.get('title')
             amount = Decimal(data.get('amount'))
             record_date = data.get('record_date')
-            transaction_id = data.get('transaction_id')  # New line to get transaction_id, may be None
-
+            transaction_id = data.get('transaction_id')  # May be None
+    
             parsed_date = datetime.strptime(record_date, '%Y-%m-%d').date()
             user = User.objects.get(id=user_id)
-
-            # Use update_or_create to prevent duplicates if transaction_id is provided
-            if transaction_id:
-                record, created = FinancialRecord.objects.update_or_create(
-                    transaction_id=transaction_id,
-                    defaults={
-                        'user': user,
-                        'title': title,
-                        'amount': amount,
-                        'record_date': parsed_date
-                    }
-                )
-            else:
-                # For manual entries without transaction_id
-                record = FinancialRecord.objects.create(
-                    user=user,
-                    title=title,
-                    amount=amount,
-                    record_date=parsed_date
-                )
-
+    
+            if not transaction_id:
+                # Generate a random transaction_id
+                transaction_id = str(uuid.uuid4())
+    
+            # Use update_or_create to prevent duplicates
+            record, created = FinancialRecord.objects.update_or_create(
+                user=user,
+                transaction_id=transaction_id,
+                defaults={
+                    'title': title,
+                    'amount': amount,
+                    'record_date': parsed_date
+                }
+            )
+    
             # Update user's balance
             user.balance -= amount
             user.save()
+
 
             update_spending_by_periods(user)
 

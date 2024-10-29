@@ -2,13 +2,14 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import Q
-from myapp.models import PlaidItem, FinancialRecord, IncomeRecord
+from myapp.models import PlaidItem, FinancialRecord
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.db.models import Sum
 from plaid.model.transactions_sync_request import TransactionsSyncRequest
 from plaid.model.transactions_sync_request_options import TransactionsSyncRequestOptions
 from .plaid_client import plaid_client
+from .plaid_views import get_account_data_util  # Import the utility function
 import json
 import logging
 
@@ -43,6 +44,16 @@ def plaid_webhook(request):
 
         user = plaid_item.user
         access_token = plaid_item.access_token  # Retrieve the access token
+
+        # Fetch account data once outside the loop
+        accounts = get_account_data_util(access_token)
+        if accounts is None:
+            logger.error("Failed to retrieve account data.")
+            return JsonResponse({"error": "Failed to retrieve account data."}, status=500)
+
+        # Create a mapping from account_id to account_name
+        account_id_to_name = {account.account_id: account.name for account in accounts}
+        logger.info(f"Account ID to Name Mapping: {account_id_to_name}")
 
         # Handle TRANSACTIONS webhooks
         if webhook_type == "TRANSACTIONS" and webhook_code in [
@@ -85,134 +96,35 @@ def plaid_webhook(request):
                     transaction_id = transaction.transaction_id
                     record_date = transaction.date
                     title = transaction.name
+                    account_id = transaction.account_id
 
-                    # Check if the transaction is income or expense
-                    if amount > 0:
-                        # Income transaction
-                        if transaction_id:
-                            # Use transaction_id and user as lookup fields
-                            IncomeRecord.objects.update_or_create(
-                                user=user,
-                                transaction_id=transaction_id,
-                                defaults={
-                                    'title': title,
-                                    'amount': amount,
-                                    'record_date': record_date,
-                                }
-                            )
-                        else:
-                            # Use other fields to prevent duplicates
-                            IncomeRecord.objects.update_or_create(
-                                user=user,
-                                title=title,
-                                amount=amount,
-                                record_date=record_date,
-                                defaults={
-                                    # Any additional fields to update
-                                }
-                            )
-                        # Update user's balance
-                        user.balance += amount
-                        user.save()
-                    else:
-                        # Expense transaction
-                        positive_amount = abs(amount)
-                        if transaction_id:
-                            # Use transaction_id and user as lookup fields
-                            FinancialRecord.objects.update_or_create(
-                                user=user,
-                                transaction_id=transaction_id,
-                                defaults={
-                                    'title': title,
-                                    'amount': positive_amount,
-                                    'record_date': record_date,
-                                }
-                            )
-                        else:
-                            # Use other fields to prevent duplicates
-                            FinancialRecord.objects.update_or_create(
+                    # Get the account name using the mapping
+                    account_name = account_id_to_name.get(account_id, '')
+
+                    # Check if the transaction is from the specified card
+                    if account_name == "Customized Cash Rewards Visa Signature - 7360":
+                        # Check if transaction_id already exists
+                        if not FinancialRecord.objects.filter(user=user, transaction_id=transaction_id).exists():
+                            # Treat all amounts as expenses and store as positive
+                            positive_amount = abs(amount)
+
+                            # Save to FinancialRecord
+                            FinancialRecord.objects.create(
                                 user=user,
                                 title=title,
                                 amount=positive_amount,
                                 record_date=record_date,
-                                defaults={
-                                    # Any additional fields to update
-                                }
+                                transaction_id=transaction_id
                             )
-                        # Update user's balance
-                        user.balance += amount  # amount is negative
-                        user.save()
 
-                # Process modified transactions (similar adjustments needed)
-                 # Process modified transactions (optional)
-                for transaction in sync_response.modified:
-                    amount = Decimal(transaction.amount)
-                    transaction_id = transaction.transaction_id
-                    record_date = transaction.date
-                    title = transaction.name
+                            # Update user's balance
+                            user.balance -= positive_amount  # Subtract the amount from balance
+                            user.save()
+                        else:
+                            logger.info(f"Transaction {transaction_id} already exists. Skipping.")
 
-                    # Determine if transaction exists in IncomeRecord or FinancialRecord
-                    income_exists = IncomeRecord.objects.filter(transaction_id=transaction_id).exists()
-                    expense_exists = FinancialRecord.objects.filter(transaction_id=transaction_id).exists()
+                # Process modified and removed transactions if necessary (optional)
 
-                    if amount > 0:
-                        # Income transaction
-                        if expense_exists:
-                            # Remove from FinancialRecord
-                            expense = FinancialRecord.objects.get(transaction_id=transaction_id)
-                            user.balance += Decimal(expense.amount)  # Reverse the expense
-                            expense.delete()
-
-                        # Update or create in IncomeRecord
-                        IncomeRecord.objects.update_or_create(
-                            transaction_id=transaction_id,
-                            defaults={
-                                'user': user,
-                                'title': title,
-                                'amount': amount,
-                                'record_date': record_date,
-                            }
-                        )
-                        # Update user's balance
-                        user.balance += amount
-                        user.save()
-                    else:
-                        # Expense transaction
-                        positive_amount = abs(amount)
-                        if income_exists:
-                            # Remove from IncomeRecord
-                            income = IncomeRecord.objects.get(transaction_id=transaction_id)
-                            user.balance -= Decimal(income.amount)  # Reverse the income
-                            income.delete()
-
-                        # Update or create in FinancialRecord
-                        FinancialRecord.objects.update_or_create(
-                            transaction_id=transaction_id,
-                            defaults={
-                                'user': user,
-                                'title': title,
-                                'amount': positive_amount,  # Store as positive value
-                                'record_date': record_date,
-                            }
-                        )
-                        # Update user's balance
-                        user.balance += amount  # amount is negative
-                        user.save()
-
-                # Process removed transactions
-                for removed_transaction in sync_response.removed:
-                    transaction_id = removed_transaction.transaction_id
-                    # Remove from IncomeRecord if exists
-                    if IncomeRecord.objects.filter(transaction_id=transaction_id).exists():
-                        income = IncomeRecord.objects.get(transaction_id=transaction_id)
-                        user.balance -= Decimal(income.amount)
-                        income.delete()
-                    # Remove from FinancialRecord if exists
-                    elif FinancialRecord.objects.filter(transaction_id=transaction_id).exists():
-                        expense = FinancialRecord.objects.get(transaction_id=transaction_id)
-                        user.balance += Decimal(expense.amount)  # amount stored as positive
-                        expense.delete()
-                    user.save()
                 # Update the cursor
                 cursor = sync_response.next_cursor
                 plaid_item.cursor = cursor
@@ -220,9 +132,8 @@ def plaid_webhook(request):
 
                 has_more = sync_response.has_more
 
-            # Update user's spending and income after processing transactions
+            # Update user's spending after processing transactions
             update_spending_by_periods(user)
-            update_income_by_periods(user)
 
             return JsonResponse({"status": "success"}, status=200)
         else:

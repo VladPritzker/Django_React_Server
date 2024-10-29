@@ -4,6 +4,7 @@ from decimal import Decimal
 from datetime import datetime
 from django.db.models import Sum
 from datetime import datetime, timedelta
+import uuid  # For generating random transaction IDs
 
 
 # Function to handle spending actions
@@ -24,12 +25,15 @@ def handle_spending_action(action_data, user_id):
             user = User.objects.get(id=user_id)
             parsed_date = datetime.strptime(record_date, '%Y-%m-%d').date()
             amount_decimal = Decimal(amount)
+            transaction_id = str(uuid.uuid4())
+
 
             record = FinancialRecord.objects.create(
                 user=user,
                 title=title,
                 amount=amount_decimal,
-                record_date=parsed_date
+                record_date=parsed_date,
+                transaction_id=transaction_id  # Assign the generated transaction_id
             )
 
             user.balance -= amount_decimal

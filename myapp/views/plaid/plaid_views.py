@@ -86,12 +86,27 @@ def get_account_data(request):
         if not access_token:
             return JsonResponse({'error': 'Access token missing'}, status=400)
         
-        # Fetch account data from Plaid using the access token
-        request_data = AccountsGetRequest(access_token=access_token)
-        response = plaid_client.accounts_get(request_data)
+        # Use the utility function
+        accounts = get_account_data_util(access_token)
+        if accounts is None:
+            return JsonResponse({'error': 'Failed to get account data'}, status=500)
         
-        # Return the account data
-        return JsonResponse(response.to_dict())
+        # Convert accounts to dictionary format
+        accounts_data = [account.to_dict() for account in accounts]
+        return JsonResponse({'accounts': accounts_data})
     except Exception as e:
         logger.error(f"Error getting account data: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
+
+        
+@csrf_exempt
+def get_account_data_util(access_token):
+    try:
+        # Fetch account data from Plaid using the access token
+        request_data = AccountsGetRequest(access_token=access_token)
+        response = plaid_client.accounts_get(request_data)
+        # Return the account data
+        return response.accounts
+    except Exception as e:
+        logger.error(f"Error getting account data: {str(e)}")
+        return None

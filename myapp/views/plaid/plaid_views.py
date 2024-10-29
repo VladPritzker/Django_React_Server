@@ -69,6 +69,7 @@ def get_access_token(request):
         if plaid_item.item_id != item_id:
             plaid_item.previous_item_id = plaid_item.item_id
             plaid_item.item_id = item_id
+            plaid_item.cursor = None  # Reset the cursor when item_id changes
         plaid_item.access_token = access_token
         plaid_item.save()
 

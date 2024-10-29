@@ -1,8 +1,8 @@
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from django.db.models import Q  # Import Q for complex queries
-from myapp.models import FinancialRecord, PlaidItem
+from django.db.models import Q
+from myapp.models import FinancialRecord, PlaidItem, IncomeRecord
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.db.models import Sum
@@ -29,7 +29,6 @@ def plaid_webhook(request):
         # Optionally, log the parsed JSON data
         logger.info(f"Received webhook JSON data: {json.dumps(data)}")
 
-
         webhook_type = data.get("webhook_type")
         webhook_code = data.get("webhook_code")
         item_id = data.get("item_id")
@@ -46,7 +45,12 @@ def plaid_webhook(request):
         access_token = plaid_item.access_token  # Retrieve the access token
 
         # Handle TRANSACTIONS webhooks
-        if webhook_type == "TRANSACTIONS" and webhook_code in ["INITIAL_UPDATE", "HISTORICAL_UPDATE", "DEFAULT_UPDATE"]:
+        if webhook_type == "TRANSACTIONS" and webhook_code in [
+            "INITIAL_UPDATE",
+            "HISTORICAL_UPDATE",
+            "DEFAULT_UPDATE",
+            "SYNC_UPDATES_AVAILABLE",
+        ]:
             # Fetch new transactions using the transactions_sync endpoint
             cursor = plaid_item.cursor  # May be None initially
             has_more = True
@@ -77,39 +81,115 @@ def plaid_webhook(request):
 
                 # Process added transactions
                 for transaction in sync_response.added:
-                    # Save each transaction to the FinancialRecord model
-                    FinancialRecord.objects.update_or_create(
-                        transaction_id=transaction.transaction_id,
-                        defaults={
-                            'user': user,
-                            'title': transaction.name,
-                            'amount': Decimal(transaction.amount),
-                            'record_date': transaction.date,
-                            # Add other fields as necessary
-                        }
-                    )
+                    amount = Decimal(transaction.amount)
+                    transaction_id = transaction.transaction_id
+                    record_date = transaction.date  # Assuming this is a string in 'YYYY-MM-DD' format
+                    title = transaction.name
 
-                    # Update user's balance
-                    user.balance -= Decimal(transaction.amount)
-                    user.save()
+                    # Check if the transaction is income or expense
+                    if amount > 0:
+                        # Income transaction
+                        # Save to IncomeRecord
+                        IncomeRecord.objects.update_or_create(
+                            transaction_id=transaction_id,
+                            defaults={
+                                'user': user,
+                                'title': title,
+                                'amount': amount,
+                                'record_date': record_date,
+                                # Add other fields as necessary
+                            }
+                        )
+                        # Update user's balance
+                        user.balance += amount
+                        user.save()
+                    else:
+                        # Expense transaction
+                        positive_amount = abs(amount)  # Convert to positive value
+                        # Save to FinancialRecord
+                        FinancialRecord.objects.update_or_create(
+                            transaction_id=transaction_id,
+                            defaults={
+                                'user': user,
+                                'title': title,
+                                'amount': positive_amount,  # Store as positive value
+                                'record_date': record_date,
+                                # Add other fields as necessary
+                            }
+                        )
+                        # Update user's balance
+                        user.balance += amount  # amount is negative, so this subtracts from balance
+                        user.save()
 
                 # Process modified transactions (optional)
                 for transaction in sync_response.modified:
-                    # Update existing transactions
-                    FinancialRecord.objects.update_or_create(
-                        transaction_id=transaction.transaction_id,
-                        defaults={
-                            'user': user,
-                            'title': transaction.name,
-                            'amount': Decimal(transaction.amount),
-                            'record_date': transaction.date,
-                            # Update other fields as necessary
-                        }
-                    )
+                    amount = Decimal(transaction.amount)
+                    transaction_id = transaction.transaction_id
+                    record_date = transaction.date
+                    title = transaction.name
+
+                    # Determine if transaction exists in IncomeRecord or FinancialRecord
+                    income_exists = IncomeRecord.objects.filter(transaction_id=transaction_id).exists()
+                    expense_exists = FinancialRecord.objects.filter(transaction_id=transaction_id).exists()
+
+                    if amount > 0:
+                        # Income transaction
+                        if expense_exists:
+                            # Remove from FinancialRecord
+                            expense = FinancialRecord.objects.get(transaction_id=transaction_id)
+                            user.balance += Decimal(expense.amount)  # Reverse the expense
+                            expense.delete()
+
+                        # Update or create in IncomeRecord
+                        IncomeRecord.objects.update_or_create(
+                            transaction_id=transaction_id,
+                            defaults={
+                                'user': user,
+                                'title': title,
+                                'amount': amount,
+                                'record_date': record_date,
+                            }
+                        )
+                        # Update user's balance
+                        user.balance += amount
+                        user.save()
+                    else:
+                        # Expense transaction
+                        positive_amount = abs(amount)
+                        if income_exists:
+                            # Remove from IncomeRecord
+                            income = IncomeRecord.objects.get(transaction_id=transaction_id)
+                            user.balance -= Decimal(income.amount)  # Reverse the income
+                            income.delete()
+
+                        # Update or create in FinancialRecord
+                        FinancialRecord.objects.update_or_create(
+                            transaction_id=transaction_id,
+                            defaults={
+                                'user': user,
+                                'title': title,
+                                'amount': positive_amount,  # Store as positive value
+                                'record_date': record_date,
+                            }
+                        )
+                        # Update user's balance
+                        user.balance += amount  # amount is negative
+                        user.save()
 
                 # Process removed transactions
                 for removed_transaction in sync_response.removed:
-                    FinancialRecord.objects.filter(transaction_id=removed_transaction.transaction_id).delete()
+                    transaction_id = removed_transaction.transaction_id
+                    # Remove from IncomeRecord if exists
+                    if IncomeRecord.objects.filter(transaction_id=transaction_id).exists():
+                        income = IncomeRecord.objects.get(transaction_id=transaction_id)
+                        user.balance -= Decimal(income.amount)
+                        income.delete()
+                    # Remove from FinancialRecord if exists
+                    elif FinancialRecord.objects.filter(transaction_id=transaction_id).exists():
+                        expense = FinancialRecord.objects.get(transaction_id=transaction_id)
+                        user.balance += Decimal(expense.amount)  # amount stored as positive
+                        expense.delete()
+                    user.save()
 
                 # Update the cursor
                 cursor = sync_response.next_cursor
@@ -118,8 +198,9 @@ def plaid_webhook(request):
 
                 has_more = sync_response.has_more
 
-            # Update user's spending after processing transactions
+            # Update user's spending and income after processing transactions
             update_spending_by_periods(user)
+            update_income_by_periods(user)
 
             return JsonResponse({"status": "success"}, status=200)
         else:
@@ -128,12 +209,13 @@ def plaid_webhook(request):
         logger.error(f"Error processing Plaid webhook: {str(e)}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
 
+
 def update_spending_by_periods(user, skip_update=False):
     if skip_update:
         return
 
     now = datetime.now()
-    current_week_start = now - timedelta(days=(now.weekday() + 1) % 7)  # Start of the week (Sunday)
+    current_week_start = now - timedelta(days=now.weekday())  # Start of the week (Monday)
     current_month = now.month
     current_year = now.year
 
@@ -160,4 +242,39 @@ def update_spending_by_periods(user, skip_update=False):
     user.spent_by_week = weekly_spending
     user.spent_by_month = monthly_spending
     user.spent_by_year = yearly_spending
+    user.save()
+
+
+def update_income_by_periods(user, skip_update=False):
+    if skip_update:
+        return
+
+    now = datetime.now()
+    current_week_start = now - timedelta(days=now.weekday())  # Start of the week (Monday)
+    current_month = now.month
+    current_year = now.year
+
+    # Calculate income for the current week
+    weekly_income = IncomeRecord.objects.filter(
+        user=user,
+        record_date__gte=current_week_start
+    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+
+    # Calculate income for the current month
+    monthly_income = IncomeRecord.objects.filter(
+        user=user,
+        record_date__year=current_year,
+        record_date__month=current_month
+    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+
+    # Calculate income for the current year
+    yearly_income = IncomeRecord.objects.filter(
+        user=user,
+        record_date__year=current_year
+    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+
+    # Update the user's income_by_week, income_by_month, and income_by_year fields
+    user.income_by_week = weekly_income
+    user.income_by_month = monthly_income
+    user.income_by_year = yearly_income
     user.save()

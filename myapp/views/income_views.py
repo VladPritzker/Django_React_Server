@@ -82,7 +82,7 @@ def update_income_by_periods(user, skip_update=False):
         return
 
     now = datetime.now()
-    current_week_start = now - timedelta(days=(now.weekday() + 1) % 7)  # Start of the week (Sunday)
+    current_week_start = now - timedelta(days=now.weekday())  # Start of the week (Monday)
     current_month = now.month
     current_year = now.year
 
@@ -110,3 +110,4 @@ def update_income_by_periods(user, skip_update=False):
     user.income_by_month = monthly_income
     user.income_by_year = yearly_income
     user.save()
+

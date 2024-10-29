@@ -153,6 +153,8 @@ class IncomeRecord(models.Model):
     title = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     record_date = models.DateField()
+    transaction_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+
 
     class Meta:
         db_table = 'income_records'

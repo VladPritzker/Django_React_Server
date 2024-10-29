@@ -99,10 +99,10 @@ def plaid_webhook(request):
                     account_id = transaction.account_id
 
                     # Get the account name using the mapping
-                    account_name = account_id_to_name.get(account_id, '')
+                    target_account_id = 'dOjAOoNZQyi59qLaYAp8uEgnBdNAKMHjxZY74'
 
                     # Check if the transaction is from the specified card
-                    if account_name == "Customized Cash Rewards Visa Signature - 7360":
+                    if account_id == target_account_id:
                         # Check if transaction_id already exists
                         if not FinancialRecord.objects.filter(user=user, transaction_id=transaction_id).exists():
                             # Treat all amounts as expenses and store as positive

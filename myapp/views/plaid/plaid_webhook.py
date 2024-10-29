@@ -19,8 +19,17 @@ logger = logging.getLogger(__name__)
 @require_http_methods(["POST"])
 def plaid_webhook(request):
     try:
+        # Read and log the raw request body
+        raw_body = request.body.decode('utf-8')
+        logger.info(f"Received webhook raw body: {raw_body}")
+
         # Parse the webhook payload
-        data = json.loads(request.body)
+        data = json.loads(raw_body)
+
+        # Optionally, log the parsed JSON data
+        logger.info(f"Received webhook JSON data: {json.dumps(data)}")
+
+
         webhook_type = data.get("webhook_type")
         webhook_code = data.get("webhook_code")
         item_id = data.get("item_id")
@@ -49,7 +58,7 @@ def plaid_webhook(request):
                 )
 
                 # Prepare the TransactionsSyncRequest
-                if cursor:
+                if cursor is not None:
                     sync_request = TransactionsSyncRequest(
                         access_token=access_token,
                         cursor=cursor,
@@ -75,7 +84,7 @@ def plaid_webhook(request):
                             'user': user,
                             'title': transaction.name,
                             'amount': Decimal(transaction.amount),
-                            'record_date': transaction.date,  # Use date object directly
+                            'record_date': transaction.date,
                             # Add other fields as necessary
                         }
                     )
@@ -93,7 +102,7 @@ def plaid_webhook(request):
                             'user': user,
                             'title': transaction.name,
                             'amount': Decimal(transaction.amount),
-                            'record_date': transaction.date,  # Use date object directly
+                            'record_date': transaction.date,
                             # Update other fields as necessary
                         }
                     )

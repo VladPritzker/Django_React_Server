@@ -2,7 +2,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import Q
-from myapp.models import FinancialRecord, PlaidItem, IncomeRecord
+from myapp.models import PlaidItem, FinancialRecord, IncomeRecord
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.db.models import Sum
@@ -83,45 +83,68 @@ def plaid_webhook(request):
                 for transaction in sync_response.added:
                     amount = Decimal(transaction.amount)
                     transaction_id = transaction.transaction_id
-                    record_date = transaction.date  # Assuming this is a string in 'YYYY-MM-DD' format
+                    record_date = transaction.date
                     title = transaction.name
 
                     # Check if the transaction is income or expense
                     if amount > 0:
                         # Income transaction
-                        # Save to IncomeRecord
-                        IncomeRecord.objects.update_or_create(
-                            transaction_id=transaction_id,
-                            defaults={
-                                'user': user,
-                                'title': title,
-                                'amount': amount,
-                                'record_date': record_date,
-                                # Add other fields as necessary
-                            }
-                        )
+                        if transaction_id:
+                            # Use transaction_id and user as lookup fields
+                            IncomeRecord.objects.update_or_create(
+                                user=user,
+                                transaction_id=transaction_id,
+                                defaults={
+                                    'title': title,
+                                    'amount': amount,
+                                    'record_date': record_date,
+                                }
+                            )
+                        else:
+                            # Use other fields to prevent duplicates
+                            IncomeRecord.objects.update_or_create(
+                                user=user,
+                                title=title,
+                                amount=amount,
+                                record_date=record_date,
+                                defaults={
+                                    # Any additional fields to update
+                                }
+                            )
                         # Update user's balance
                         user.balance += amount
                         user.save()
                     else:
                         # Expense transaction
-                        positive_amount = abs(amount)  # Convert to positive value
-                        # Save to FinancialRecord
-                        FinancialRecord.objects.update_or_create(
-                            transaction_id=transaction_id,
-                            defaults={
-                                'user': user,
-                                'title': title,
-                                'amount': positive_amount,  # Store as positive value
-                                'record_date': record_date,
-                                # Add other fields as necessary
-                            }
-                        )
+                        positive_amount = abs(amount)
+                        if transaction_id:
+                            # Use transaction_id and user as lookup fields
+                            FinancialRecord.objects.update_or_create(
+                                user=user,
+                                transaction_id=transaction_id,
+                                defaults={
+                                    'title': title,
+                                    'amount': positive_amount,
+                                    'record_date': record_date,
+                                }
+                            )
+                        else:
+                            # Use other fields to prevent duplicates
+                            FinancialRecord.objects.update_or_create(
+                                user=user,
+                                title=title,
+                                amount=positive_amount,
+                                record_date=record_date,
+                                defaults={
+                                    # Any additional fields to update
+                                }
+                            )
                         # Update user's balance
-                        user.balance += amount  # amount is negative, so this subtracts from balance
+                        user.balance += amount  # amount is negative
                         user.save()
 
-                # Process modified transactions (optional)
+                # Process modified transactions (similar adjustments needed)
+                 # Process modified transactions (optional)
                 for transaction in sync_response.modified:
                     amount = Decimal(transaction.amount)
                     transaction_id = transaction.transaction_id
@@ -190,7 +213,6 @@ def plaid_webhook(request):
                         user.balance += Decimal(expense.amount)  # amount stored as positive
                         expense.delete()
                     user.save()
-
                 # Update the cursor
                 cursor = sync_response.next_cursor
                 plaid_item.cursor = cursor
@@ -208,6 +230,7 @@ def plaid_webhook(request):
     except Exception as e:
         logger.error(f"Error processing Plaid webhook: {str(e)}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
+
 
 
 def update_spending_by_periods(user, skip_update=False):

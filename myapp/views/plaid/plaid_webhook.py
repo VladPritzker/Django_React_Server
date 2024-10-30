@@ -2,7 +2,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import Q
-from myapp.models import PlaidItem, FinancialRecord
+from myapp.models import PlaidItem, FinancialRecord, TrackedAccount
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.db.models import Sum
@@ -12,7 +12,6 @@ from .plaid_client import plaid_client
 from .plaid_views import get_account_data_util  # Import the utility function
 import json
 import logging
-import uuid  # For generating random transaction IDs when needed
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -62,13 +61,14 @@ def plaid_webhook(request):
         }
         logger.info(f"Account ID to Info Mapping: {account_id_to_info}")
 
-        # Handle TRANSACTIONS webhooks
-        if webhook_type == "TRANSACTIONS" and webhook_code in [
-            "INITIAL_UPDATE",
-            "HISTORICAL_UPDATE",
-            "DEFAULT_UPDATE",
-            "SYNC_UPDATES_AVAILABLE",
-        ]:
+        # Get user's tracked accounts
+        tracked_accounts = TrackedAccount.objects.filter(user=user).values_list('account_id', flat=True)
+        tracked_account_ids = set(tracked_accounts)
+
+        logger.info(f"User's tracked account IDs: {tracked_account_ids}")
+
+        # Handle only SYNC_UPDATES_AVAILABLE webhook
+        if webhook_type == "TRANSACTIONS" and webhook_code == "SYNC_UPDATES_AVAILABLE":
             # Fetch new transactions using the transactions_sync endpoint
             cursor = plaid_item.cursor  # May be None initially
             has_more = True
@@ -80,19 +80,11 @@ def plaid_webhook(request):
                 )
 
                 # Prepare the TransactionsSyncRequest
-                if cursor is not None:
-                    sync_request = TransactionsSyncRequest(
-                        access_token=access_token,
-                        cursor=cursor,
-                        count=100,
-                        options=request_options
-                    )
-                else:
-                    sync_request = TransactionsSyncRequest(
-                        access_token=access_token,
-                        count=100,
-                        options=request_options
-                    )
+                sync_request = TransactionsSyncRequest(
+                    access_token=access_token,
+                    cursor=cursor,
+                    options=request_options
+                )
 
                 # Make the API call
                 sync_response = plaid_client.transactions_sync(sync_request)
@@ -110,31 +102,27 @@ def plaid_webhook(request):
                     account_name = account_info.get('name', '')
                     account_mask = account_info.get('mask', '')
 
-                    logger.info(f"Processing transaction {transaction_id} from account {account_name} ending with {account_mask}")
+                    logger.info(f"Evaluating transaction {transaction_id}: account_name='{account_name}', account_mask='{account_mask}'")
 
-                    # Check if the transaction is from the specified card
-                    if account_name == "Customized Cash Rewards Visa Signature" and account_mask == "7360":
-                        # Check if transaction_id already exists
-                        if not FinancialRecord.objects.filter(user=user, transaction_id=transaction_id).exists():
-                            # Treat all amounts as expenses and store as positive
-                            positive_amount = abs(amount)
+                    # Check if the account is in the user's tracked accounts
+                    if account_id in tracked_account_ids:
+                        logger.info(f"Processing transaction {transaction_id} from tracked account.")
+                        # Use update_or_create to prevent duplicates
+                        FinancialRecord.objects.update_or_create(
+                            user=user,
+                            transaction_id=transaction_id,
+                            defaults={
+                                'title': title,
+                                'amount': abs(amount),
+                                'record_date': record_date,
+                            }
+                        )
 
-                            # Save to FinancialRecord
-                            FinancialRecord.objects.create(
-                                user=user,
-                                title=title,
-                                amount=positive_amount,
-                                record_date=record_date,
-                                transaction_id=transaction_id
-                            )
-
-                            # Update user's balance
-                            user.balance -= positive_amount  # Subtract the amount from balance
-                            user.save()
-                        else:
-                            logger.info(f"Transaction {transaction_id} already exists. Skipping.")
-
-                # Process modified and removed transactions if necessary (optional)
+                        # Update user's balance
+                        user.balance -= abs(amount)  # Subtract the amount from balance
+                        user.save()
+                    else:
+                        logger.info(f"Ignoring transaction {transaction_id} from account {account_name} ending with {account_mask}")
 
                 # Update the cursor
                 cursor = sync_response.next_cursor
@@ -148,12 +136,12 @@ def plaid_webhook(request):
 
             return JsonResponse({"status": "success"}, status=200)
         else:
+            logger.info(f"Ignoring webhook with code: {webhook_code}")
             return JsonResponse({"status": "ignored"}, status=200)
+
     except Exception as e:
         logger.error(f"Error processing Plaid webhook: {str(e)}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
-
-
 
 def update_spending_by_periods(user, skip_update=False):
     if skip_update:
@@ -187,39 +175,4 @@ def update_spending_by_periods(user, skip_update=False):
     user.spent_by_week = weekly_spending
     user.spent_by_month = monthly_spending
     user.spent_by_year = yearly_spending
-    user.save()
-
-
-def update_income_by_periods(user, skip_update=False):
-    if skip_update:
-        return
-
-    now = datetime.now()
-    current_week_start = now - timedelta(days=now.weekday())  # Start of the week (Monday)
-    current_month = now.month
-    current_year = now.year
-
-    # Calculate income for the current week
-    weekly_income = IncomeRecord.objects.filter(
-        user=user,
-        record_date__gte=current_week_start
-    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
-
-    # Calculate income for the current month
-    monthly_income = IncomeRecord.objects.filter(
-        user=user,
-        record_date__year=current_year,
-        record_date__month=current_month
-    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
-
-    # Calculate income for the current year
-    yearly_income = IncomeRecord.objects.filter(
-        user=user,
-        record_date__year=current_year
-    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
-
-    # Update the user's income_by_week, income_by_month, and income_by_year fields
-    user.income_by_week = weekly_income
-    user.income_by_month = monthly_income
-    user.income_by_year = yearly_income
     user.save()

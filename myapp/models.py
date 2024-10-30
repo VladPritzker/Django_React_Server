@@ -64,7 +64,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class FinancialRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    transaction_id = models.CharField(max_length=255, null=True, blank=True)  # New field
+    transaction_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     title = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     record_date = models.DateField()
@@ -253,3 +253,15 @@ class PlaidItem(models.Model):
 
 
 
+class TrackedAccount(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    account_id = models.CharField(max_length=255)
+    account_name = models.CharField(max_length=255)
+    account_mask = models.CharField(max_length=4, null=True, blank=True)
+    item = models.ForeignKey(PlaidItem, on_delete=models.CASCADE)
+    
+    class Meta:
+        db_table = 'TrackedAccount'
+
+    def __str__(self):
+        return f"{self.account_name} ending with {self.account_mask}"

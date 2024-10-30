@@ -108,6 +108,8 @@ def get_account_data(request):
         logger.error(f"Error getting account data: {str(e)}", exc_info=True)
         return Response({'error': str(e)}, status=500)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_account_data_util(access_token):
     try:
         # Fetch account data from Plaid using the access token
@@ -149,7 +151,8 @@ def select_accounts(request):
 
     return render(request, 'select_accounts.html', {'accounts': account_data})
 
-@require_POST
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def save_selected_accounts(request):
     user = request.user
     if not user.is_authenticated:

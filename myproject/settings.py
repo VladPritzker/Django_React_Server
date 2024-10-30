@@ -77,6 +77,7 @@ CSRF_COOKIE_SECURE = True
 
 AUTH_USER_MODEL = 'myapp.User'
 
+
 # Application definition
 INSTALLED_APPS = [
     'corsheaders',
@@ -88,9 +89,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt',
     'myapp',
     'storages'
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # CORS handling should be very early, before most other middlewares

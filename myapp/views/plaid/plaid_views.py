@@ -13,16 +13,18 @@ from myapp.models import PlaidItem, TrackedAccount
 from django.views.decorators.http import require_POST
 import json
 import logging
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def create_link_token(request):
     try:
-        user = request.user  # Get the authenticated user
-        if not user.is_authenticated:
-            return JsonResponse({'error': 'User not authenticated'}, status=401)
+        user = request.user
         user_id = str(user.id)
         logger.info(f"Creating link token for client_user_id: {user_id}")
 
@@ -33,7 +35,7 @@ def create_link_token(request):
             products=[Products("transactions")],
             country_codes=[CountryCode("US")],
             language="en",
-            webhook="https://your-webhook-url/plaid/webhook/"
+            webhook="https://oyster-app-vhznt.ondigitalocean.app/plaid/webhook/"
         )
 
         # Send the request to Plaid
@@ -42,11 +44,11 @@ def create_link_token(request):
 
         # Log and return the link token
         logger.info(f"Link token generated: {link_token}")
-        return JsonResponse({'link_token': link_token})
+        return Response({'link_token': link_token})
 
     except Exception as e:
         logger.error(f"Error creating link token: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
+        return Response({'error': str(e)}, status=500)
 
 @csrf_exempt
 def get_access_token(request):

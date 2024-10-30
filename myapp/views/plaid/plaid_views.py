@@ -50,14 +50,13 @@ def create_link_token(request):
         logger.error(f"Error creating link token: {str(e)}")
         return Response({'error': str(e)}, status=500)
 
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def get_access_token(request):
     try:
-        data = json.loads(request.body)
+        data = request.data  # Use DRF's request.data
         public_token = data.get('public_token')
-        user = request.user  # Get the authenticated user
-        if not user.is_authenticated:
-            return JsonResponse({'error': 'User not authenticated'}, status=401)
+        user = request.user  # Now properly authenticated
         user_id = user.id
         logger.info(f"Received public token: {public_token} for user_id: {user_id}")
 
@@ -79,35 +78,35 @@ def get_access_token(request):
         plaid_item.access_token = access_token
         plaid_item.save()
 
-        return JsonResponse({'message': 'Access token obtained successfully.', 'access_token': access_token})
+        return Response({'message': 'Access token obtained successfully.', 'access_token': access_token})
     except Exception as e:
-        logger.error(f"Error getting access token: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
+        logger.error(f"Error getting access token: {str(e)}", exc_info=True)
+        return Response({'error': str(e)}, status=500)
 
-@csrf_exempt
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_account_data(request):
     try:
-        user = request.user  # Get the authenticated user
-        if not user.is_authenticated:
-            return JsonResponse({'error': 'User not authenticated'}, status=401)
+        user = request.user  # Authenticated user
         plaid_item = PlaidItem.objects.filter(user=user).last()
         if not plaid_item:
-            return JsonResponse({'error': 'PlaidItem not found'}, status=404)
+            return Response({'error': 'PlaidItem not found'}, status=404)
         access_token = plaid_item.access_token
         if not access_token:
-            return JsonResponse({'error': 'Access token missing'}, status=400)
+            return Response({'error': 'Access token missing'}, status=400)
         
         # Use the utility function
         accounts = get_account_data_util(access_token)
         if accounts is None:
-            return JsonResponse({'error': 'Failed to get account data'}, status=500)
+            return Response({'error': 'Failed to get account data'}, status=500)
         
         # Convert accounts to dictionary format
         accounts_data = [account.to_dict() for account in accounts]
-        return JsonResponse({'accounts': accounts_data})
+        return Response({'accounts': accounts_data})
     except Exception as e:
-        logger.error(f"Error getting account data: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
+        logger.error(f"Error getting account data: {str(e)}", exc_info=True)
+        return Response({'error': str(e)}, status=500)
 
 def get_account_data_util(access_token):
     try:

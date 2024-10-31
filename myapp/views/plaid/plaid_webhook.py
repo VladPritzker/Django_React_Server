@@ -61,6 +61,9 @@ def plaid_webhook(request):
 
         logger.info(f"User's tracked account IDs: {tracked_account_ids}")
 
+        # Define phrases to exclude
+        exclude_phrases = ["Online payment from"]
+
         # Update the webhook code handling to process INITIAL_UPDATE, HISTORICAL_UPDATE, and SYNC_UPDATES_AVAILABLE
         if webhook_type == "TRANSACTIONS" and webhook_code in ["INITIAL_UPDATE", "HISTORICAL_UPDATE", "SYNC_UPDATES_AVAILABLE"]:
             cursor = plaid_item.cursor  # May be None initially
@@ -102,6 +105,11 @@ def plaid_webhook(request):
 
                     logger.info(f"Evaluating transaction {transaction_id}: account_name='{account_name}', account_mask='{account_mask}'")
 
+                    # Skip transactions that match exclude phrases
+                    if any(phrase in title for phrase in exclude_phrases):
+                        logger.info(f"Skipping transaction {transaction_id} with title '{title}'")
+                        continue
+
                     if account_id in tracked_account_ids:
                         logger.info(f"Processing transaction {transaction_id} from tracked account.")
                         FinancialRecord.objects.update_or_create(
@@ -136,6 +144,7 @@ def plaid_webhook(request):
     except Exception as e:
         logger.error(f"Error processing Plaid webhook: {str(e)}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
+
 
 def update_spending_by_periods(user, skip_update=False):
     if skip_update:

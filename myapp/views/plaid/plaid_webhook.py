@@ -62,7 +62,7 @@ def plaid_webhook(request):
         logger.info(f"User's tracked account IDs: {tracked_account_ids}")
 
         # Define phrases to exclude
-        exclude_phrases = ["Online payment from"]
+exclude_phrases = ["Online payment from", "PENDING PAYMENT"]
 
         # Update the webhook code handling to process INITIAL_UPDATE, HISTORICAL_UPDATE, and SYNC_UPDATES_AVAILABLE
         if webhook_type == "TRANSACTIONS" and webhook_code in ["INITIAL_UPDATE", "HISTORICAL_UPDATE", "SYNC_UPDATES_AVAILABLE"]:

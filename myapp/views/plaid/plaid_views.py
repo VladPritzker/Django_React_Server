@@ -11,7 +11,10 @@ from django.conf import settings
 from plaid.model.products import Products
 from myapp.models import PlaidItem, TrackedAccount
 from django.views.decorators.http import require_POST
-from myapp.models import User
+# from myapp.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
 import json
 import logging
 from rest_framework.decorators import api_view, permission_classes

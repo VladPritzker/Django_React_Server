@@ -26,16 +26,13 @@ def plaid_webhook(request):
 
         # Parse the webhook payload
         data = json.loads(raw_body)
-
-        # Optionally, log the parsed JSON data
-        logger.info(f"Received webhook JSON data: {json.dumps(data)}")
-
         webhook_type = data.get("webhook_type")
         webhook_code = data.get("webhook_code")
         item_id = data.get("item_id")
+
         logger.info(f"Received webhook for item_id: {item_id}, type: {webhook_type}, code: {webhook_code}")
 
-        # Find the associated PlaidItem using item_id or previous_item_id
+        # Retrieve the associated PlaidItem
         try:
             plaid_item = PlaidItem.objects.get(Q(item_id=item_id) | Q(previous_item_id=item_id))
         except PlaidItem.DoesNotExist:
@@ -43,50 +40,49 @@ def plaid_webhook(request):
             return JsonResponse({"status": "item_not_found"}, status=200)
 
         user = plaid_item.user
-        access_token = plaid_item.access_token  # Retrieve the access token
+        access_token = plaid_item.access_token
 
-        # Fetch account data once outside the loop
+        # Fetch account data
         accounts = get_account_data_util(access_token)
         if accounts is None:
             logger.error("Failed to retrieve account data.")
             return JsonResponse({"error": "Failed to retrieve account data."}, status=500)
 
-        # Create a mapping from account_id to account info (name and mask)
+        # Create account mapping
         account_id_to_info = {
             account.account_id: {
                 'name': account.name,
                 'mask': account.mask
             }
             for account in accounts
-        } 
-        logger.info(f"Account ID to Info Mapping: {account_id_to_info}")
-
-        # Get user's tracked accounts
+        }
         tracked_accounts = TrackedAccount.objects.filter(user=user).values_list('account_id', flat=True)
         tracked_account_ids = set(tracked_accounts)
 
         logger.info(f"User's tracked account IDs: {tracked_account_ids}")
 
-        # Handle only SYNC_UPDATES_AVAILABLE webhook
-        # if webhook_type == "TRANSACTIONS" and webhook_code == "SYNC_UPDATES_AVAILABLE":
+        # Update the webhook code handling to process INITIAL_UPDATE, HISTORICAL_UPDATE, and SYNC_UPDATES_AVAILABLE
         if webhook_type == "TRANSACTIONS" and webhook_code in ["INITIAL_UPDATE", "HISTORICAL_UPDATE", "SYNC_UPDATES_AVAILABLE"]:
-
-            # Fetch new transactions using the transactions_sync endpoint
             cursor = plaid_item.cursor  # May be None initially
             has_more = True
 
             while has_more:
-                # Prepare request options if needed
                 request_options = TransactionsSyncRequestOptions(
                     include_personal_finance_category=True
                 )
 
-                # Prepare the TransactionsSyncRequest
-                sync_request = TransactionsSyncRequest(
-                    access_token=access_token,
-                    cursor=cursor,
-                    options=request_options
-                )
+                # Conditionally include cursor only if it's not None
+                if cursor:
+                    sync_request = TransactionsSyncRequest(
+                        access_token=access_token,
+                        cursor=cursor,
+                        options=request_options
+                    )
+                else:
+                    sync_request = TransactionsSyncRequest(
+                        access_token=access_token,
+                        options=request_options
+                    )
 
                 # Make the API call
                 sync_response = plaid_client.transactions_sync(sync_request)
@@ -99,17 +95,15 @@ def plaid_webhook(request):
                     title = transaction.name
                     account_id = transaction.account_id
 
-                    # Get the account info using the mapping
+                    # Get account info using the mapping
                     account_info = account_id_to_info.get(account_id, {})
                     account_name = account_info.get('name', '')
                     account_mask = account_info.get('mask', '')
 
                     logger.info(f"Evaluating transaction {transaction_id}: account_name='{account_name}', account_mask='{account_mask}'")
 
-                    # Check if the account is in the user's tracked accounts
                     if account_id in tracked_account_ids:
                         logger.info(f"Processing transaction {transaction_id} from tracked account.")
-                        # Use update_or_create to prevent duplicates
                         FinancialRecord.objects.update_or_create(
                             user=user,
                             transaction_id=transaction_id,
@@ -119,14 +113,12 @@ def plaid_webhook(request):
                                 'record_date': record_date,
                             }
                         )
-
-                        # Update user's balance
-                        user.balance -= abs(amount)  # Subtract the amount from balance
+                        user.balance -= abs(amount)
                         user.save()
                     else:
                         logger.info(f"Ignoring transaction {transaction_id} from account {account_name} ending with {account_mask}")
 
-                # Update the cursor
+                # Update cursor
                 cursor = sync_response.next_cursor
                 plaid_item.cursor = cursor
                 plaid_item.save()

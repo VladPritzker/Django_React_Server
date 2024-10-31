@@ -108,8 +108,7 @@ def get_account_data(request):
         logger.error(f"Error getting account data: {str(e)}", exc_info=True)
         return Response({'error': str(e)}, status=500)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
+
 def get_account_data_util(access_token):
     try:
         # Fetch account data from Plaid using the access token
@@ -121,53 +120,27 @@ def get_account_data_util(access_token):
         logger.error(f"Error getting account data: {str(e)}")
         return None
 
-def select_accounts(request):
-    user = request.user
-    if not user.is_authenticated:
-        return redirect('login')
-    # Assuming you have a way to get the latest PlaidItem for the user
-    plaid_item = PlaidItem.objects.filter(user=user).last()
-    if not plaid_item:
-        # Handle the case where no PlaidItem exists
-        return redirect('link_account')
 
-    access_token = plaid_item.access_token
-    accounts = get_account_data_util(access_token)
-    if accounts is None:
-        # Handle error
-        return render(request, 'error.html', {'message': 'Failed to retrieve accounts.'})
 
-    # Prepare account data for rendering
-    account_data = [
-        {
-            'account_id': account.account_id,
-            'name': account.name,
-            'mask': account.mask,
-            'type': account.type,
-            'subtype': account.subtype,
-        }
-        for account in accounts
-    ]
 
-    return render(request, 'select_accounts.html', {'accounts': account_data})
-
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def save_selected_accounts(request):
     user = request.user
-    if not user.is_authenticated:
-        return redirect('login')
-    selected_account_ids = request.POST.getlist('account_ids')
+    data = request.data  # Use DRF's request.data to handle JSON data
+    selected_account_ids = data.get('account_ids', [])
 
     # Assuming you have the latest PlaidItem
     plaid_item = PlaidItem.objects.filter(user=user).last()
     if not plaid_item:
-        # Handle error
-        return redirect('link_account')
+        return Response({'error': 'PlaidItem not found'}, status=404)
 
-    # Fetch account data again to get account info
+    # Fetch account data to get account info
     access_token = plaid_item.access_token
     accounts = get_account_data_util(access_token)
+    if accounts is None:
+        return Response({'error': 'Failed to retrieve accounts.'}, status=500)
+
     account_id_to_info = {
         account.account_id: {
             'name': account.name,
@@ -190,4 +163,4 @@ def save_selected_accounts(request):
             item=plaid_item
         )
 
-    return redirect('dashboard')
+    return Response({'message': 'Selected accounts saved successfully.'})

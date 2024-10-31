@@ -76,7 +76,6 @@ urlpatterns = [
     path('get_access_token/', get_access_token, name='get_access_token'),
     path('get_account_data/', get_account_data, name='get_account_data'),
     path('plaid/webhook/', plaid_webhook, name='plaid_webhook'),
-    path('select_accounts/', select_accounts, name='select_accounts'),
     path('save_selected_accounts/', save_selected_accounts, name='save_selected_accounts'),
 
     

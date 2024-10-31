@@ -22,7 +22,7 @@ from myapp.views.docusign_views.docusign_UI_send import send_docusign_envelope
 from myapp.views.assistant_views import assistant_views
 
 # plaid
-from myapp.views.plaid.plaid_views import get_access_token, create_link_token, get_account_data, select_accounts, save_selected_accounts
+from myapp.views.plaid.plaid_views import get_access_token, create_link_token, get_account_data, save_selected_accounts
 from myapp.views.plaid.plaid_webhook import plaid_webhook
 
 

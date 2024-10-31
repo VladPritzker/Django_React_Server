@@ -21,7 +21,7 @@ from rest_framework.response import Response
 logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def create_link_token(request):
     try:
         user = request.user
@@ -51,7 +51,7 @@ def create_link_token(request):
         return Response({'error': str(e)}, status=500)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def get_access_token(request):
     try:
         data = request.data  # Use DRF's request.data
@@ -85,7 +85,7 @@ def get_access_token(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def get_account_data(request):
     try:
         user = request.user  # Authenticated user
@@ -124,7 +124,7 @@ def get_account_data_util(access_token):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def save_selected_accounts(request):
     user = request.user
     data = request.data  # Use DRF's request.data to handle JSON data

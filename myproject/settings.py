@@ -50,9 +50,6 @@ ALLOWED_HOSTS = [
     'freedom.to',
     'gs-loc.apple.com',
     'mobile.events.data.microsoft.com',
-
-    
-
 ]
 
 # CORS and CSRF settings

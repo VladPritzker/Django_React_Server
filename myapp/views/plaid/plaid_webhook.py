@@ -68,7 +68,9 @@ def plaid_webhook(request):
         logger.info(f"User's tracked account IDs: {tracked_account_ids}")
 
         # Handle only SYNC_UPDATES_AVAILABLE webhook
-        if webhook_type == "TRANSACTIONS" and webhook_code == "SYNC_UPDATES_AVAILABLE":
+        # if webhook_type == "TRANSACTIONS" and webhook_code == "SYNC_UPDATES_AVAILABLE":
+        if webhook_type == "TRANSACTIONS" and webhook_code in ["INITIAL_UPDATE", "HISTORICAL_UPDATE", "SYNC_UPDATES_AVAILABLE"]:
+
             # Fetch new transactions using the transactions_sync endpoint
             cursor = plaid_item.cursor  # May be None initially
             has_more = True

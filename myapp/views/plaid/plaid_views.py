@@ -48,7 +48,7 @@ def create_link_token(request):
             products=[Products("transactions")],
             country_codes=[CountryCode("US")],
             language="en",
-            webhook="https://your-domain.com/plaid/webhook/"
+            webhook="https://oyster-app-vhznt.ondigitalocean.app/plaid/webhook/"
         )
 
         # Send the request to Plaid

@@ -58,7 +58,7 @@ def plaid_webhook(request):
                 'mask': account.mask
             }
             for account in accounts
-        }
+        } 
         logger.info(f"Account ID to Info Mapping: {account_id_to_info}")
 
         # Get user's tracked accounts

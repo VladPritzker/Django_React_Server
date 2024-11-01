@@ -113,7 +113,41 @@ def financial_records(request):
             for record in records
         ]
         return JsonResponse(records_data, safe=False)
+    elif request.method == 'PATCH':
+        try:
+            data = json.loads(request.body)
+            record_id = data.get('record_id')
+            title = data.get('title')
+            amount = data.get('amount')
+            record_date = data.get('record_date')
+            
+            # Get the record
+            record = get_object_or_404(FinancialRecord, id=record_id)
+            
+            # Update fields if provided
+            if title:
+                record.title = title
+            if amount:
+                record.amount = Decimal(amount)
+            if record_date:
+                record.record_date = datetime.strptime(record_date, '%Y-%m-%d').date()
+            
+            record.save()
 
+            update_spending_by_periods(record.user)
+
+            return JsonResponse({
+                'message': 'Record updated successfully',
+                'id': record.id,
+                'title': record.title,
+                'amount': str(record.amount),
+                'record_date': record.record_date.isoformat()
+            }, status=200)
+        except FinancialRecord.DoesNotExist:
+            return JsonResponse({'error': 'Financial record not found'}, status=404)
+        except Exception as e:
+            logger.exception("Error updating financial record:")
+            return JsonResponse({'error': 'Server error: ' + str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 

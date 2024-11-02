@@ -1,4 +1,5 @@
 # settings.py
+from django.conf import settings
 import os
 from pathlib import Path
 from decouple import config
@@ -8,6 +9,7 @@ import environ
 LOGIN_URL = 'https://pritzker-finance.com/'  # Update with the correct login URL
 
 
+BASE_URL = "http://127.0.0.1:8000" if os.environ.get("DJANGO_ENV") == "development" else "https://oyster-app-vhznt.ondigitalocean.app"
 
 
 # Load environment variables from .env file
@@ -88,8 +90,14 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'myapp',
-    'storages'
+    'storages',
+    'anymail',
+
 ]
+ANYMAIL = {
+    'MAILGUN_API_KEY': 'your-mailgun-api-key',
+    'MAILGUN_SENDER_DOMAIN': 'your-domain.com',  # e.g., mg.your-domain.com
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -210,7 +218,9 @@ USE_TZ = False
 CORS_ALLOW_ALL_ORIGINS = True
 
 EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+DEFAULT_FROM_EMAIL = 'pritzkervlad@gmail.com'
+SERVER_EMAIL = 'https://oyster-app-vhznt.ondigitalocean.app@pritzker-finance.com'
+
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False  # Ensure this line is set to False
@@ -260,13 +270,6 @@ PASSWORD_RESET_TIMEOUT = 86400  # 1 day (you can adjust this value)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Ensure this directory exists and is correctly set up
 
-# SendGrid settings 
-EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-SENDGRID_API_KEY = config('SENDGRID_API_KEY')
-
-# Additional SendGrid settings (optional)
-SENDGRID_SANDBOX_MODE_IN_DEBUG = False  # Set to True if you want to test without sending emails
-SENDGRID_ECHO_TO_STDOUT = True  # Print emails to the console while in DEBUG mode
 DEFAULT_FROM_EMAIL = "pritzkervlad@gmail.com"
 
 
@@ -294,3 +297,8 @@ AWS_QUERYSTRING_AUTH = False
  
 AWS_LOCATION = ''
 AWS_DEFAULT_ACL = None
+
+
+
+# SendGrid
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')

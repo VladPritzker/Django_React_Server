@@ -30,7 +30,6 @@ def plaid_webhook(request):
         webhook_code = data.get("webhook_code")
         item_id = data.get("item_id")
 
-        logger.info(f"Received webhook for item_id: {item_id}, type: {webhook_type}, code: {webhook_code}")
 
         # Retrieve the associated PlaidItem
         try:
@@ -59,7 +58,7 @@ def plaid_webhook(request):
         tracked_accounts = TrackedAccount.objects.filter(user=user).values_list('account_id', flat=True)
         tracked_account_ids = set(tracked_accounts)
 
-        logger.info(f"User's tracked account IDs: {tracked_account_ids}")
+        # 
 
         # Define phrases to exclude
         exclude_phrases = ["Online payment from", "PENDING PAYMENT"]

@@ -10,7 +10,8 @@ from myapp.views import (
     stock_data_pdf
 )
 from myapp.views.user_views import (
-    register_user, login_with_otp, verify_otp, reset_password, fetch_user_details, send_otp, simple_login,
+    register_user,  simple_login, 
+    # register_user, login_with_otp, verify_otp, fetch_user_details, send_otp, simple_login, reset_password
 )
 from django.contrib.auth import views as auth_views
 
@@ -25,6 +26,10 @@ from myapp.views.assistant_views import assistant_views
 from myapp.views.plaid.plaid_views import get_access_token, create_link_token, get_account_data, save_selected_accounts
 from myapp.views.plaid.plaid_webhook import plaid_webhook
 
+# password reset 
+from myapp.views.password_reset.password_reset import request_password_reset, reset_password
+
+
 
 
 
@@ -35,10 +40,8 @@ from myapp.views.plaid.plaid_webhook import plaid_webhook
 urlpatterns = [
     path('', home_views.homepage, name='homepage'),
     path('admin/', admin.site.urls),
-    # path('users/', user_views.users, name='users'),
     path('register/', register_user, name='register'),
     path('simple-login/', simple_login, name='simple_login'),
-    path('login/', login_with_otp, name='login_with_otp'),
     path('users/<int:user_id>/', user_views.users_data, name='users_data'),
     path('financial_records/', financial_views.financial_records, name='financial_records'),
     path('financial_records/<int:user_id>/<int:record_id>/', financial_views.delete_financial_record, name='delete_financial_record'),
@@ -71,28 +74,17 @@ urlpatterns = [
     
 
 
-    #plaid
+    # plaid
     path('create_link_token/', create_link_token, name='create_link_token'),
     path('get_access_token/', get_access_token, name='get_access_token'),
     path('get_account_data/', get_account_data, name='get_account_data'),
     path('plaid/webhook/', plaid_webhook, name='plaid_webhook'),
     path('save_selected_accounts/', save_selected_accounts, name='save_selected_accounts'),
-
+    
+    # password reset 
+    path('request-password-reset/', request_password_reset, name='request_password_reset'),
+    path('reset-password/', reset_password, name='reset_password'),  # This will handle the token
     
 
-
-
-    # sendgrid
-    path('send-otp/', send_otp, name='send_otp'),
-    path('verify-otp/', verify_otp, name='verify_otp'),
-    path('fetch-user-details/', fetch_user_details, name='fetch_user_details'),
-
-
-    # Password reset
-    path('reset-password/', reset_password, name='reset_password'),
-    path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
-    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
-    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

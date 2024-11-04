@@ -9,7 +9,7 @@ import environ
 LOGIN_URL = 'https://pritzker-finance.com/'  # Update with the correct login URL
 
 
-DJANGO_ENV = os.getenv('DJANGO_ENV', 'development')
+DJANGO_ENV = os.getenv('DJANGO_ENV')
 
 # BASE URL for the app based on environment
 BASE_URL = config('BASE_URL', default="http://127.0.0.1:8000") if DJANGO_ENV == "development" else "https://oyster-app-vhznt.ondigitalocean.app"

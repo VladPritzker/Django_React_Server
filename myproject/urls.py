@@ -27,7 +27,7 @@ from myapp.views.plaid.plaid_views import get_access_token, create_link_token, g
 from myapp.views.plaid.plaid_webhook import plaid_webhook
 
 # password reset 
-from myapp.views.password_reset.password_reset import request_password_reset, reset_password
+from myapp.views.password_reset.password_reset import reset_password_form, reset_password, request_password_reset
 
 
 
@@ -82,8 +82,10 @@ urlpatterns = [
     path('save_selected_accounts/', save_selected_accounts, name='save_selected_accounts'),
     
     # password reset 
+    path('reset-password/', reset_password_form, name='reset_password_form'),  # GET request for form
+    path('reset-password-submit/', reset_password, name='reset_password'),  # POST request for submission
     path('request-password-reset/', request_password_reset, name='request_password_reset'),
-    path('reset-password/', reset_password, name='reset_password'),  # This will handle the token
+
     
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

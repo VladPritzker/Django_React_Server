@@ -20,9 +20,7 @@ else:
     plaid_secret = settings.PLAID_SANDBOX_SECRET  # Use the secret from settings
 
 # Log the environment and credentials for debugging
-logger.info(f"Using Plaid Environment: {plaid_env}")
-logger.info(f"Using Plaid Client ID: {settings.PLAID_CLIENT_ID}")
-logger.info(f"Using Plaid Secret: {plaid_secret}")
+
 
 
 # Get the path to certifi's certificates

@@ -9,7 +9,8 @@ import environ
 LOGIN_URL = 'https://pritzker-finance.com/'  # Update with the correct login URL
 
 
-BASE_URL = "http://127.0.0.1:8000" if os.environ.get("DJANGO_ENV") == "development" else "https://oyster-app-vhznt.ondigitalocean.app"
+
+
 
 
 # Load environment variables from .env file
@@ -52,6 +53,9 @@ ALLOWED_HOSTS = [
     'freedom.to',
     'gs-loc.apple.com',
     'mobile.events.data.microsoft.com',
+    'gspe1-ssl.ls.apple.com',  # Add this to accept requests from this host
+    'copilot-telemetry.githubusercontent.com',
+    'metrics.icloud.com'
 ]
 
 # CORS and CSRF settings
@@ -66,7 +70,9 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',  # Local frontend
     'https://clownfish-app-dsl46.ondigitalocean.app',  # Production frontend
     'https://oyster-app-vhznt.ondigitalocean.app',  # Production backend
-    'http://pritzker-finance.com'
+    'http://pritzker-finance.com',
+    'http://copilot-telemetry.githubusercontent.com',
+    'http://gateway.icloud.com'
 ]
 CSRF_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_HTTPONLY = False
@@ -123,10 +129,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'myproject.urls'
 
+
+BASE_DIR = '/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance/Django_server'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'myapp/templates')],  # Ensure this path is correct
+        'DIRS': [os.path.join(BASE_DIR, 'myapp/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -138,6 +147,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'myproject.wsgi.application'
 
@@ -217,7 +227,7 @@ DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 USE_TZ = False
 CORS_ALLOW_ALL_ORIGINS = True
 
-EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
+EMAIL_BACKEND = 'django_sendgrid_v5.backend.SendgridBackend'
 DEFAULT_FROM_EMAIL = 'pritzkervlad@gmail.com'
 SERVER_EMAIL = 'https://oyster-app-vhznt.ondigitalocean.app@pritzker-finance.com'
 
@@ -226,7 +236,6 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False  # Ensure this line is set to False
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = 'no-reply@pritzker-finance.com'
 
 STOCK_DATA_KEY = config('STOCK_DATA_KEY')
 CORS_ALLOW_CREDENTIALS = True
@@ -270,7 +279,6 @@ PASSWORD_RESET_TIMEOUT = 86400  # 1 day (you can adjust this value)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Ensure this directory exists and is correctly set up
 
-DEFAULT_FROM_EMAIL = "pritzkervlad@gmail.com"
 
 
 
@@ -302,3 +310,4 @@ AWS_DEFAULT_ACL = None
 
 # SendGrid
 SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+BASE_URL = os.getenv('DJANGO_ENV')

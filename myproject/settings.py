@@ -9,6 +9,10 @@ import environ
 LOGIN_URL = 'https://pritzker-finance.com/'  # Update with the correct login URL
 
 
+DJANGO_ENV = os.getenv('DJANGO_ENV', 'development')
+
+# BASE URL for the app based on environment
+BASE_URL = config('BASE_URL', default="http://127.0.0.1:8000") if DJANGO_ENV == "development" else "https://oyster-app-vhznt.ondigitalocean.app"
 
 
 
@@ -135,7 +139,9 @@ BASE_DIR = '/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'myapp/templates')],
+        'DIRS': [
+            '/Users/vladbuzhor/Library/Mobile Documents/com~apple~CloudDocs/Vlad/Study/Study/Django_Angular_React_finance/Django_server/myapp/templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -310,4 +316,3 @@ AWS_DEFAULT_ACL = None
 
 # SendGrid
 SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
-BASE_URL = os.getenv('DJANGO_ENV')

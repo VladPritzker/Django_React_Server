@@ -15,6 +15,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # View to render the reset password form (GET request)
+@csrf_exempt
 def reset_password_form(request):
     try:
         token = request.GET.get('token')

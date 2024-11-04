@@ -228,6 +228,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Ensure you have the correct storage backend set up
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
 
 # Additional settings
 USE_TZ = False

@@ -284,8 +284,7 @@ PLAID_SANDBOX_SECRET = os.getenv('PLAID_SANDBOX_SECRET', 'b975402f6416411b11fb5a
 
 PASSWORD_RESET_TIMEOUT = 86400  # 1 day (you can adjust this value)
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Ensure this directory exists and is correctly set up
+
 
 
 

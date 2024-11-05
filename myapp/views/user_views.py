@@ -22,6 +22,9 @@ from myapp.views.income_views import update_income_by_periods
 from myapp.views.financial_views import update_spending_by_periods
 from myapp.models import User
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated
+
+from rest_framework.decorators import api_view, permission_classes
 
 
 
@@ -35,10 +38,11 @@ def simple_login(request):
         email = data.get('email')
         password = data.get('password')
 
-        user = authenticate(email=email, password=password)
+        # Authenticate user credentials
+        user = authenticate(request, email=email, password=password)
 
         if user is not None:
-            # Log the user in
+            # Log the user in (Django session)
             login(request, user)
 
             # Generate JWT tokens (refresh and access tokens)
@@ -78,7 +82,8 @@ def register_user(request):
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-@csrf_exempt
+@api_view(['PATCH', 'GET', 'POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def users_data(request, user_id=None):
     if request.method == 'PATCH':
         if not user_id:

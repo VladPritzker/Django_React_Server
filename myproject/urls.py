@@ -29,6 +29,10 @@ from myapp.views.plaid.plaid_webhook import plaid_webhook
 # password reset 
 from myapp.views.password_reset.password_reset import reset_password_form, reset_password, request_password_reset
 
+# authentification token 
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+
 
 
 
@@ -85,6 +89,10 @@ urlpatterns = [
     path('reset-password/', reset_password_form, name='reset_password_form'),  # GET request for form
     path('reset-password-submit/', reset_password, name='reset_password'),  # POST request for submission
     path('request-password-reset/', request_password_reset, name='request_password_reset'),
+    
+    # authentification token 
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     
 

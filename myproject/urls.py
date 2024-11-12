@@ -32,6 +32,7 @@ from myapp.views.password_reset.password_reset import reset_password_form, reset
 
 # authentification token 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from myapp.views.token import validate_token
 
 
 
@@ -94,6 +95,8 @@ urlpatterns = [
     # authentification token 
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/validate-token/', validate_token, name='validate_token'),
+
 
     # notifications
     path('notifications/', get_unread_notifications, name='get_unread_notifications'),

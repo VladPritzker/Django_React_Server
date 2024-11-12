@@ -25,6 +25,7 @@ from myapp.views.assistant_views import assistant_views
 # plaid
 from myapp.views.plaid.plaid_views import get_access_token, create_link_token, get_account_data, save_selected_accounts
 from myapp.views.plaid.plaid_webhook import plaid_webhook
+from myapp.views.plaid.nitifications import get_unread_notifications, mark_notifications_as_read
 
 # password reset 
 from myapp.views.password_reset.password_reset import reset_password_form, reset_password, request_password_reset
@@ -93,6 +94,10 @@ urlpatterns = [
     # authentification token 
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # notifications
+    path('notifications/', get_unread_notifications, name='get_unread_notifications'),
+    path('notifications/mark_as_read/', mark_notifications_as_read, name='mark_notifications_as_read'),
 
     
 

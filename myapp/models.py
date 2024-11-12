@@ -254,7 +254,7 @@ class PlaidItem(models.Model):
 
 
 
-
+ 
 
 class TrackedAccount(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -268,3 +268,24 @@ class TrackedAccount(models.Model):
 
     def __str__(self):
         return f"{self.account_name} ending with {self.account_mask}"
+
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('new_transaction', 'New Transaction'),
+        # You can add more types if needed
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    # # Optionally, you can link to the related object (e.g., transaction)
+    # transaction = models.ForeignKey('FinancialRecord', null=True, blank=True, on_delete=models.CASCADE)
+    class Meta:
+       db_table = 'Notifications'
+
+    def __str__(self):
+        return f'Notification for {self.user.username}: {self.message}'

@@ -5,6 +5,17 @@ from pathlib import Path
 from decouple import config
 from dotenv import load_dotenv
 import environ
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # Set access token expiry, e.g., 5 minutes
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),    # Set refresh token expiry, e.g., 1 day
+    'ROTATE_REFRESH_TOKENS': True,                  # Rotates refresh token each time it’s used
+    'BLACKLIST_AFTER_ROTATION': True,               # Invalidates old refresh tokens
+    'ALGORITHM': 'HS256',                           # Set the algorithm for signing tokens
+    # 'SIGNING_KEY': SECRET_KEY,                      # Use your Django secret key to sign tokens
+}
+
 
 LOGIN_URL = 'https://pritzker-finance.com/'  # Update with the correct login URL
 

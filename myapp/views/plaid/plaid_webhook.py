@@ -30,7 +30,6 @@ def plaid_webhook(request):
         webhook_code = data.get("webhook_code")
         item_id = data.get("item_id")
 
-
         # Retrieve the associated PlaidItem
         try:
             plaid_item = PlaidItem.objects.get(Q(item_id=item_id) | Q(previous_item_id=item_id))
@@ -58,12 +57,10 @@ def plaid_webhook(request):
         tracked_accounts = TrackedAccount.objects.filter(user=user).values_list('account_id', flat=True)
         tracked_account_ids = set(tracked_accounts)
 
-        # 
-
         # Define phrases to exclude
         exclude_phrases = ["Online payment from", "PENDING PAYMENT"]
 
-        # Update the webhook code handling to process INITIAL_UPDATE, HISTORICAL_UPDATE, and SYNC_UPDATES_AVAILABLE
+        # Process transaction updates
         if webhook_type == "TRANSACTIONS" and webhook_code in ["INITIAL_UPDATE", "HISTORICAL_UPDATE", "SYNC_UPDATES_AVAILABLE"]:
             cursor = plaid_item.cursor  # May be None initially
             has_more = True
@@ -73,7 +70,7 @@ def plaid_webhook(request):
                     include_personal_finance_category=True
                 )
 
-                # Conditionally include cursor only if it's not None
+                # Conditionally include cursor
                 if cursor:
                     sync_request = TransactionsSyncRequest(
                         access_token=access_token,
@@ -96,22 +93,55 @@ def plaid_webhook(request):
                     record_date = transaction.date
                     title = transaction.name
                     account_id = transaction.account_id
+                    pending = transaction.pending
+                    pending_id = getattr(transaction, 'pending_transaction_id', None)
 
-                    # Get account info using the mapping
+                    # Get account info
                     account_info = account_id_to_info.get(account_id, {})
                     account_name = account_info.get('name', '')
                     account_mask = account_info.get('mask', '')
 
-                    logger.info(f"Evaluating transaction {transaction_id}: account_name='{account_name}', account_mask='{account_mask}'")
+                    logger.info(f"Evaluating transaction {transaction_id}: account_name='{account_name}', account_mask='{account_mask}', pending={pending}")
 
-                    # Skip transactions that match exclude phrases
+                    # Skip excluded phrases
                     if any(phrase in title for phrase in exclude_phrases):
-                        logger.info(f"Skipping transaction {transaction_id} with title '{title}'")
+                        logger.info(f"Skipping transaction {transaction_id} with title '{title}' due to exclude phrases")
                         continue
 
+                    # Skip pending transactions to avoid duplicates
+                    if pending:
+                        logger.info(f"Skipping pending transaction {transaction_id}")
+                        continue
+
+                    # Now we deal with final transactions
                     if account_id in tracked_account_ids:
-                        logger.info(f"Processing transaction {transaction_id} from tracked account.")
-                        FinancialRecord.objects.update_or_create(
+                        logger.info(f"Processing final transaction {transaction_id} from tracked account.")
+
+                        # If this final transaction references a pending one
+                        if pending_id:
+                            # Try updating a record created by that pending transaction_id
+                            updated = FinancialRecord.objects.filter(
+                                user=user, transaction_id=pending_id
+                            ).update(
+                                transaction_id=transaction_id,
+                                title=title,
+                                amount=abs(amount),
+                                record_date=record_date
+                            )
+                            if updated:
+                                logger.info(f"Updated record from pending {pending_id} to final {transaction_id}")
+                                # If you never saved pending transactions before, updated will be 0, so it won't happen.
+                                # If updated, you might have already adjusted balance at pending stage (if you did so), otherwise adjust now.
+                                # If you never adjusted at pending stage, adjust now:
+                                # If you did adjust at pending stage, no double-adjust needed.
+                                # For simplicity, assume we never adjusted pending stage, so adjust now:
+                                if updated == 1:
+                                    user.balance -= abs(amount)
+                                    user.save()
+                                continue
+
+                        # If no pending_id or no update happened, treat this as a new final transaction
+                        _, created = FinancialRecord.objects.update_or_create(
                             user=user,
                             transaction_id=transaction_id,
                             defaults={
@@ -120,19 +150,20 @@ def plaid_webhook(request):
                                 'record_date': record_date,
                             }
                         )
-                        user.balance -= abs(amount)
-                        user.save()
+                        if created:
+                            user.balance -= abs(amount)
+                            user.save()
                     else:
                         logger.info(f"Ignoring transaction {transaction_id} from account {account_name} ending with {account_mask}")
 
-                # Update cursor
+                # Update cursor and save
                 cursor = sync_response.next_cursor
                 plaid_item.cursor = cursor
                 plaid_item.save()
 
                 has_more = sync_response.has_more
 
-            # Update user's spending after processing transactions
+            # Update user's spending
             update_spending_by_periods(user)
 
             return JsonResponse({"status": "success"}, status=200)

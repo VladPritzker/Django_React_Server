@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 import environ
 from datetime import timedelta
 
+
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # Set access token expiry, e.g., 5 minutes
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),    # Set refresh token expiry, e.g., 1 day
@@ -113,6 +115,7 @@ INSTALLED_APPS = [
     'myapp',
     'storages',
     'anymail',
+    'sendgrid_backend',
 
 ]
 ANYMAIL = {

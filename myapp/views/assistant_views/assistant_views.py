@@ -20,7 +20,6 @@ def assistant_views(request):
         user_message = data.get('message', '')
         messages = data.get('messages', [])
         user_id = data.get('user_id', None)
-
         system_prompt = """
             You are a helpful assistant integrated into a user application that manages contacts, income, and spending records.
             When a user wants to add, delete, or list their contacts, income, or spending records, extract the intent and details.

@@ -1,0 +1,63 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+# --- Build job ---
+build:
+  stage: build
+  image: python:3.11-slim
+  before_script:
+    - python3 -V
+    - pip install --upgrade pip
+  script:
+    - python3 -m venv djangoenv
+    - source djangoenv/bin/activate
+    - pip install -r requirements.txt
+  cache:
+    paths:
+      - .cache/pip
+  artifacts:
+    paths:
+      - djangoenv/
+    expire_in: 1 hour
+  only:
+    - main
+    - develop
+
+# --- Test job ---
+test:
+  stage: test
+  image: python:3.11-slim
+  before_script:
+    - source djangoenv/bin/activate
+  script:
+    - python manage.py test || echo "No tests found, skipping."
+  dependencies:
+    - build
+  only:
+    - main
+    - develop
+
+# --- Deploy job (manual trigger) ---
+deploy:
+  stage: deploy
+  image: python:3.11-slim
+  before_script:
+    - source djangoenv/bin/activate
+  script:
+    - echo "Deploying Django application..."
+    # Example deployment commands:
+    - pip install gunicorn
+    - python manage.py collectstatic --noinput
+    - gunicorn myproject.wsgi:application --config gunicorn.conf.py
+  dependencies:
+    - test
+  environment:
+    name: production
+  only:
+    - main
+  when: manual

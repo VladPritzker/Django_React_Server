@@ -12,8 +12,7 @@ build:
   stage: build
   image: python:3.11-slim
   before_script:
-    - apt-get update && apt-get install -y python3-venv
-    - python3 -V
+    - python3 --version
     - pip install --upgrade pip
   script:
     - python3 -m venv djangoenv

@@ -21,7 +21,7 @@ build:
   only:
     - main
     - develop
- 
+  
 test:
   stage: test
   image: python:3.11-slim

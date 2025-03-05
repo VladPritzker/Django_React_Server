@@ -9,8 +9,18 @@ variables:
 
 build:
   stage: build
-  image: python:3.11  # <-- Not slim
+  image: python:3.11
   before_script:
+    # 1) Install Debian's python3.11 & python3.11-venv
+    - apt-get update && apt-get install -y python3.11 python3.11-venv
+
+    # 2) Remove Docker’s own python3 so we don't mix interpreters
+    - rm /usr/local/bin/python3
+
+    # 3) Symlink Debian’s python3.11 as /usr/local/bin/python3
+    - ln -s /usr/bin/python3.11 /usr/local/bin/python3
+    
+    - which python3
     - python3 --version
     - pip install --upgrade pip
   script:

@@ -21,7 +21,11 @@ build:
   only:
     - main
     - develop
+<<<<<<< HEAD
    
+=======
+
+>>>>>>> 296b4b7163f14cabf2f79b62af7d3a0a53b205fb
 test:
   stage: test
   image: python:3.11-slim

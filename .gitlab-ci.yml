@@ -5,12 +5,14 @@ stages:
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  VENV_PATH: "$CI_PROJECT_DIR/djangoenv"
 
 # --- Build job ---
 build:
   stage: build
   image: python:3.11-slim
   before_script:
+    - apt-get update && apt-get install -y python3-venv
     - python3 -V
     - pip install --upgrade pip
   script:
@@ -20,6 +22,7 @@ build:
   cache:
     paths:
       - .cache/pip
+      - djangoenv/
   artifacts:
     paths:
       - djangoenv/
@@ -27,13 +30,14 @@ build:
   only:
     - main
     - develop
-
+ 
 # --- Test job ---
 test:
   stage: test
   image: python:3.11-slim
   before_script:
-    - source djangoenv/bin/activate
+    - apt-get update && apt-get install -y python3-venv
+    - source $VENV_PATH/bin/activate
   script:
     - python manage.py test || echo "No tests found, skipping."
   dependencies:
@@ -47,10 +51,10 @@ deploy:
   stage: deploy
   image: python:3.11-slim
   before_script:
-    - source djangoenv/bin/activate
+    - apt-get update && apt-get install -y python3-venv
+    - source $VENV_PATH/bin/activate
   script:
     - echo "Deploying Django application..."
-    # Example deployment commands:
     - pip install gunicorn
     - python manage.py collectstatic --noinput
     - gunicorn myproject.wsgi:application --config gunicorn.conf.py

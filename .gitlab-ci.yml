@@ -30,7 +30,7 @@ build:
   only:
     - main
     - develop
-
+ 
 # --- Test job ---
 test:
   stage: test

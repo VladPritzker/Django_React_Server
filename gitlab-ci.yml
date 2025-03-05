@@ -12,16 +12,16 @@ build:
   stage: build
   image: python:3.11-slim
   before_script:
-    - python3 -V  # Ensure Python is available
+    - apt-get update && apt-get install -y python3-venv
+    - python3 -V
     - pip install --upgrade pip
   script:
-    - python3 -m venv $VENV_PATH  # Create virtual environment
+    - python3 -m venv $VENV_PATH
     - source $VENV_PATH/bin/activate
-    - pip install --upgrade pip
     - pip install -r requirements.txt
   cache:
-    key: venv-cache
     paths:
+      - .cache/pip
       - djangoenv/
   artifacts:
     paths:
@@ -36,10 +36,8 @@ test:
   stage: test
   image: python:3.11-slim
   before_script:
-    - python3 -m venv $VENV_PATH  # Ensure venv is created
+    - apt-get update && apt-get install -y python3-venv
     - source $VENV_PATH/bin/activate
-    - pip install --upgrade pip
-    - pip install -r requirements.txt
   script:
     - python manage.py test || echo "No tests found, skipping."
   dependencies:
@@ -53,10 +51,8 @@ deploy:
   stage: deploy
   image: python:3.11-slim
   before_script:
-    - python3 -m venv $VENV_PATH  # Ensure venv exists
+    - apt-get update && apt-get install -y python3-venv
     - source $VENV_PATH/bin/activate
-    - pip install --upgrade pip
-    - pip install -r requirements.txt
   script:
     - echo "Deploying Django application..."
     - pip install gunicorn

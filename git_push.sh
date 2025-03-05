@@ -2,12 +2,7 @@
 #!/bin/bash
 
 #!/bin/bash
-if [ -z "$1" ]; then
-    MESSAGE="Automated commit"
-else
-    MESSAGE="$1"
-fi
-
 git add .
-git commit -m "$MESSAGE"
+git commit -m "${1:-'auto commit'}"
 git push origin main
+git push gitlab main

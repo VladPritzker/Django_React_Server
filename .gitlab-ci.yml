@@ -42,15 +42,15 @@ deploy:
   stage: deploy
   image: python:3.11-slim
   before_script:
-  - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev
-  - python3 -m venv $VENV_PATH
-  - source $VENV_PATH/bin/activate
-  - pip install --upgrade pip
+    - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev
+    - python3 -m venv $VENV_PATH
+    - source $VENV_PATH/bin/activate
+    - pip install --upgrade pip
     - pip install -r requirements.txt
   script:
     - echo "Deploying Django application..."
     - pip install gunicorn
-    - export SECRET_KEY=$SECRET_KEY  # ensure environment var is available
+    - export SECRET_KEY=$SECRET_KEY
     - python manage.py collectstatic --noinput
     - gunicorn myproject.wsgi:application --config gunicorn.conf.py
   dependencies:

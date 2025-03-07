@@ -9,10 +9,13 @@ variables:
 
 build:
   stage: build
-  image: python:3.11
+  image: python:3.11-slim
+  before_script:
+    - apt-get update && apt-get install -y gcc libmariadb-dev pkg-config
+    - python3 -m venv $VENV_PATH
+    - source $VENV_PATH/bin/activate
+    - pip install --upgrade pip
   script:
-    - python3 -m venv djangoenv
-    - source djangoenv/bin/activate
     - pip install -r requirements.txt
   artifacts:
     paths:
@@ -39,7 +42,8 @@ deploy:
   stage: deploy
   image: python:3.11-slim
   before_script:
-    - python3 -m venv $VENV_PATH        # create venv explicitly
+    - apt-get update && apt-get install -y gcc libmariadb-dev pkg-config
+    - python3 -m venv $VENV_PATH
     - source $VENV_PATH/bin/activate
     - pip install --upgrade pip
     - pip install -r requirements.txt
@@ -55,4 +59,3 @@ deploy:
   only:
     - main
   when: manual
-

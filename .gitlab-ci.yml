@@ -52,7 +52,7 @@ deploy:
     - pip install gunicorn
     - export SECRET_KEY=$SECRET_KEY
     - python manage.py collectstatic --noinput
-    - gunicorn myproject.wsgi:application --config gunicorn.conf.py
+    - gunicorn myproject.wsgi:application --config gunicorn.conf.py --log-level debug
   dependencies:
     - test
   environment:

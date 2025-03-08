@@ -1,8 +1,5 @@
-# myapp/tests.py
-
 from django.test import TestCase
-from django.urls import reverse
-from myapp.models import CustomUser
+from myapp.models import User
 
 class SimpleTestCase(TestCase):
     def test_homepage_status_code(self):
@@ -10,5 +7,5 @@ class SimpleTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_create_user(self):
-        user = CustomUser.objects.create_user(email="test@example.com", password="Test123!")
+        user = User.objects.create_user(email="test@example.com", password="Test123!")
         self.assertEqual(user.email, "test@example.com")

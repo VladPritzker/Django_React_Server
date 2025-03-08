@@ -30,6 +30,16 @@ test:
   image: python:3.11-slim
   before_script:
     - source "$VENV_PATH/bin/activate"
+    # Define your database credentials for testing
+    - export DB_NAME=$DB_NAME
+    - export DB_USER=$DB_USER
+    - export DB_PASSWORD=$DB_PASSWORD
+    - export DB_HOST=$DB_HOST
+    - export DB_PORT=$DB_PORT
+    - export SECRET_KEY=$SECRET_KEY
+    - export EMAIL_HOST_USER=$EMAIL_HOST_USER
+    - export EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD
+    - export DEBUG=True
   script:
     - python manage.py test
   dependencies:

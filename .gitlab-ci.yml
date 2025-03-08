@@ -28,26 +28,22 @@ build:
 test:
   stage: test
   image: python:3.11-slim
+  services:
+    - mysql:8.0
+  variables:
+    MYSQL_ROOT_PASSWORD: "Test11!!"
+    MYSQL_DATABASE: myproject
+    DB_NAME: myproject
+    DB_USER: root
+    DB_PASSWORD: Test11!!
+    DB_HOST: mysql
+    DB_PORT: 3306
   before_script:
+    - apt-get update && apt-get install -y gcc libmariadb-dev pkg-config
     - source "$VENV_PATH/bin/activate"
-    # Define your database credentials for testing
-    - export DB_NAME=$DB_NAME
-    - export DB_USER=$DB_USER
-    - export DB_PASSWORD=$DB_PASSWORD
-    - export DB_HOST=$DB_HOST
-    - export DB_PORT=$DB_PORT
-    - export SECRET_KEY=$SECRET_KEY
-    - export EMAIL_HOST_USER=$EMAIL_HOST_USER
-    - export EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD
-    - export DEBUG=True
   script:
     - python manage.py test
-  dependencies:
-    - build
-  only:
-    - main
-    - develop
-
+  
 deploy:
   stage: deploy
   image: python:3.11-slim

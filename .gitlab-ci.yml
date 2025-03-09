@@ -35,6 +35,8 @@ test:
     MYSQL_DATABASE: myproject
     MYSQL_USER: myuser
     MYSQL_PASSWORD: Test11!!
+    DB_HOST: mysql            # <--- TELL Django to connect to "mysql"
+    DB_PORT: 3306
   before_script:
     - apt-get update && apt-get install -y gcc libmariadb-dev pkg-config
     - source "$VENV_PATH/bin/activate"

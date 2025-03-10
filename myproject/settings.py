@@ -178,14 +178,21 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+
+# Possibly read .env, but override if DJANGO_ENV=ci
+if os.getenv('DJANGO_ENV') == 'ci':
+    DB_HOST = 'mysql'
+else:
+    DB_HOST = config('DB_HOST', default='127.0.0.1')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT', cast=int),
+        'HOST': DB_HOST,
+        'PORT': config('DB_PORT', default=3306, cast=int),
     }
 }
 

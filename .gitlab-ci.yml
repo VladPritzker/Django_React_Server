@@ -28,6 +28,7 @@ build:
   only:
     - main
     - QA
+    - production
 
 # ----------------------
 # TEST JOB
@@ -58,6 +59,8 @@ test:
   only:
     - main
     - QA
+    - production
+
 
 # ----------------------
 # DEPLOY JOB

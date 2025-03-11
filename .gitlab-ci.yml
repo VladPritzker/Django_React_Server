@@ -31,16 +31,30 @@ test:
   services:
     - mysql:8.0
   variables:
-    MYSQL_ROOT_PASSWORD: Test11!!
-    MYSQL_DATABASE: myproject
-    MYSQL_USER: myuser
-    MYSQL_PASSWORD: Test11!!
-    DB_HOST: mysql            # <--- TELL Django to connect to "mysql"
-    DB_PORT: 3306
+    # Ensure Django sees DJANGO_ENV=ci so it uses "if os.getenv('DJANGO_ENV') == 'ci': DB_HOST='mysql'"
+    DJANGO_ENV: "ci"
+
+    # Match Django's DB variables exactly:
+    DB_NAME: "myproject"
+    DB_USER: "myuser"
+    DB_PASSWORD: "Test11!!"
+    DB_PORT: "3306"
+    
+    # MySQL container initialization
+    MYSQL_ROOT_PASSWORD: "Test11!!"
+    # If you want a separate non-root user, you can also define:
+    # MYSQL_USER: "myuser"
+    # MYSQL_PASSWORD: "Test11!!"
+    # MYSQL_DATABASE: "myproject"
+
   before_script:
     - apt-get update && apt-get install -y gcc libmariadb-dev pkg-config
     - source "$VENV_PATH/bin/activate"
   script:
+    # Optional: wait a bit so MySQL container finishes startup
+    - echo "Sleeping 10s to let MySQL initialize..."
+    - sleep 10
+
     - python manage.py test
   dependencies:
     - build

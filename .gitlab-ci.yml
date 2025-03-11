@@ -31,17 +31,13 @@ test:
   services:
     - mysql:8.0
   variables:
-    # Tells MySQL container to create a new user "myuser" with password "Test11!!"
-    # and a database named "myproject"
+    # This instructs MySQL to set up root with the password "Test11!!"
     MYSQL_ROOT_PASSWORD: "Test11!!"
-    MYSQL_USER: "myuser"
-    MYSQL_PASSWORD: "Test11!!"
-    MYSQL_DATABASE: "myproject"
 
-    # Tells Django to connect as "myuser" / "Test11!!"
+    # Now we tell Django to connect as root in settings.py:
     DJANGO_ENV: "ci"
     DB_NAME: "myproject"
-    DB_USER: "myuser"
+    DB_USER: "root"
     DB_PASSWORD: "Test11!!"
     DB_HOST: "mysql"
     DB_PORT: "3306"

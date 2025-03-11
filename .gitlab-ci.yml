@@ -61,7 +61,7 @@ test:
   only:
     - main
     - develop
-
+ 
 deploy:
   stage: deploy
   image: python:3.11-slim

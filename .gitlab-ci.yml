@@ -7,6 +7,9 @@ variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   VENV_PATH: "$CI_PROJECT_DIR/djangoenv"
 
+# ----------------------
+# BUILD JOB
+# ----------------------
 build:
   stage: build
   image: python:3.11-slim
@@ -21,20 +24,21 @@ build:
     paths:
       - djangoenv/
     expire_in: 1 hour
+  # Build runs on main and QA
   only:
     - main
-    - develop
+    - QA
 
+# ----------------------
+# TEST JOB
+# ----------------------
 test:
   stage: test
   image: python:3.11-slim
   services:
     - mysql:8.0
   variables:
-    # This instructs MySQL to set up root with the password "Test11!!"
     MYSQL_ROOT_PASSWORD: "Test11!!"
-
-    # Now we tell Django to connect as root in settings.py:
     DJANGO_ENV: "ci"
     DB_NAME: "myproject"
     DB_USER: "root"
@@ -50,10 +54,14 @@ test:
     - python manage.py test
   dependencies:
     - build
+  # Test runs on main and QA
   only:
     - main
-    - develop
- 
+    - QA
+
+# ----------------------
+# DEPLOY JOB
+# ----------------------
 deploy:
   stage: deploy
   image: python:3.11-slim
@@ -83,6 +91,7 @@ deploy:
     - test
   environment:
     name: production
+  # Only trigger 'deploy' when code merges into 'production'
   only:
-    - main
+    - production
   when: manual

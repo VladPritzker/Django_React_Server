@@ -55,7 +55,7 @@ test:
     MYSQL_PASSWORD: "Test11!!"
     MYSQL_ROOT_PASSWORD: "Test11!!"
     DB_NAME: "myproject"
-    DB_USER: "myuser"
+    DB_USER: "root"  # Use root ONLY FOR TESTS
     DB_PASSWORD: "Test11!!"
     DB_HOST: "mysql"
   before_script:

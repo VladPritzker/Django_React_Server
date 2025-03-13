@@ -58,7 +58,7 @@ test:
     DB_USER: "root"  # Use root ONLY FOR TESTS
     DB_PASSWORD: "Test11!!"
     DB_HOST: "mysql"
-  before_script:
+  before_script: 
     - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev
     - source "$VENV_PATH/bin/activate"
     - pip install -r requirements.txt

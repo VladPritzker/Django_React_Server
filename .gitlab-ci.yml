@@ -49,16 +49,31 @@ test:
   services:
     - name: mysql:latest
       alias: mysql
+      variables:
+        MYSQL_DATABASE: "myproject"
+        MYSQL_USER: "root"
+        MYSQL_PASSWORD: "Test11!!"
+        MYSQL_ROOT_PASSWORD: "Test11!!"
   variables:
-    MYSQL_DATABASE: "myproject"
-    MYSQL_USER: "root"
-    MYSQL_PASSWORD: "Test11!!"
-    MYSQL_ROOT_PASSWORD: "Test11!!"
     DB_NAME: "myproject"
-    DB_USER: "root"        # <-- Django explicitly needs this user for creating test DB
+    DB_USER: "root"
     DB_PASSWORD: "Test11!!"
     DB_HOST: "mysql"
     DJANGO_ENV: "ci"
+  before_script: 
+    - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev
+    - source "$VENV_PATH/bin/activate"
+    - pip install -r requirements.txt
+  script:
+    - echo "Sleeping 20s to let MySQL initialize..."
+    - sleep 20
+    - python manage.py test
+  dependencies:
+    - build
+  only:
+    - main
+    - QA
+    - production
   before_script:
     - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev
     - source "$VENV_PATH/bin/activate"

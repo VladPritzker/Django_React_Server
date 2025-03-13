@@ -47,22 +47,24 @@ test:
   stage: test
   image: python:3.11-slim
   services:
-  - name: mysql:latest
-    alias: mysql
-      # The MySQL container sees these environment variables so it starts up properly:
+    - name: mysql:latest
+      alias: mysql
   variables:
     MYSQL_DATABASE: "myproject"
     MYSQL_USER: "myuser"
     MYSQL_PASSWORD: "Test11!!"
     MYSQL_ROOT_PASSWORD: "Test11!!"
+    DB_NAME: "myproject"
+    DB_USER: "myuser"
+    DB_PASSWORD: "Test11!!"
     DB_HOST: "mysql"
-    DB_PORT: "3306"        
   before_script:
-    - apt-get update && apt-get install -y gcc libmariadb-dev pkg-config
+    - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev
     - source "$VENV_PATH/bin/activate"
+    - pip install -r requirements.txt
   script:
-    - echo "Sleeping 10s to let MySQL initialize..."
-    - sleep 10
+    - echo "Sleeping 20s to let MySQL initialize..."
+    - sleep 20
     - python manage.py test
   dependencies:
     - build

@@ -55,9 +55,10 @@ test:
     MYSQL_PASSWORD: "Test11!!"
     MYSQL_ROOT_PASSWORD: "Test11!!"
     DB_NAME: "myproject"
-    DB_USER: "root"  # Use root ONLY FOR TESTS
+    DB_USER: "root"  # explicitly root here!
     DB_PASSWORD: "Test11!!"
     DB_HOST: "mysql"
+    DB_PORT: "3306"
   before_script: 
     - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev
     - source "$VENV_PATH/bin/activate"

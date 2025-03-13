@@ -182,8 +182,12 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # Possibly read .env, but override if DJANGO_ENV=ci
 if os.getenv('DJANGO_ENV') == 'ci':
     DB_HOST = 'mysql'
+    DB_USER = os.getenv('DB_USER', 'root')
+    DB_PASSWORD = os.getenv('DB_PASSWORD')
 else:
     DB_HOST = config('DB_HOST', default='127.0.0.1')
+    DB_USER = config('DB_USER')
+    DB_PASSWORD = config('DB_PASSWORD')
 
 DATABASES = {
     'default': {

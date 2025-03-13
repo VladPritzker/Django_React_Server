@@ -47,15 +47,16 @@ test:
   stage: test
   image: python:3.11-slim
   services:
-    - name: mysql:8.0
-      alias: mysql
+  - name: mysql:latest
+    alias: mysql
       # The MySQL container sees these environment variables so it starts up properly:
       variables:
-        MYSQL_ROOT_PASSWORD: "$MYSQL_ROOT_PASSWORD"  # set in GitLab CI variables
-        MYSQL_DATABASE: "$MYSQL_DATABASE"            # set in GitLab CI variables
-        # If you want a separate non-root user for MySQL, also define:
-        # MYSQL_USER: "$MYSQL_USER"
-        # MYSQL_PASSWORD: "$MYSQL_USER_PASSWORD"
+        MYSQL_DATABASE: "myproject"
+        MYSQL_USER: "myuser"
+        MYSQL_PASSWORD: "Test11!!"
+        MYSQL_ROOT_PASSWORD: "Test11!!"
+        DB_HOST: "mysql"
+        DB_PORT: "3306"        
   before_script:
     - apt-get update && apt-get install -y gcc libmariadb-dev pkg-config
     - source "$VENV_PATH/bin/activate"

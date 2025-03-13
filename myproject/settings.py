@@ -179,24 +179,27 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 
-# Possibly read .env, but override if DJANGO_ENV=ci
 if os.getenv('DJANGO_ENV') == 'ci':
-    DB_HOST = 'mysql'
+    # CI environment variables explicitly set by GitLab
+    DB_HOST = os.getenv('DB_HOST', 'mysql')
     DB_USER = os.getenv('DB_USER', 'root')
-    DB_PASSWORD = os.getenv('DB_PASSWORD')
+    DB_PASSWORD = os.getenv('DB_PASSWORD', 'Test11!!')
+    DB_NAME = os.getenv('DB_NAME', 'myproject')
 else:
+    # Local development using python-decouple from .env file
     DB_HOST = config('DB_HOST', default='127.0.0.1')
-    DB_USER = config('DB_USER')
-    DB_PASSWORD = config('DB_PASSWORD')
+    DB_USER = config('DB_USER', default='myuser')
+    DB_PASSWORD = config('DB_PASSWORD', default='Test11!!')
+    DB_NAME = config('DB_NAME', default='myproject')
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
         'HOST': DB_HOST,
-        'PORT': 3306
+        'PORT': config('DB_PORT', default=3306),
     }
 }
 

@@ -55,11 +55,11 @@ test:
     MYSQL_PASSWORD: "Test11!!"
     MYSQL_ROOT_PASSWORD: "Test11!!"
     DB_NAME: "myproject"
-    DB_USER: "root"  # explicitly root here!
+    DB_USER: "root"        # <-- Django explicitly needs this user for creating test DB
     DB_PASSWORD: "Test11!!"
     DB_HOST: "mysql"
-    DB_PORT: "3306"
-  before_script: 
+    DJANGO_ENV: "ci"
+  before_script:
     - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev
     - source "$VENV_PATH/bin/activate"
     - pip install -r requirements.txt

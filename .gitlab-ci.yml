@@ -50,13 +50,13 @@ test:
   - name: mysql:latest
     alias: mysql
       # The MySQL container sees these environment variables so it starts up properly:
-      variables:
-        MYSQL_DATABASE: "myproject"
-        MYSQL_USER: "myuser"
-        MYSQL_PASSWORD: "Test11!!"
-        MYSQL_ROOT_PASSWORD: "Test11!!"
-        DB_HOST: "mysql"
-        DB_PORT: "3306"        
+  variables:
+    MYSQL_DATABASE: "myproject"
+    MYSQL_USER: "myuser"
+    MYSQL_PASSWORD: "Test11!!"
+    MYSQL_ROOT_PASSWORD: "Test11!!"
+    DB_HOST: "mysql"
+    DB_PORT: "3306"        
   before_script:
     - apt-get update && apt-get install -y gcc libmariadb-dev pkg-config
     - source "$VENV_PATH/bin/activate"

@@ -15,7 +15,7 @@ variables:
   DB_NAME: "$DB_NAME"          # read from GitLab CI variables
   DB_USER: "$DB_USER"          # read from GitLab CI variables
   DB_PASSWORD: "$DB_PASSWORD"  # read from GitLab CI variables
-  DB_HOST: "mysql"
+  DB_HOST: "127.0.0.1"
   DB_PORT: "3306"
 
 # ----------------------

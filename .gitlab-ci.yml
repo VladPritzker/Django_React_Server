@@ -51,7 +51,7 @@ test:
       alias: mysql
   variables:
     MYSQL_DATABASE: "myproject"
-    MYSQL_USER: "myuser"
+    MYSQL_USER: "root"
     MYSQL_PASSWORD: "Test11!!"
     MYSQL_ROOT_PASSWORD: "Test11!!"
     DB_NAME: "myproject"

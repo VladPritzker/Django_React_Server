@@ -180,13 +180,11 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 
 
 if os.getenv('DJANGO_ENV') == 'ci':
-    # CI environment variables explicitly set by GitLab
-    DB_HOST = os.getenv('DB_HOST', 'mysql')
-    DB_USER = os.getenv('DB_USER', 'root')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', 'Test11!!')
-    DB_NAME = os.getenv('DB_NAME', 'myproject')
+    DB_HOST = 'mysql'  # hardcoded explicitly for CI environment
+    DB_USER = 'root'
+    DB_PASSWORD = 'Test11!!'
+    DB_NAME = 'myproject'
 else:
-    # Local development using python-decouple from .env file
     DB_HOST = config('DB_HOST', default='127.0.0.1')
     DB_USER = config('DB_USER', default='myuser')
     DB_PASSWORD = config('DB_PASSWORD', default='Test11!!')

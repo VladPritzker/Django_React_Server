@@ -47,26 +47,26 @@ test:
   stage: test
   image: python:3.11-slim
   services:
-    - name: mysql:latest
+    - name: mysql:8.0
       alias: mysql
       variables:
+        MYSQL_ROOT_PASSWORD: "Test11!!"
         MYSQL_DATABASE: "myproject"
         MYSQL_USER: "root"
         MYSQL_PASSWORD: "Test11!!"
-        MYSQL_ROOT_PASSWORD: "Test11!!"
   variables:
-    DB_HOST: "mysql"
+    DJANGO_ENV: "ci"
     DB_NAME: "myproject"
     DB_USER: "root"
     DB_PASSWORD: "Test11!!"
-    DJANGO_ENV: "ci"
-  before_script: 
+    DB_HOST: "mysql" # This should match the alias above exactly
+  before_script:
     - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev mysql-client
     - source "$VENV_PATH/bin/activate"
     - pip install -r requirements.txt
   script:
-    - echo "Sleeping 20s to let MySQL initialize..."
-    - sleep 20
+    - echo "Sleeping 30s to ensure MySQL initialization..."
+    - sleep 30
     - mysql --host=mysql --user=root --password=$MYSQL_ROOT_PASSWORD -e "SHOW DATABASES;"
     - python manage.py test
   dependencies:

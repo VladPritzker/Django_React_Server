@@ -52,7 +52,7 @@ test:
       variables:
         MYSQL_ROOT_PASSWORD: "Test11!!"
         MYSQL_DATABASE: "myproject"
-        MYSQL_USER: "root"
+        # MYSQL_USER: "root"
         MYSQL_PASSWORD: "Test11!!"
   variables:
     DJANGO_ENV: "ci"

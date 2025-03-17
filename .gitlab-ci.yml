@@ -4,19 +4,16 @@ stages:
   - deploy
 
 # --------------------------
-# Global Variables (Optional)
+# Global Variables
 # --------------------------
-# These refer to variables you'll define in GitLab -> Settings -> CI/CD -> Variables
-# Example variable names: MYSQL_ROOT_PASSWORD, MYSQL_DATABASE, DB_NAME, DB_USER, DB_PASSWORD, etc.
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   VENV_PATH: "$CI_PROJECT_DIR/djangoenv"
-  DJANGO_ENV: "ci"             # for your test config
-  DB_NAME: "$DB_NAME"          # read from GitLab CI variables
-  DB_USER: "$DB_USER"          # read from GitLab CI variables
-  DB_PASSWORD: "$DB_PASSWORD"  # read from GitLab CI variables
-  DB_HOST: "127.0.0.1"
-  DB_PORT: "3306"
+  DJANGO_ENV: "ci"
+  DB_NAME: "$DB_NAME"
+  DB_USER: "$DB_USER"
+  DB_PASSWORD: "$DB_PASSWORD"
+  DB_HOST: "mysql"
 
 # ----------------------
 # BUILD JOB
@@ -41,27 +38,28 @@ build:
     - production
 
 # ----------------------
-# TEST JOB
+# TEST JOB (fixed)
 # ----------------------
 test:
   stage: test
   image: python:3.11-slim
   services:
-    - name: mysql:8.0
+    - name: mysql:8.0                  # Changed to mysql:8.0 for version consistency
       alias: mysql
       variables:
         MYSQL_ROOT_PASSWORD: "Test11!!"
         MYSQL_DATABASE: "myproject"
-        # MYSQL_USER: "root"
         MYSQL_PASSWORD: "Test11!!"
+        # Removed MYSQL_USER as root user is auto-created
   variables:
     DJANGO_ENV: "ci"
     DB_NAME: "myproject"
     DB_USER: "root"
     DB_PASSWORD: "Test11!!"
-    DB_HOST: "mysql" # This should match the alias above exactly
+    DB_HOST: "mysql"
   before_script:
-    - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev mysql-client
+    # Installed default-mysql-client instead of mysql-client
+    - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev default-mysql-client
     - source "$VENV_PATH/bin/activate"
     - pip install -r requirements.txt
   script:
@@ -88,9 +86,8 @@ deploy:
       variables:
         MYSQL_ROOT_PASSWORD: "$MYSQL_ROOT_PASSWORD"
         MYSQL_DATABASE: "$MYSQL_DATABASE"
-        # same idea if you need separate user
   before_script:
-    - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev curl
+    - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev curl default-mysql-client  # Added default-mysql-client here
     - python3 -m venv "$VENV_PATH"
     - source "$VENV_PATH/bin/activate"
     - pip install --upgrade pip

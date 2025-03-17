@@ -55,18 +55,19 @@ test:
         MYSQL_PASSWORD: "Test11!!"
         MYSQL_ROOT_PASSWORD: "Test11!!"
   variables:
+    DB_HOST: "mysql"
     DB_NAME: "myproject"
     DB_USER: "root"
     DB_PASSWORD: "Test11!!"
-    DB_HOST: "mysql"  # ensure DB_HOST matches exactly the alias above
     DJANGO_ENV: "ci"
   before_script: 
-    - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev
+    - apt-get update && apt-get install -y gcc pkg-config libmariadb-dev mysql-client
     - source "$VENV_PATH/bin/activate"
     - pip install -r requirements.txt
   script:
     - echo "Sleeping 20s to let MySQL initialize..."
     - sleep 20
+    - mysql --host=mysql --user=root --password=$MYSQL_ROOT_PASSWORD -e "SHOW DATABASES;"
     - python manage.py test
   dependencies:
     - build

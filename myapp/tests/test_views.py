@@ -2,6 +2,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 from myapp.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class UserViewTest(APITestCase):
     def setUp(self):
@@ -10,19 +11,39 @@ class UserViewTest(APITestCase):
             email='apitest@example.com',
             password='securepass123'
         )
-        self.client.login(username='apitest', password='securepass123')
 
-    def test_get_user_profile(self):
-        url = reverse('user-profile', kwargs={'pk': self.user.pk})
+    def test_simple_login(self):
+        url = reverse('simple_login')
+        data = {'email': 'apitest@example.com', 'password': 'securepass123'}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('access', response.data)
+        self.assertEqual(response.data['email'], 'apitest@example.com')
+
+    def test_register_user(self):
+        url = reverse('register')
+        data = {'username': 'newuser', 'email': 'newuser@example.com', 'password': 'newpassword123'}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['message'], 'User registered successfully')
+
+    def test_get_user_data(self):
+        url = reverse('users_data', kwargs={'user_id': self.user.id})
+        refresh = RefreshToken.for_user(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {str(refresh.access_token)}')
         response = self.client.get(url)
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['username'], 'apitest')
 
-    def test_user_login(self):
-        url = reverse('token_obtain_pair')
-        data = {'email': 'apitest@example.com', 'password': 'securepass123'}
-        response = self.client.post(url, data, format='json')
-        
+    def test_patch_user_data(self):
+        url = reverse('users_data', kwargs={'user_id': self.user.id})
+        refresh = RefreshToken.for_user(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {str(refresh.access_token)}')
+        data = {'username': 'updateduser'}
+        response = self.client.patch(url, data, format='json')
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
+        self.assertEqual(response.data['user']['username'], 'updateduser')

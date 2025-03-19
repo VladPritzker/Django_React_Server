@@ -262,7 +262,12 @@ STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 
 # Additional settings
-USE_TZ = False
+# USE_TZ = False
+# Internationalization
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'America/New_York'
+USE_I18N = True
+USE_TZ = True  # Ensure this
 CORS_ALLOW_ALL_ORIGINS = True
 
 EMAIL_BACKEND = 'django_sendgrid_v5.backend.SendgridBackend'

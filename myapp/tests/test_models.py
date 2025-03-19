@@ -1,7 +1,8 @@
 from django.test import TestCase
 from myapp.models import (
     User, FinancialRecord, InvestingRecord, CustomCashFlowInvestment, Note,
-    MonthlyExpense, IncomeRecord, Contact, Meeting, SleepLog, Notification
+    MonthlyExpense, IncomeRecord, Contact, Meeting, SleepLog, StockData,
+    PlaidItem, TrackedAccount, Notification
 )
 
 

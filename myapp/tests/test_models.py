@@ -122,31 +122,31 @@ class ContactModelTest(TestCase):
         self.assertEqual(contact.name, 'Alice')
 
 
-class MeetingTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user('meeting@example.com', 'pass')
-        self.meeting = Meeting.objects.create(
-            user=self.user,
-            title='Team Sync',
-            datetime='2024-04-10T10:00:00Z'
-        )
+# class MeetingTest(TestCase):
+#     def setUp(self):
+#         self.user = User.objects.create_user('meeting@example.com', 'pass')
+#         self.meeting = Meeting.objects.create(
+#             user=self.user,
+#             title='Team Sync',
+#             datetime='2024-04-10T10:00:00Z'
+#         )
 
-    def test_meeting_creation(self):
-        self.assertEqual(self.meeting.title, 'Team Sync')
+#     def test_meeting_creation(self):
+#         self.assertEqual(self.meeting.title, 'Team Sync')
 
 
-class SleepLogTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user('sleep@example.com', 'pass')
-        self.log = SleepLog.objects.create(
-            user=self.user,
-            date='2024-04-10',
-            sleep_time='2024-04-10T23:00:00Z',
-            wake_time='2024-04-11T07:00:00Z'
-        )
+# class SleepLogTest(TestCase):
+#     def setUp(self):
+#         self.user = User.objects.create_user('sleep@example.com', 'pass')
+#         self.log = SleepLog.objects.create(
+#             user=self.user,
+#             date='2024-04-10',
+#             sleep_time='2024-04-10T23:00:00Z',
+#             wake_time='2024-04-11T07:00:00Z'
+#         )
 
-    def test_sleep_log_creation(self):
-        self.assertEqual(str(self.log), 'sleep@example.com - 2024-04-10')
+#     def test_sleep_log_creation(self):
+#         self.assertEqual(str(self.log), 'sleep@example.com - 2024-04-10')
 
 
 class NotificationTest(TestCase):

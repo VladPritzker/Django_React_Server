@@ -1,8 +1,8 @@
 from django.test import TestCase
+from django.utils import timezone
 from myapp.models import (
     User, FinancialRecord, InvestingRecord, CustomCashFlowInvestment, Note,
-    MonthlyExpense, IncomeRecord, Contact, Meeting, SleepLog, StockData,
-    PlaidItem, TrackedAccount, Notification
+    MonthlyExpense, IncomeRecord, Contact, Meeting, SleepLog, Notification
 )
 
 
@@ -25,7 +25,7 @@ class UserModelTest(TestCase):
 
 class FinancialRecordTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user('user@example.com', 'pass')
+        self.user = User.objects.create_user(email='user@example.com', username='user', password='pass')
         self.record = FinancialRecord.objects.create(
             user=self.user,
             transaction_id='txn_001',
@@ -42,7 +42,7 @@ class FinancialRecordTest(TestCase):
 
 class InvestingRecordTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user('investor@example.com', 'pass')
+        self.user = User.objects.create_user(email='investor@example.com', username='investor', password='pass')
         self.record = InvestingRecord.objects.create(
             user=self.user,
             record_date='2024-01-01',
@@ -57,7 +57,7 @@ class InvestingRecordTest(TestCase):
 
 class CustomCashFlowInvestmentTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user('cashflow@example.com', 'pass')
+        self.user = User.objects.create_user(email='cashflow@example.com', username='cashflow', password='pass')
         self.investment = CustomCashFlowInvestment.objects.create(
             user=self.user,
             record_date='2024-02-01',
@@ -76,7 +76,7 @@ class CustomCashFlowInvestmentTest(TestCase):
 
 class NoteModelTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user('noteuser@example.com', 'pass')
+        self.user = User.objects.create_user(email='noteuser@example.com', username='noteuser', password='pass')
         self.note = Note.objects.create(
             user=self.user,
             title='Test Note',
@@ -91,7 +91,7 @@ class NoteModelTest(TestCase):
 
 class IncomeRecordTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user('income@example.com', 'pass')
+        self.user = User.objects.create_user(email='income@example.com', username='incomeuser', password='pass')
         self.record = IncomeRecord.objects.create(
             user=self.user,
             title='Consulting',
@@ -105,7 +105,7 @@ class IncomeRecordTest(TestCase):
 
 class MonthlyExpenseTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user('expense@example.com', 'pass')
+        self.user = User.objects.create_user(email='expense@example.com', username='expenseuser', password='pass')
         self.expense = MonthlyExpense.objects.create(
             user=self.user,
             title='Rent',
@@ -122,36 +122,9 @@ class ContactModelTest(TestCase):
         self.assertEqual(contact.name, 'Alice')
 
 
-# class MeetingTest(TestCase):
-#     def setUp(self):
-#         self.user = User.objects.create_user('meeting@example.com', 'pass')
-#         self.meeting = Meeting.objects.create(
-#             user=self.user,
-#             title='Team Sync',
-#             datetime='2024-04-10T10:00:00Z'
-#         )
-
-#     def test_meeting_creation(self):
-#         self.assertEqual(self.meeting.title, 'Team Sync')
-
-
-# class SleepLogTest(TestCase):
-#     def setUp(self):
-#         self.user = User.objects.create_user('sleep@example.com', 'pass')
-#         self.log = SleepLog.objects.create(
-#             user=self.user,
-#             date='2024-04-10',
-#             sleep_time='2024-04-10T23:00:00Z',
-#             wake_time='2024-04-11T07:00:00Z'
-#         )
-
-#     def test_sleep_log_creation(self):
-#         self.assertEqual(str(self.log), 'sleep@example.com - 2024-04-10')
-
-
 class NotificationTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user('notify@example.com', 'pass')
+        self.user = User.objects.create_user(email='notify@example.com', username='notifyuser', password='pass')
         self.notification = Notification.objects.create(
             user=self.user,
             notification_type='new_transaction',
@@ -160,3 +133,4 @@ class NotificationTest(TestCase):
 
     def test_notification_creation(self):
         self.assertEqual(self.notification.notification_type, 'new_transaction')
+        self.assertEqual(str(self.notification), 'Notification for notifyuser: A new transaction occurred')

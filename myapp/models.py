@@ -43,7 +43,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     spent_by_month = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     spent_by_year = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     income_by_year = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    income_by_month = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    income_by_month = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,  # Force a zero default
+        null=False,    # Typically no longer needed if you have a default
+        blank=True     # You can keep blank=True for forms, but null=False ensures DB field won't be NULL
+    )
     password = models.CharField(max_length=100)
     photo = models.URLField(max_length=255, null=True, blank=True)  # URL field for storing image URLs
     groups = models.ManyToManyField(Group, related_name='custom_user_groups', blank=True)

@@ -5,7 +5,6 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.db import models
 
-
 class UserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
         if not email:
@@ -34,29 +33,38 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     last_login = models.DateTimeField('last login', default=timezone.now, blank=True, null=True)
+
     money_invested = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     money_spent = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     income_by_week = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
     balance_goal = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     spent_by_week = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     spent_by_month = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     spent_by_year = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    income_by_year = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    # Updated here: give income_by_year a default just like income_by_month
+    income_by_year = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,   # <-- Minimal fix: ensures it's never None
+        null=True,
+        blank=True
+    )
     income_by_month = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        default=0.00,  # Force a zero default
-        null=False,    # Typically no longer needed if you have a default
-        blank=True     # You can keep blank=True for forms, but null=False ensures DB field won't be NULL
+        default=0.00,
+        null=False,
+        blank=True
     )
     password = models.CharField(max_length=100)
-    photo = models.URLField(max_length=255, null=True, blank=True)  # URL field for storing image URLs
+    photo = models.URLField(max_length=255, null=True, blank=True)
     groups = models.ManyToManyField(Group, related_name='custom_user_groups', blank=True)
     user_permissions = models.ManyToManyField(Permission, related_name='custom_user_permissions', blank=True)
     reset_token = models.CharField(max_length=64, blank=True, null=True)
     reset_token_expiry = models.DateTimeField(blank=True, null=True)
-
 
     objects = UserManager()
 
@@ -70,7 +78,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
-
 class FinancialRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     transaction_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
@@ -82,11 +89,7 @@ class FinancialRecord(models.Model):
         db_table = 'financial_records'
 
     def __str__(self):
-        # Format amount as two decimals: e.g. 5000.00
         return f"{self.title} on {self.record_date} for ${self.amount:.2f}"
-
-
-
 
 class InvestingRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='investing_records')
@@ -98,13 +101,12 @@ class InvestingRecord(models.Model):
     amount_at_maturity = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     maturity_date = models.DateField(null=True, blank=True)
     discount_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    yearly_income = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # New field
+    yearly_income = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     class Meta:
         db_table = 'investing_records'
 
     def __str__(self):
-        # Safely handle cases where amount might be None:
         amount_str = f"{self.amount:.2f}" if self.amount is not None else "0.00"
         return f"{self.title} on {self.record_date} for ${amount_str}"
 
@@ -125,9 +127,6 @@ class CustomCashFlowInvestment(models.Model):
 
     def __str__(self):
         return f"{self.title} on {self.record_date} for ${self.amount}"
-    
-
-
 
 class Note(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -171,7 +170,6 @@ class IncomeRecord(models.Model):
         db_table = 'income_records'
 
     def __str__(self):
-        # Format amount as two decimals: e.g. 3000.00
         return f"{self.title} - {self.amount:.2f} - {self.record_date}"
 
 class Contact(models.Model):
@@ -221,8 +219,6 @@ class SleepLog(models.Model):
             'created_at': self.created_at,
         }
 
-
-
 class StockData(models.Model):
     ticker = models.CharField(max_length=10)
     name = models.CharField(max_length=100)
@@ -238,14 +234,10 @@ class StockData(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'stock_data'            
-    
+        db_table = 'stock_data'
+
     def __str__(self):
         return self.ticker
-
-
-
-
 
 class PlaidItem(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -254,16 +246,11 @@ class PlaidItem(models.Model):
     previous_item_id = models.CharField(max_length=255, null=True, blank=True)
     cursor = models.CharField(max_length=255, null=True, blank=True)
 
-
     class Meta:
         db_table = 'PlaidItem'
 
     def __str__(self):
         return f"{self.user.username}'s Plaid Item"
-
-
-
- 
 
 class TrackedAccount(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -278,11 +265,9 @@ class TrackedAccount(models.Model):
     def __str__(self):
         return f"{self.account_name} ending with {self.account_mask}"
 
-
 class Notification(models.Model):
     NOTIFICATION_TYPES = [
         ('new_transaction', 'New Transaction'),
-        # You can add more types if needed
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
@@ -291,8 +276,6 @@ class Notification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
-    # # Optionally, you can link to the related object (e.g., transaction)
-    # transaction = models.ForeignKey('FinancialRecord', null=True, blank=True, on_delete=models.CASCADE)
     class Meta:
        db_table = 'Notifications'
 

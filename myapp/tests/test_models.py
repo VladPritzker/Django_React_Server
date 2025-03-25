@@ -1,11 +1,8 @@
 from django.test import TestCase
-from django.utils import timezone
-import json  # <--- For parsing JSON if/when we make requests to views returning JsonResponse
 from myapp.models import (
     User, FinancialRecord, InvestingRecord, CustomCashFlowInvestment, Note,
     MonthlyExpense, IncomeRecord, Contact, Meeting, SleepLog, Notification
 )
-
 
 class UserModelTest(TestCase):
     def setUp(self):
@@ -21,7 +18,6 @@ class UserModelTest(TestCase):
         self.assertEqual(self.user.email, 'testuser@example.com')
 
     def test_user_string_representation(self):
-        # By default, we expect str(user) to be user.email
         self.assertEqual(str(self.user), 'testuser@example.com')
 
 
@@ -43,7 +39,6 @@ class FinancialRecordTest(TestCase):
     def test_financial_record_creation(self):
         self.assertEqual(self.record.title, 'Salary')
         self.assertEqual(self.record.amount, 5000.00)
-        # Ensure the model's __str__ returns two decimals: $5000.00
         self.assertEqual(str(self.record), 'Salary on 2024-01-01 for $5000.00')
 
 
@@ -63,7 +58,6 @@ class InvestingRecordTest(TestCase):
 
     def test_investing_record(self):
         self.assertEqual(self.record.title, 'Bond')
-        # Check two-decimal format for $1000.00
         self.assertEqual(str(self.record), 'Bond on 2024-01-01 for $1000.00')
 
 
@@ -124,7 +118,6 @@ class IncomeRecordTest(TestCase):
         )
 
     def test_income_record(self):
-        # Checking the exact string format with two decimals: 3000.00
         self.assertEqual(str(self.record), 'Consulting - 3000.00 - 2024-03-01')
 
 

@@ -18,6 +18,7 @@ class UserViewTest(APITestCase):
         response = self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Works if the view returns a DRF Response (response.data is available)
         self.assertIn('access', response.data)
         self.assertEqual(response.data['email'], 'apitest@example.com')
 
@@ -27,6 +28,7 @@ class UserViewTest(APITestCase):
         response = self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # Again, DRF Response expected
         self.assertEqual(response.data['message'], 'User registered successfully')
 
     def test_get_user_data(self):

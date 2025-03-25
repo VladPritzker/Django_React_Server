@@ -76,7 +76,9 @@ class FinancialRecord(models.Model):
         db_table = 'financial_records'
 
     def __str__(self):
-        return f"{self.title} on {self.record_date} for ${self.amount}"
+        # Format amount as two decimals: e.g. 5000.00
+        return f"{self.title} on {self.record_date} for ${self.amount:.2f}"
+
 
 
 
@@ -88,17 +90,18 @@ class InvestingRecord(models.Model):
     tenor = models.CharField(max_length=255, null=True, blank=True)
     type_invest = models.CharField(max_length=255, null=True, blank=True)
     amount_at_maturity = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
-    maturity_date = models.DateField(null=True, blank=True)    
+    maturity_date = models.DateField(null=True, blank=True)
     discount_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     yearly_income = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # New field
-
 
     class Meta:
         db_table = 'investing_records'
 
     def __str__(self):
-        return f"{self.title} on {self.record_date} for ${self.amount}"
-    
+        # Safely handle cases where amount might be None:
+        amount_str = f"{self.amount:.2f}" if self.amount is not None else "0.00"
+        return f"{self.title} on {self.record_date} for ${amount_str}"
+
 class CustomCashFlowInvestment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     record_date = models.DateField()
@@ -158,12 +161,12 @@ class IncomeRecord(models.Model):
     record_date = models.DateField()
     transaction_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
 
-
     class Meta:
         db_table = 'income_records'
 
     def __str__(self):
-        return f"{self.title} - {self.amount} - {self.record_date}"
+        # Format amount as two decimals: e.g. 3000.00
+        return f"{self.title} - {self.amount:.2f} - {self.record_date}"
 
 class Contact(models.Model):
     name = models.CharField(max_length=100)

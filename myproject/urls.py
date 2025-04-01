@@ -85,7 +85,7 @@ urlpatterns = [
     
     # GET/PATCH/DELETE for a single activity record
     path('activities/<int:user_id>/<int:id>/', ActivitiesView.as_view(), name='activities_detail'),
-
+ 
     
 
 

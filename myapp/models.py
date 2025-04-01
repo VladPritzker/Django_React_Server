@@ -281,3 +281,25 @@ class Notification(models.Model):
 
     def __str__(self):
         return f'Notification for {self.user.username}: {self.message}'
+
+
+class Activity(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)         # e.g., "Jogging", "Reading"
+    date = models.DateField()                       # The date the activity occurred
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'activities'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.name}"
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'name': self.name,
+            'date': self.date,
+            'created_at': self.created_at,
+        }

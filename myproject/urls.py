@@ -34,6 +34,10 @@ from myapp.views.password_reset.password_reset import reset_password_form, reset
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from myapp.views.token import validate_token
 
+# from myapp.views.activities import ActivitiesView
+from myapp.views.activities import ActivitiesView
+
+
 
 
 
@@ -77,6 +81,11 @@ urlpatterns = [
     path('api/assistant/', assistant_views.assistant_views , name='assistant'),
     path('send-envelope/', send_docusign_envelope, name='send-envelope'),
     # path('download-new-envelopes/', download_new_envelopes, name='download-new-envelopes'),
+    path('activities/<int:user_id>/', ActivitiesView.as_view(), name='activities_list'),
+    
+    # GET/PATCH/DELETE for a single activity record
+    path('activities/<int:user_id>/<int:id>/', ActivitiesView.as_view(), name='activities_detail'),
+
     
 
 

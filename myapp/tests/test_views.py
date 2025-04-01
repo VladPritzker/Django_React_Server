@@ -46,7 +46,7 @@ class UserViewTest(APITestCase):
             HTTP_AUTHORIZATION=f'Bearer {str(refresh.access_token)}'
         )
         response = self.client.get(url)
-
+  
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         json_response = json.loads(response.content)

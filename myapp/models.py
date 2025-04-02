@@ -283,14 +283,13 @@ class Notification(models.Model):
         return f'Notification for {self.user.username}: {self.message}'
 
 
-class Activity(models.Model):
+class ActivityType(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)         # e.g., "Jogging", "Reading"
-    date = models.DateField()                       # The date the activity occurred
+    name = models.CharField(max_length=255)  # e.g., "Jogging", "Reading"
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'activities'
+        db_table = 'activity_types'
 
     def __str__(self):
         return f"{self.user.username} - {self.name}"
@@ -300,6 +299,28 @@ class Activity(models.Model):
             'id': self.id,
             'user_id': self.user_id,
             'name': self.name,
+            'created_at': self.created_at,
+        }
+
+
+class Activity(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    activity_type = models.ForeignKey(ActivityType, on_delete=models.CASCADE, null=True, blank=True)
+    date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'activities'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.activity_type.name if self.activity_type else 'No Type'}"
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'activity_type_id': self.activity_type_id,
+            'activity_type_name': self.activity_type.name if self.activity_type else None,  # convenience
             'date': self.date,
             'created_at': self.created_at,
         }
